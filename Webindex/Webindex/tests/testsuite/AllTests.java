@@ -2,16 +2,15 @@ package testsuite;
 
 import index.combinationstrategy.utils.NormalizerTest;
 import index.spatialindex.similarities.SpatialRelationshipFactoryTest;
+import index.spatialindex.similarities.pointsimilarities.InRelationshipTest;
 import index.spatialindex.utils.LocationProviderTest;
 import index.textindex.DBIndexTest;
+import index.textindex.similarities.probabilisticmodels.BM1Test;
+import index.textindex.similarities.vectorspacemodels.CosineSimilarityTest;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
-
-import similarities.spatialsimilarities.pointsimilarities.InRelationshipTest;
-import similarities.textsimilarities.probabilisticmodels.BM1Test;
-import similarities.textsimilarities.vectorspacemodels.CosineSimilarityTest;
 
 @RunWith(Suite.class)
 @SuiteClasses({ DBIndexTest.class, CosineSimilarityTest.class, BM1Test.class, LocationProviderTest.class, SpatialRelationshipFactoryTest.class, InRelationshipTest.class, NormalizerTest.class})

@@ -1,4 +1,4 @@
-package similarities.textsimilarities.probabilisticmodels;
+package index.textindex.similarities.probabilisticmodels;
 
 import static org.junit.Assert.assertEquals;
 import index.textindex.DBIndexTest;

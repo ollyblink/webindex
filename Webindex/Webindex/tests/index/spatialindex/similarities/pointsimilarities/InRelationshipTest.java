@@ -1,4 +1,4 @@
-package similarities.spatialsimilarities.pointsimilarities;
+package index.spatialindex.similarities.pointsimilarities;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;

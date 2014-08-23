@@ -1,4 +1,4 @@
-package similarities.textsimilarities.vectorspacemodels;
+package index.textindex.similarities.vectorspacemodels;
 
 import static org.junit.Assert.assertEquals;
 
