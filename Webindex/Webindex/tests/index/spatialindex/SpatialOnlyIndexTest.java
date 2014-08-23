@@ -1,7 +1,13 @@
 package index.spatialindex;
 
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+
 import index.spatialindex.spatialindeximplementations.SpatialOnlyIndex;
+import index.textindex.utils.texttransformation.MockTextTokenizer;
 import index.utils.DBManager;
+import index.utils.IndexDocument;
 import index.utils.Ranking;
 
 import org.junit.AfterClass;
@@ -17,10 +23,11 @@ public class SpatialOnlyIndexTest {
 
 		String[] docs = new String[] {
 			"This text is about Zurich, a city in Switzerland",
-			"The queen of England was not amused",
+			"The mayor of London was not amused",
 			"Many people died in World War II when Berlin was bombed by the allies"
 		};
 		dbManager = DBManager.getTestDBManager();
+		DBManager.initTestTextDB(new MockTextTokenizer(), dbManager, docs);
 		spatialOnlyIndex = DBManager.initSpatialTestDB(dbManager, docs);
 		
 	}
@@ -28,7 +35,10 @@ public class SpatialOnlyIndexTest {
 	@Test
 	public void queryTest() { 
 		Ranking ranking = spatialOnlyIndex.queryIndex("point_in", "Switzerland");
-		ranking.getResults();
+		ArrayList<IndexDocument> results = ranking.getResults();
+		for(IndexDocument d: results){
+ 			assertTrue(d.getId() == 1);
+		}
 	}
 
 	@AfterClass

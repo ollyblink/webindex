@@ -30,7 +30,11 @@ public class GeometryConverter {
 		case org.postgis.Geometry.POINT:
 			return factory.createPoint(coordinates.get(0));
 		case org.postgis.Geometry.POLYGON:
-			return factory.createPolygon((Coordinate[]) coordinates.toArray());
+			Coordinate[] coords = new Coordinate[coordinates.size()];
+			for(int i = 0; i < coordinates.size();++i){
+				coords[i] = coordinates.get(i);
+			}
+			return factory.createPolygon(coords);
 		default:
 			throw new NoSuchObjectException("Was not a point nor a polygon.");
 		}

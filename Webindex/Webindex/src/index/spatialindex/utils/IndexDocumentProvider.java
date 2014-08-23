@@ -89,8 +89,8 @@ public class IndexDocumentProvider {
 	 * @return
 	 */
 	public List<SpatialIndexDocumentMetaData> getDocumentLocations(Long... docids) {
-		if (dbManager.getConnector().tableExists("location")) {
-			String sql = "Select l.id, l.geometry from location l " + getWhereClause(docids);
+		if (dbManager.getConnector().tableExists("locations")) {
+			String sql = "Select l.docid, l.geometry from locations l " + getWhereClause(docids);
 			return new ArrayList<>(retrieveDocuments(sql).values());
 		}
 		return new ArrayList<>();

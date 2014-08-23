@@ -7,6 +7,5 @@ import java.util.List;
 import com.vividsolutions.jts.geom.Geometry;
 
 public interface ISpatialRelationship {
-	 
-	public void calculateSimilarity(List<? extends Geometry> queryFootPrints, List<SpatialScoreTriple> documentFootPrints);
+	public List<SpatialScoreTriple> calculateSimilarity(final List<? extends Geometry> queryFootPrints, final List<SpatialScoreTriple> documentFootPrints);
 }

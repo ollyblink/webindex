@@ -36,6 +36,7 @@ public class SpatialOnlyIndex extends AbstractSpatialIndex {
 
 	@Override
 	public Ranking queryIndex(String spatialRelationship, String location) {
+		
 		// Define spatial relationship algorithm
 		ISpatialRelationship spatRelAlgorithm = SpatialRelationshipFactory.create(spatialRelationship);
 
@@ -52,13 +53,13 @@ public class SpatialOnlyIndex extends AbstractSpatialIndex {
 			documentFootPrints.addAll(queryResult);
 		}
 		// Algorithm stage: calculate score for each found geometry
-		spatRelAlgorithm.calculateSimilarity(queryFootPrints, documentFootPrints);
+		List<SpatialScoreTriple> results = spatRelAlgorithm.calculateSimilarity(queryFootPrints, documentFootPrints);
 		// =======================================================================================
 		// End querying spatial index
 		// =======================================================================================
 
 		// Retrieve all the documents for the scores
-		ArrayList<IndexDocument> documents = getDocuments(documentFootPrints);
+		ArrayList<IndexDocument> documents = getDocuments(results);
 
 		// Sorting documents so they are ranked from highest to lowerst rank
 		Collections.sort(documents);

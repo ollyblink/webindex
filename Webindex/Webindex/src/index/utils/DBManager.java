@@ -38,7 +38,7 @@ public class DBManager {
 
 	"create table locations(docid bigserial not null references documents(id)); Select ADDGEOMETRYCOLUMN('locations','geometry',4326,'GEOMETRY',2); Create Index locations_spatial_index on locations using GIST(geometry); Alter table locations add primary key(docid, geometry)" };
 
-	public static final String dropTables = "drop table terms, documents, term_docs, metadata, original_terms, locations cascade;";
+	public static final String dropTables = "drop table if exists terms, documents, term_docs, metadata, original_terms, locations cascade;";
 
 	private AbstractDBConnector db;
 
@@ -96,18 +96,15 @@ public class DBManager {
 	public static DBTextIndex initTestTextDB(MockTextTokenizer tokenizer, DBManager dbManager, String[] docs) {
 		DBTextIndex index = new DBTextIndex(dbManager, tokenizer, 4000); 
 		List<String> documents = new ArrayList<String>();
-		documents.add(docs[0]);
-		documents.add(docs[1]); 
-		index.addDocuments(documents); 
-		documents.clear();
-		documents.add(docs[2]);
-		documents.add(docs[3]);
+		
+		for(String d:docs){
+			documents.add(d);
+		}  
 		index.addDocuments(documents);
 		return index;
 	}
 
 	public static DBManager getTestDBManager() {
-
 		String host = "localhost";
 		String port = "5432";
 		String database = "girindex_test";
@@ -127,10 +124,11 @@ public class DBManager {
 	}
 
 	public static SpatialOnlyIndex initSpatialTestDB(DBManager dbManager, String[] docs) {
+		 
 		SpatialOnlyIndex index = new SpatialOnlyIndex(new Quadtree(), new IndexDocumentProvider(dbManager));
 		SpatialIndexDocumentMetaData[] docLocs = new SpatialIndexDocumentMetaData[docs.length];
 		for(int i = 0; i< docs.length;++i){
-			docLocs[i] = new SpatialIndexDocumentMetaData(i);
+			docLocs[i] = new SpatialIndexDocumentMetaData(i+1);
 			List<? extends Geometry> geometries =  LocationProvider.INSTANCE.retrieveLocations(docs[i]); 
 			for(Geometry g: geometries){
 				docLocs[i].addGeometry(g);

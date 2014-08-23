@@ -43,9 +43,11 @@ public class SpatialIndexDocumentMetaData implements ISimilarityProvider {
 		if (sScore != null) {
 			if (sScore < score) {
 				sScore = score;
-			}
-			spatialScores.put(geometry, sScore);
+			} 
+		}else{
+			sScore = score;
 		}
+		spatialScores.put(geometry, sScore);
 	}
 
 	public List<Geometry> getGeometries() {
