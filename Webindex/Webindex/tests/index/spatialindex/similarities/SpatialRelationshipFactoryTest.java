@@ -1,4 +1,4 @@
-package similarities.spatialsimilarities;
+package index.spatialindex.similarities;
 import static org.junit.Assert.*;
 import index.spatialindex.similarities.ISpatialRelationship;
 import index.spatialindex.similarities.SpatialRelationshipFactory;

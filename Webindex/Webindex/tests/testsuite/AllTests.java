@@ -1,6 +1,7 @@
 package testsuite;
 
 import index.combinationstrategy.utils.NormalizerTest;
+import index.spatialindex.similarities.SpatialRelationshipFactoryTest;
 import index.spatialindex.utils.LocationProviderTest;
 import index.textindex.DBIndexTest;
 
@@ -8,7 +9,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import similarities.spatialsimilarities.SpatialRelationshipFactoryTest;
 import similarities.spatialsimilarities.pointsimilarities.InRelationshipTest;
 import similarities.textsimilarities.probabilisticmodels.BM1Test;
 import similarities.textsimilarities.vectorspacemodels.CosineSimilarityTest;
