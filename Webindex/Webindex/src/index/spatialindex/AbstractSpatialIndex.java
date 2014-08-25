@@ -1,40 +1,54 @@
 package index.spatialindex;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import index.spatialindex.utils.IndexDocumentProvider;
 import index.spatialindex.utils.SpatialIndexDocumentMetaData;
 import index.spatialindex.utils.SpatialScoreTriple;
+import index.utils.IndexDocument;
 
-import java.util.List;
-
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.index.quadtree.Quadtree;
 
 public abstract class AbstractSpatialIndex implements ISpatialIndex {
- 
+
 	protected Quadtree quadTree;
 	protected IndexDocumentProvider docProvider;
+	protected Long[] docids;
 
-	public AbstractSpatialIndex(Quadtree quadTree, IndexDocumentProvider docProvider) {
+	public AbstractSpatialIndex(Quadtree quadTree, IndexDocumentProvider docProvider, Long... docids) {
 		this.quadTree = quadTree;
 		this.docProvider = docProvider;
-		fillQuadtree();
+		this.docids = docids;
+		fillQuadtree(docids);
 	}
 
-	private void fillQuadtree() {
-		List<SpatialIndexDocumentMetaData> docLocs = docProvider.getDocumentLocations();
-		for (SpatialIndexDocumentMetaData docLoc : docLocs) {
-			List<Geometry> geometries = docLoc.getGeometries();
-			for(Geometry geometry: geometries){
-				quadTree.insert(geometry.getEnvelopeInternal(), new SpatialScoreTriple(docLoc.getDocid(), geometry, 0f));
-			}
+	@Override
+	public void addLocations(SpatialIndexDocumentMetaData... dFPs) {
+		if (dFPs == null || dFPs.length == 0) { // Bouncer
+			return;
+		} else {
+			docProvider.storePersistently(dFPs);
+			refillQuadtree(docids);
 		}
 	}
 
 	
-	protected void refillQuadtree(){
+
+	protected void refillQuadtree(Long... docids) {
 		this.quadTree = new Quadtree();
-		fillQuadtree();
+		fillQuadtree(docids);
 	}
-	 
+
+	protected abstract void fillQuadtree(Long... docids);
+	
+	/**
+	 * Used to query whatever information provider has been implemented to get the whole documents specified by Location::docid
+	 * 
+	 * @return a list of documents according to the locations
+	 */
+	public ArrayList<IndexDocument> getDocuments(List<SpatialScoreTriple> dFPs) {
+		return docProvider.getDocumentIdAndFulltext(dFPs);
+	}
 
 }

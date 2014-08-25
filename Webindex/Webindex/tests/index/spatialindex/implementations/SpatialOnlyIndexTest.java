@@ -1,10 +1,10 @@
-package index.spatialindex;
+package index.spatialindex.implementations;
 
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 
-import index.spatialindex.spatialindeximplementations.SpatialOnlyIndex;
+import index.spatialindex.implementations.SpatialOnlyIndex;
 import index.textindex.utils.texttransformation.MockTextTokenizer;
 import index.utils.DBManager;
 import index.utils.IndexDocument;

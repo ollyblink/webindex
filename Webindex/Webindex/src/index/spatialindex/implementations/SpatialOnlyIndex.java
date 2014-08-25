@@ -1,4 +1,4 @@
-package index.spatialindex.spatialindeximplementations;
+package index.spatialindex.implementations;
 
 import index.spatialindex.AbstractSpatialIndex;
 import index.spatialindex.similarities.ISpatialRelationship;
@@ -20,23 +20,14 @@ import com.vividsolutions.jts.index.quadtree.Quadtree;
 
 public class SpatialOnlyIndex extends AbstractSpatialIndex {
 
-	public SpatialOnlyIndex(Quadtree quadTree, IndexDocumentProvider docProvider) {
-		super(quadTree, docProvider);
+	public SpatialOnlyIndex(Quadtree quadTree, IndexDocumentProvider docProvider, Long... docids) {
+		super(quadTree, docProvider, docids);
 	}
 
-	@Override
-	public void addLocations(SpatialIndexDocumentMetaData... dFPs) {
-		if (dFPs == null || dFPs.length == 0) { // Bouncer
-			return;
-		} else {
-			docProvider.storePersistently(dFPs);
-			refillQuadtree();
-		}
-	}
-
+	 
 	@Override
 	public Ranking queryIndex(String spatialRelationship, String location) {
-		
+
 		// Define spatial relationship algorithm
 		ISpatialRelationship spatRelAlgorithm = SpatialRelationshipFactory.create(spatialRelationship);
 
@@ -47,7 +38,7 @@ public class SpatialOnlyIndex extends AbstractSpatialIndex {
 		List<? extends Geometry> queryFootPrints = LocationProvider.INSTANCE.retrieveLocations(location);
 		// Filter stage
 		List<SpatialScoreTriple> documentFootPrints = new ArrayList<SpatialScoreTriple>();
-		for (Geometry qFP : queryFootPrints) { 
+		for (Geometry qFP : queryFootPrints) {
 			@SuppressWarnings("unchecked")
 			List<SpatialScoreTriple> queryResult = quadTree.query(qFP.getEnvelopeInternal());
 			documentFootPrints.addAll(queryResult);
@@ -68,18 +59,23 @@ public class SpatialOnlyIndex extends AbstractSpatialIndex {
 		return new Ranking("<spatrel>" + spatialRelationship + "</spatrel><location>" + location + "</location>", documents);
 	}
 
-	/**
-	 * Used to query whatever information provider has been implemented to get the whole documents specified by Location::docid
-	 * 
-	 * @return a list of documents according to the locations
-	 */
-	public ArrayList<IndexDocument> getDocuments(List<SpatialScoreTriple> dFPs) {
-		return docProvider.getDocumentIdAndFulltext(dFPs);
-	}
+	
 
 	@Override
 	public SpatialIndexMetaData getAdditionalIndexInformation() {
+		//TODO 
 		throw new NoSuchMethodError();
+	}
+
+	@Override
+	protected void fillQuadtree(Long... docids) {
+		List<SpatialIndexDocumentMetaData> docLocs = docProvider.getDocumentLocations(docids);
+		for (SpatialIndexDocumentMetaData docLoc : docLocs) {
+			List<Geometry> geometries = docLoc.getGeometries();
+			for (Geometry geometry : geometries) {
+				quadTree.insert(geometry.getEnvelopeInternal(), new SpatialScoreTriple(docLoc.getDocid(), geometry, 0f));
+			}
+		}
 	}
 
 }

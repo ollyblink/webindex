@@ -1,5 +1,6 @@
-package index.textindex;
+package index.textindex.implementations;
 
+import index.textindex.ITextIndex;
 import index.textindex.utils.TextIndexMetaData;
 import index.textindex.utils.Term;
 import index.textindex.utils.TermDocumentValues;
@@ -22,15 +23,15 @@ import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-public class DBTextIndex implements ITextIndex {
+public class DBTextOnlyIndex implements ITextIndex {
 
 	private final class DocumentConsumer implements Runnable {
 
 		boolean isUpdated;
 		private BlockingQueue<String> documentQueue;
-		private DBTextIndex dbIndex;
+		private DBTextOnlyIndex dbIndex;
 
-		public DocumentConsumer(DBTextIndex dbIndex, BlockingQueue<String> documentQueue) {
+		public DocumentConsumer(DBTextOnlyIndex dbIndex, BlockingQueue<String> documentQueue) {
 			this.dbIndex = dbIndex;
 			this.documentQueue = documentQueue;
 			this.isUpdated = true;
@@ -85,7 +86,7 @@ public class DBTextIndex implements ITextIndex {
 	private DocumentConsumer consumer;
 	private boolean indexIsRunning;
 
-	public DBTextIndex(DBManager dbManager, ITextTokenizer tokenizer, int queueSize) {
+	public DBTextOnlyIndex(DBManager dbManager, ITextTokenizer tokenizer, int queueSize) {
 		this.dbManager = dbManager;
 		this.tokenizer = tokenizer;
 		this.indexIsRunning = true;

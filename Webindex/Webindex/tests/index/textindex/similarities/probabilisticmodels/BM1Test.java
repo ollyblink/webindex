@@ -1,7 +1,7 @@
 package index.textindex.similarities.probabilisticmodels;
 
 import static org.junit.Assert.assertEquals;
-import index.textindex.DBIndexTest;
+import index.textindex.implementations.DBIndexTest;
 import index.textindex.similarities.probabilisticmodels.BM1;
 import index.textindex.similarities.probabilisticmodels.BestMatch;
 import index.utils.IndexDocument;

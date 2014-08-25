@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
 
-import index.textindex.DBIndexTest;
+import index.textindex.implementations.DBIndexTest;
 import index.textindex.similarities.tfidfweighting.DocTFIDFTypes;
 import index.textindex.similarities.tfidfweighting.Formula3TFStrategy;
 import index.textindex.similarities.tfidfweighting.QueryIDFTypes;

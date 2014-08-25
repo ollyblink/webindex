@@ -4,7 +4,7 @@ import index.combinationstrategy.utils.NormalizerTest;
 import index.spatialindex.similarities.SpatialRelationshipFactoryTest;
 import index.spatialindex.similarities.pointsimilarities.InRelationshipTest;
 import index.spatialindex.utils.LocationProviderTest;
-import index.textindex.DBIndexTest;
+import index.textindex.implementations.DBIndexTest;
 import index.textindex.similarities.probabilisticmodels.BM1Test;
 import index.textindex.similarities.vectorspacemodels.CosineSimilarityTest;
 

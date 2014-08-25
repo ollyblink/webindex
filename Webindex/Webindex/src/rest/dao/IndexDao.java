@@ -1,6 +1,6 @@
 package rest.dao;
 
-import index.textindex.DBTextIndex;
+import index.textindex.implementations.DBTextOnlyIndex;
 import index.textindex.similarities.ITextSimilarity;
 import index.textindex.similarities.probabilisticmodels.BM1;
 import index.textindex.similarities.probabilisticmodels.BM11;
@@ -23,7 +23,7 @@ import index.utils.dbconnection.PGDBConnector;
 public enum IndexDao {
 	INSTANCE;
 
-	private DBTextIndex index;
+	private DBTextOnlyIndex index;
 	private DBManager dbManager;
 	private static final int QUEUE_SIZE = 5002;
 
@@ -38,7 +38,7 @@ public enum IndexDao {
 		dbManager = new DBManager(db);
 		ITextTokenizer tokenizer = new GermanTextTokenizer();
 
-		index = new DBTextIndex(dbManager, tokenizer, QUEUE_SIZE);
+		index = new DBTextOnlyIndex(dbManager, tokenizer, QUEUE_SIZE);
 	}
 
 	public void initDB() {

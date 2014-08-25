@@ -1,10 +1,10 @@
 package index.utils;
 
-import index.spatialindex.spatialindeximplementations.SpatialOnlyIndex;
+import index.spatialindex.implementations.SpatialOnlyIndex;
 import index.spatialindex.utils.SpatialIndexDocumentMetaData;
 import index.spatialindex.utils.IndexDocumentProvider;
 import index.spatialindex.utils.LocationProvider;
-import index.textindex.DBTextIndex;
+import index.textindex.implementations.DBTextOnlyIndex;
 import index.textindex.utils.texttransformation.MockTextTokenizer;
 import index.utils.dbconnection.AbstractDBConnector;
 import index.utils.dbconnection.PGDBConnector;
@@ -93,8 +93,8 @@ public class DBManager {
 		db.closeConnection();
 	}
 
-	public static DBTextIndex initTestTextDB(MockTextTokenizer tokenizer, DBManager dbManager, String[] docs) {
-		DBTextIndex index = new DBTextIndex(dbManager, tokenizer, 4000); 
+	public static DBTextOnlyIndex initTestTextDB(MockTextTokenizer tokenizer, DBManager dbManager, String[] docs) {
+		DBTextOnlyIndex index = new DBTextOnlyIndex(dbManager, tokenizer, 4000); 
 		List<String> documents = new ArrayList<String>();
 		
 		for(String d:docs){

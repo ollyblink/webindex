@@ -1,7 +1,8 @@
-package index.textindex;
+package index.textindex.implementations;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import index.textindex.implementations.DBTextOnlyIndex;
 import index.textindex.utils.Term;
 import index.textindex.utils.texttransformation.MockTextTokenizer;
 import index.utils.DBManager;
@@ -22,7 +23,7 @@ import org.junit.Test;
 public class DBIndexTest {
 
 	public static Map<Long, List<String>> testDocTerms;
-	public static DBTextIndex index;
+	public static DBTextOnlyIndex index;
 	public static DBManager dbManager;
 	public static final long d1 = 1;
 	public static final long d2 = 2;

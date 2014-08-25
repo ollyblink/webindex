@@ -1,7 +1,7 @@
 package index.spatialindex.utils;
 
 import static org.junit.Assert.*;
-import index.textindex.DBIndexTest;
+import index.textindex.implementations.DBIndexTest;
 
 import org.junit.After;
 import org.junit.Before;

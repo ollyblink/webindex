@@ -1,5 +1,6 @@
 package index.spatialindex;
 
+import index.spatialindex.implementations.SpatialOnlyIndexTest;
 import index.spatialindex.similarities.SpatialSimilarityTestSuite;
 import index.spatialindex.utils.SpatialSimilaritiesUtilsTestSuite;
 
