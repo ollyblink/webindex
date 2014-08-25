@@ -1,13 +1,18 @@
 package index.girindex.implementations;
 
-import index.girindex.IGIRIndex;
+import index.girindex.combinationstrategy.ICombinationStrategy;
+import index.spatialindex.utils.SpatialIndexUtils;
+import index.textindex.utils.Term;
+import index.textindex.utils.TextIndexUtils;
 import index.textindex.utils.texttransformation.ITextTokenizer;
 import index.utils.DBDataProvider;
+import index.utils.IndexUtils;
 import index.utils.Ranking;
 import index.utils.SimpleIndexDocument;
 import index.utils.query.SpatialIndexQuery;
 import index.utils.query.TextIndexQuery;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,17 +21,17 @@ import java.util.Set;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.index.quadtree.Quadtree;
 
-public class TextPrimarySpatialIndex implements IGIRIndex{
+public class TextPrimarySpatialIndex extends AbstractGIRIndex {
 
 	/**
 	 * The actual index of this implementation An in memory index represented by a Map<K,V>.
 	 */
 	private Map<String /* Term */, Quadtree /* Spatial footprints */> index;
-	
-	private DBDataProvider dbDataProvider; 
+	protected ITextTokenizer tokenizer;
 
-	public TextPrimarySpatialIndex(DBDataProvider dbDataProvider, ITextTokenizer tokenizer) {
-		this.dbDataProvider = dbDataProvider; 
+	public TextPrimarySpatialIndex(DBDataProvider dbDataProvider, ITextTokenizer tokenizer, ICombinationStrategy combinationStrategy) {
+		super(dbDataProvider, combinationStrategy);
+		this.tokenizer = tokenizer;
 		fillInMemoryIndex();
 	}
 
@@ -65,11 +70,41 @@ public class TextPrimarySpatialIndex implements IGIRIndex{
 		fillInMemoryIndex();
 	}
 
-  
 	@Override
 	public Ranking queryIndex(TextIndexQuery textQuery, SpatialIndexQuery spatialQuery) {
-		// TODO Auto-generated method stub
-		return null;
+
+		// Get all the terms in the query
+		HashMap<Term, Integer> termFreqs = tokenizer.transform(textQuery.getTextQuery());
+
+		// Get all the documents' spatial indexes for those terms
+		HashMap<Term, Quadtree> documentTrees = new HashMap<>();
+		for (Term term : termFreqs.keySet()) {
+			Quadtree quadtree = index.get(term.getIndexedTerm());
+			if (quadtree != null) {
+				documentTrees.put(term, quadtree);
+			}
+		}
+
+		/*
+		 * Perform querying
+		 */
+		List<Ranking> spatialRankings = new ArrayList<Ranking>();
+		for (Term term : documentTrees.keySet()) {
+			Ranking spatialRanking = SpatialIndexUtils.performSpatialQuery(spatialQuery, documentTrees.get(term), dbDataProvider);
+			spatialRankings.add(spatialRanking);
+		}
+		// No combine all the rankings and eliminate duplicated documents.
+		// Uses the maximum score of a document to determine its spatial score.
+		Ranking spatialRanking = IndexUtils.combineRankings(spatialRankings, "space");
+		Ranking textRanking = TextIndexUtils.performTextQuery(textQuery, tokenizer, dbDataProvider, spatialRanking);
+		/*
+		 * End querying
+		 */
+
+		// Last step: combine the ranks of the queries.
+		Ranking finalRanking = combinationStrategy.combineScores(textRanking, spatialRanking);
+
+		return finalRanking;
 	}
 
 }

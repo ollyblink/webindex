@@ -33,7 +33,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author rsp
  *
  */
-public class DBDataProvider  implements IDataProvider{
+public class DBDataProvider implements IDataProvider {
 
 	private DBManager dbManager;
 	private BlockingQueue<String> documentQueue;
@@ -588,17 +588,33 @@ public class DBDataProvider  implements IDataProvider{
 		}
 	}
 
-	public ArrayList<IndexDocument> getDocTermKeyValues(List<String> queryTerms, boolean isIntersected) {
+	private String getDocumentsWhere(List<IndexDocument> indexDocuments, String docVarName) { 
+		if (indexDocuments == null || indexDocuments.size() == 0) {
+			return "";
+		}
+		int counter = 0;
+		String whereClause = " AND (";
+		for (IndexDocument iD : indexDocuments) {
+			if (++counter == indexDocuments.size()) {
+				whereClause += docVarName+".id=" + iD.getId() + ")";
+			} else {
+				whereClause += docVarName+".id=" + iD.getId() + " OR ";
+			}
+		}
+		return whereClause;
+	}
+
+	public ArrayList<IndexDocument> getDocTermKeyValues(List<String> queryTerms, boolean isIntersected, List<IndexDocument> indexDocuments) {
 
 		String sql = "";
 		if (isIntersected) {
-			sql = "with docscounts(id, counter) as(select t.docid, count(t.docid) " + "from term_docs t " + "where (" + getOrSql(true, queryTerms)
-					+ ") " + "group by t.docid)\n";
+			sql = "with docscounts(id, counter) as(select t.docid, count(t.docid) from term_docs t where (" + getOrSql(true, queryTerms)
+					+ ") group by t.docid)\n";
 		}
 
 		sql += "select * from terms t inner join term_docs td on t.id = td.termid inner join documents d on d.id = td.docId "
 				+ getDocsCountsFromSql(isIntersected) + " " + "where (" + getOrSql(false, queryTerms) + ") "
-				+ getDocsCountsWhereSql(isIntersected, queryTerms.size()) + ";";
+				+ getDocsCountsWhereSql(isIntersected, queryTerms.size()) + getDocumentsWhere(indexDocuments, "d") + ";";
 
 		ArrayList<IndexDocument> results = new ArrayList<>();
 
@@ -835,15 +851,15 @@ public class DBDataProvider  implements IDataProvider{
 				String term = set.getString(1);
 				Long docid = set.getLong(2);
 				Geometry documentFootPrint = GeometryConverter.convertPostGisToJTS((PGgeometry) set.getObject(0));
-				
+
 				SimpleIndexDocument document = documents.get(docid);
-				if(document == null){
+				if (document == null) {
 					document = new SimpleIndexDocument(docid, new HashSet<>(), new HashSet<>());
 					documents.put(docid, document);
 				}
 				document.addTerm(term);
 				document.addDocumentFootprint(documentFootPrint);
-				
+
 			}
 
 		} catch (SQLException | NoSuchObjectException e) {
@@ -851,6 +867,11 @@ public class DBDataProvider  implements IDataProvider{
 		}
 
 		return new ArrayList<>(documents.values());
+	}
+
+	@Override
+	public ArrayList<IndexDocument> getDocTermKeyValues(List<String> queryTerms, boolean isIntersected) {
+		return getDocTermKeyValues(queryTerms, isIntersected, null);
 	}
 
 	/*

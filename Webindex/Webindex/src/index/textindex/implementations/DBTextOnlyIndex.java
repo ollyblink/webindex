@@ -5,6 +5,7 @@ import index.textindex.similarities.ITextSimilarity;
 import index.textindex.similarities.TextSimilarityFactory;
 import index.textindex.utils.Term;
 import index.textindex.utils.TextIndexMetaData;
+import index.textindex.utils.TextIndexUtils;
 import index.textindex.utils.texttransformation.ITextTokenizer;
 import index.utils.DBDataProvider;
 import index.utils.IndexDocument;
@@ -33,22 +34,11 @@ public class DBTextOnlyIndex extends AbstractTextIndex {
 
 	@Override
 	public Ranking queryIndex(TextIndexQuery query) {
-		//Convert the text query to index terms and frequencies
-		HashMap<Term, Integer> queryTerms = tokenizer.transform(query.getTextQuery());
-		  
-		// get the indexed documents matching the query terms
-		ArrayList<IndexDocument> documents = dbDataProvider.getDocTermKeyValues(getTermFreqsForQuery(queryTerms), query.isIntersected());
-		
-		//Get the similarity
-		ITextSimilarity similarityStrategy = TextSimilarityFactory.getSimilarity(query.getSimilarity(), dbDataProvider.getTextMetaData());
-		
-		//Calculate the ranking according to that similarity
-		Ranking ranking = similarityStrategy.calculateSimilarity(query, queryTerms, documents, query.isIntersected());
-		
-		return ranking;
+		return TextIndexUtils.performTextQuery(query, tokenizer, dbDataProvider, null);
 	}
 
-
+	
+	
 	@Override
 	public TextIndexMetaData getTextMetaData() {
 		return dbDataProvider.getTextMetaData();
@@ -56,12 +46,11 @@ public class DBTextOnlyIndex extends AbstractTextIndex {
 	
 	
 
-	private ArrayList<String> getTermFreqsForQuery(HashMap<Term, Integer> queryTerms) {
-		ArrayList<String> indexedTerms = new ArrayList<String>();
-		for (Term term : queryTerms.keySet()) {
-			indexedTerms.add(term.getIndexedTerm());
-		}
-		return indexedTerms;
+	
+
+	@Override
+	public void refill() {
+		//Nothing to do... direct access to database...
 	}
 
 }

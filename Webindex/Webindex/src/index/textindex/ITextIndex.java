@@ -3,11 +3,12 @@ package index.textindex;
 import index.textindex.utils.TextIndexMetaData;
 import index.textindex.utils.texttransformation.ITextTokenizer;
 import index.utils.Ranking;
+import index.utils.indexchangelistener.IIndexChangeListener;
 import index.utils.query.TextIndexQuery;
 
 import java.util.List;
 
-public interface ITextIndex {
+public interface ITextIndex extends IIndexChangeListener {
 
 	/**
 	 * Add one new document to the index

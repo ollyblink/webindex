@@ -16,7 +16,7 @@ public enum LocationProvider {
 
 	private LocationProvider() {
 		String userName = "ollyblink";
-		String xmlLocation = System.getProperty("user.dir") + "/src/files/yahooxml.xml";
+		String xmlLocation = System.getProperty("user.dir") + "/files/yahooxml.xml";
 		PEType type = PEType.YPM;
 		placeExtractor = PEFactory.createPlaceExtractor(type, userName, xmlLocation);
 	}

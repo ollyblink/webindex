@@ -63,9 +63,6 @@ public final class IndexDocument implements Comparable<IndexDocument> {
 		this.textIndexDocumentMetaData = textIndexDocumentMetaData;
 	}
 
- 
- 
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -165,5 +162,25 @@ public final class IndexDocument implements Comparable<IndexDocument> {
 		this.overallSimilarity = overallSimilarity;
 	}
 
-	
+	public boolean hasHigherScoreThan(IndexDocument document, String comparableScoreType) {
+		switch (comparableScoreType) {
+		case "text":
+			return textIndexDocumentMetaData.getSimilarity() > document.textIndexDocumentMetaData.getSimilarity();
+		case "space":
+			return spatialIndexDocumentMetaData.getSimilarity() > document.spatialIndexDocumentMetaData.getSimilarity();
+		}
+		return false;
+	}
+
+	public void setHigherScore(IndexDocument toCompare, String comparableScoreType) {
+		switch (comparableScoreType) {
+		case "text":
+			textIndexDocumentMetaData.setSimilarity(toCompare.textIndexDocumentMetaData.getSimilarity());
+			break;
+		case "space":
+			spatialIndexDocumentMetaData.setSpatialScores(toCompare.spatialIndexDocumentMetaData.getSpatialScores());
+			break;
+		}
+	}
+
 }
