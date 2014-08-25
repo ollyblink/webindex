@@ -7,8 +7,8 @@ import index.textindex.utils.Term;
 import index.textindex.utils.TextIndexUtils;
 import index.textindex.utils.texttransformation.ITextTokenizer;
 import index.utils.DBDataProvider;
-import index.utils.IndexUtils;
 import index.utils.Ranking;
+import index.utils.Score;
 import index.utils.SimpleIndexDocument;
 import index.utils.query.SpatialIndexQuery;
 import index.utils.query.TextIndexQuery;
@@ -72,7 +72,7 @@ public class TextPrimarySpatialIndex extends AbstractGIRIndex {
 	}
 
 	@Override
-	public Ranking queryIndex(TextIndexQuery textQuery, SpatialIndexQuery spatialQuery) {
+	public Ranking queryIndex(boolean isIntersected, TextIndexQuery textQuery, SpatialIndexQuery spatialQuery) {
 
 		// Get all the terms in the query
 		HashMap<Term, Integer> termFreqs = tokenizer.transform(textQuery.getTextQuery());
@@ -94,18 +94,47 @@ public class TextPrimarySpatialIndex extends AbstractGIRIndex {
 			Ranking spatialRanking = SpatialIndexUtils.performSpatialQuery(spatialQuery, documentTrees.get(term), dbDataProvider);
 			spatialRankings.add(spatialRanking);
 		}
-		// No combine all the rankings and eliminate duplicated documents.
+		// Now combine all the rankings and eliminate duplicated documents.
 		// Uses the maximum score of a document to determine its spatial score.
-		Ranking spatialRanking = IndexUtils.combineRankings(spatialRankings, "space");
-		Ranking textRanking = TextIndexUtils.performTextQuery(textQuery, tokenizer, dbDataProvider, spatialRanking);
+		Ranking spatialRanking = combineRankings(spatialRankings);
+		Ranking textRanking = TextIndexUtils.performTextQuery(textQuery, tokenizer, dbDataProvider, spatialRanking.getResults());
 		/*
 		 * End querying
 		 */
 
 		// Last step: combine the ranks of the queries.
-		Ranking finalRanking = combinationStrategy.combineScores(textRanking, spatialRanking);
+		Ranking finalRanking = combinationStrategy.combineScores(isIntersected, textRanking, spatialRanking);
 
 		return finalRanking;
+	}
+
+	private Ranking combineRankings(List<Ranking> rankings) {
+		ArrayList<Score> finalScores = new ArrayList<Score>();
+		
+		for(Ranking ranking: rankings){
+			ArrayList<Score> toCompare = ranking.getResults();
+			for(Score score: toCompare){
+				if(finalScores.contains(score)){
+					Score finalScore = findScore(finalScores, score);
+					if(finalScore != null){
+						finalScore.setScore(Math.max(finalScore.getScore(), score.getScore()));
+					}
+				}else{
+					finalScores.add(score);
+				}
+			}
+		}
+		
+		return new Ranking(finalScores);
+	}
+
+	private Score findScore(ArrayList<Score> finalScores, Score score) {
+		for(Score finalScore: finalScores){
+			if(score.equals(finalScore)){
+				return finalScore;
+			}
+		}
+		return null;
 	}
 
 }

@@ -17,7 +17,7 @@ public class TextIndexDocumentMetaData implements Comparable<TextIndexDocumentMe
 	private float docVectorNorm2;
 	private float docVectorNorm3;
 	private Map<String, TermDocumentValues> termToDocVals;
-	private Float similarity = 0f;
+	private Float similarity = null;
 	private long docid;
 	
 	/**

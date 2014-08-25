@@ -1,6 +1,5 @@
 package index.textindex.similarities.vectorspacemodels;
 
-import index.girindex.utils.ScoreTuple;
 import index.textindex.similarities.ITextSimilarity;
 import index.textindex.similarities.tfidfweighting.DocTFIDFTypes;
 import index.textindex.similarities.tfidfweighting.QueryIDFTypes;
@@ -9,14 +8,12 @@ import index.textindex.utils.Term;
 import index.textindex.utils.TermDocumentValues;
 import index.textindex.utils.TextIndexDocumentMetaData;
 import index.utils.IndexDocument;
-import index.utils.IndexUtils;
 import index.utils.Ranking;
+import index.utils.Score;
 import index.utils.query.TextIndexQuery;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 
 public final class CosineSimilarity implements ITextSimilarity {
 
@@ -35,13 +32,10 @@ public final class CosineSimilarity implements ITextSimilarity {
 			boolean isIntersected) {
 
 		int maxFreq = getMaxFreq(queryTermFreqs);
-		calculateCosineSimilarity(queryTermFreqs, maxFreq, documents);
-		Map<IndexDocument, ScoreTuple> scores = new HashMap<IndexDocument, ScoreTuple>();
-		for (IndexDocument document : documents) {
-			IndexUtils.createScoreTuple(scores, document, document.getTextIndexDocumentMetaData().getSimilarity(), "text");
-		}
+		ArrayList<Score> scores = calculateCosineSimilarity(queryTermFreqs, maxFreq, documents);
+
 		Ranking ranking = new Ranking(scores);
-		ranking.setTextQuery(query);
+		 
 		return ranking;
 	}
 
@@ -56,11 +50,13 @@ public final class CosineSimilarity implements ITextSimilarity {
 		return maxFreq;
 	}
 
-	private void calculateCosineSimilarity(HashMap<Term, Integer> queryTerms, int maxFreq, ArrayList<IndexDocument> documents) {
+	private ArrayList<Score> calculateCosineSimilarity(HashMap<Term, Integer> queryTerms, int maxFreq, ArrayList<IndexDocument> documents) {
 		HashMap<String, Integer> indexedTerms = new HashMap<String, Integer>();
 		for (Term term : queryTerms.keySet()) {
 			indexedTerms.put(term.getIndexedTerm(), queryTerms.get(term));
 		}
+		
+		ArrayList<Score> scores = new ArrayList<Score>();
 		for (IndexDocument document : documents) {
 			float sumWeight = 0f;
 			for (String queryTerm : indexedTerms.keySet()) {
@@ -71,8 +67,10 @@ public final class CosineSimilarity implements ITextSimilarity {
 					sumWeight += docTfIdf * queryTfIdf;
 				}
 			}
-			document.getTextIndexDocumentMetaData().setSimilarity(sumWeight / getVectorNorm(document));
+			scores.add(new Score(document.getId(), (sumWeight / getVectorNorm(document))));
 		}
+		
+		return scores;
 	}
 
 	private float getVectorNorm(IndexDocument document) {

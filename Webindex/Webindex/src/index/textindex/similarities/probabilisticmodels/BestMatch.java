@@ -1,19 +1,17 @@
 package index.textindex.similarities.probabilisticmodels;
 
-import index.girindex.utils.ScoreTuple;
 import index.textindex.similarities.ITextSimilarity;
 import index.textindex.utils.Term;
 import index.textindex.utils.TermDocumentValues;
 import index.textindex.utils.TextIndexMetaData;
 import index.utils.IndexDocument;
-import index.utils.IndexUtils;
 import index.utils.Ranking;
+import index.utils.Score;
 import index.utils.query.TextIndexQuery;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Calculates similarity values accordings to BM formulas. See Modern Information Retrieval Ed. 2, page 106. The implementation needs one of the
@@ -36,10 +34,8 @@ public class BestMatch implements ITextSimilarity {
 
 	@Override
 	public Ranking calculateSimilarity(TextIndexQuery query, HashMap<Term, Integer> queryTermFreqs, ArrayList<IndexDocument> documents, boolean isIntersected) { 
-		
-		Map<IndexDocument, ScoreTuple> scores = new HashMap<IndexDocument, ScoreTuple>();
-		
-		for (IndexDocument document : documents) {
+		ArrayList<Score> scores = new ArrayList<Score>();
+	 	for (IndexDocument document : documents) {
 			float sumWeight = 0f;
 			for (Term queryTerm : queryTermFreqs.keySet()) {
 				TermDocumentValues values = document.getTextIndexDocumentMetaData().get(queryTerm.getIndexedTerm());
@@ -48,15 +44,13 @@ public class BestMatch implements ITextSimilarity {
 					float value = getLog(ni);
 					sumWeight += bmStrategy.calculateSimilarity(value, values, document, metaData);
 				}
-				document.getTextIndexDocumentMetaData().setSimilarity(sumWeight); 
-			}
-			IndexUtils.createScoreTuple(scores, document, document.getTextIndexDocumentMetaData().getSimilarity(), "text");
+				scores.add(new Score(document.getId(), sumWeight));
+			} 
+			
 		}
-		Collections.sort(documents);
-		Ranking ranking = new Ranking(scores);
-		ranking.setTextQuery(query);
-		
-		return ranking;
+		Collections.sort(scores);
+		return new Ranking(scores); 
+		 
 	}
 
 

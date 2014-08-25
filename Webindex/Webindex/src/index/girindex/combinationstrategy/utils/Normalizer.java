@@ -1,37 +1,40 @@
 package index.girindex.combinationstrategy.utils;
 
+import index.utils.Score;
+
 import java.util.ArrayList;
-import java.util.List;
 
 public class Normalizer {
-	public static List<Float> normalizeMinMax(final List<Float> values) {
+	public static ArrayList<Score> normalizeMinMax(final ArrayList<Score> scores) { 
+		ArrayList<Score> normalizedValues = new ArrayList<>();
 
-		List<Float> normalizedValues = new ArrayList<>();
+		Float min = getMin(scores);
+		Float normFactor = getMax(scores) - min;
 
-		Float min = getMin(values);
-		Float normFactor = getMax(values) - min;
-
-		for (Float value : values) {
-			normalizedValues.add((value - min) / normFactor);
+		for (Score score : scores) {
+			float norm =  (score.getScore() - min) / normFactor ;
+ 
+			normalizedValues.add(new Score(score.getDocid(),norm));
 		}
+	
 		return normalizedValues;
 	}
 
-	private static Float getMin(final List<Float> values) {
+	private static Float getMin(ArrayList<Score> values) {
 		Float min = Float.MAX_VALUE;
-		for (Float value : values) {
-			if (min > value) {
-				min = value;
+		for (Score value : values) {
+			if (min > value.getScore()) {
+				min = value.getScore();
 			}
 		}
 		return min;
 	}
 
-	private static Float getMax(final List<Float> values) {
+	private static Float getMax(ArrayList<Score> values) {
 		Float max = Float.MIN_VALUE;
-		for (Float value : values) {
-			if (max < value) {
-				max = value;
+		for (Score value : values) {
+			if (max < value.getScore()) {
+				max = value.getScore();
 			}
 		}
 		return max;

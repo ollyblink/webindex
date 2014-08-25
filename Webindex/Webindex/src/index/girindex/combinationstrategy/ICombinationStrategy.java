@@ -11,7 +11,7 @@ public interface ICombinationStrategy {
 	 * @param rankings
 	 * @return
 	 */
-	public Ranking combineScores(Ranking... rankings);
+	public Ranking combineScores(boolean isIntersected, Ranking... rankings);
  
 
 }

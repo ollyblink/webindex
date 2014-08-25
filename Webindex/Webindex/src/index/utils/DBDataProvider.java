@@ -588,23 +588,23 @@ public class DBDataProvider implements IDataProvider {
 		}
 	}
 
-	private String getDocumentsWhere(List<IndexDocument> indexDocuments, String docVarName) { 
+	private String getDocumentsWhere(List<Score> indexDocuments, String docVarName) { 
 		if (indexDocuments == null || indexDocuments.size() == 0) {
 			return "";
 		}
 		int counter = 0;
 		String whereClause = " AND (";
-		for (IndexDocument iD : indexDocuments) {
+		for (Score iD : indexDocuments) {
 			if (++counter == indexDocuments.size()) {
-				whereClause += docVarName+".id=" + iD.getId() + ")";
+				whereClause += docVarName+".id=" + iD.getDocid() + ")";
 			} else {
-				whereClause += docVarName+".id=" + iD.getId() + " OR ";
+				whereClause += docVarName+".id=" + iD.getDocid() + " OR ";
 			}
 		}
 		return whereClause;
 	}
 
-	public ArrayList<IndexDocument> getDocTermKeyValues(List<String> queryTerms, boolean isIntersected, List<IndexDocument> indexDocuments) {
+	public ArrayList<IndexDocument> getDocTermKeyValues(List<String> queryTerms, boolean isIntersected, List<Score> indexDocuments) {
 
 		String sql = "";
 		if (isIntersected) {

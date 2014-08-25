@@ -35,7 +35,7 @@ public class SpatialIndexDocumentMetaData implements ISimilarityProvider {
 	}
 
 	public void addGeometry(Geometry geometry) {
-		this.spatialScores.put(geometry, 0f);
+		this.spatialScores.put(geometry, null);
 	}
 
 	public void addSpatialScore(Geometry geometry, Float score) {

@@ -42,10 +42,10 @@ public class SeparatedGIRIndex extends AbstractGIRIndex implements  IIndexChange
 	}
 
 	@Override
-	public Ranking queryIndex(TextIndexQuery textQuery, SpatialIndexQuery spatialQuery) {
+	public Ranking queryIndex(boolean isIntersected, TextIndexQuery textQuery, SpatialIndexQuery spatialQuery) {
 		Ranking textRanking = textIndex.queryIndex(textQuery);
 		Ranking spatialRanking = spatialIndex.queryIndex(spatialQuery);
-		Ranking combination = combinationStrategy.combineScores(textRanking, spatialRanking);
+		Ranking combination = combinationStrategy.combineScores(isIntersected, textRanking, spatialRanking);
 		return combination;
 	}
 

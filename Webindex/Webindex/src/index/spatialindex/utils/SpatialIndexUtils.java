@@ -1,18 +1,16 @@
 package index.spatialindex.utils;
 
-import index.girindex.utils.ScoreTuple;
 import index.spatialindex.similarities.ISpatialRelationship;
 import index.spatialindex.similarities.SpatialRelationshipFactory;
 import index.utils.DBDataProvider;
 import index.utils.IndexDocument;
-import index.utils.IndexUtils;
 import index.utils.Ranking;
+import index.utils.Score;
 import index.utils.query.SpatialIndexQuery;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.index.quadtree.Quadtree;
@@ -42,17 +40,14 @@ public class SpatialIndexUtils {
 		// End querying spatial index
 		// =======================================================================================
 
-		// Retrieve all the documents for the scores
-		ArrayList<IndexDocument> documents = getDocuments(results, dbDataProvider); 
-		// For possible combination:
-		Map<IndexDocument, ScoreTuple> scores = new HashMap<IndexDocument, ScoreTuple>();
-		for (IndexDocument document : documents) {
-			IndexUtils.createScoreTuple(scores, document, document.getSpatialIndexDocumentMetaData().getSimilarity(), "space");
+		 
+		ArrayList<Score> scores = new ArrayList<Score>();
+		for(SpatialScoreTriple sST: results){
+			scores.add(new Score(sST.getDocid(), sST.getScore()));
 		}
-
+		Collections.sort(scores);
  		// Create the spatial ranking
-		Ranking ranking = new Ranking(scores);
-		ranking.setSpatialQuery(query);
+		Ranking ranking = new Ranking(scores); 
 
 		return ranking;
 	}
