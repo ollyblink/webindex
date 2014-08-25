@@ -32,7 +32,9 @@ public final class IndexDocument implements Comparable<IndexDocument> {
 	public IndexDocument(long id, String fulltext) {
 		this.id = id;
 		if (fulltext != null) {
-			this.fulltext = fulltext.replace("´", "'");
+			this.fulltext = fulltext.replace("´", "'"); 
+//			// The following creates the <span></span> html tags around the original terms in the fulltext for displaying.
+//			addHiliteSpans(); 
 		}
 		this.overallSimilarity = 0f;
 		this.textIndexDocumentMetaData = new TextIndexDocumentMetaData(id);

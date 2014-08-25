@@ -1,15 +1,13 @@
 package index.spatialindex.implementations;
 
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-
-import index.spatialindex.implementations.SpatialOnlyIndex;
+import static org.junit.Assert.assertTrue;
 import index.textindex.utils.texttransformation.MockTextTokenizer;
 import index.utils.DBManager;
 import index.utils.IndexDocument;
 import index.utils.Ranking;
 import index.utils.query.SpatialIndexQuery;
+
+import java.util.ArrayList;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -38,7 +36,7 @@ public class SpatialOnlyIndexTest {
 	@Test
 	public void queryTest() { 
 		Ranking ranking = spatialOnlyIndex.queryIndex(new SpatialIndexQuery("point_in", "Switzerland"));
-		ArrayList<IndexDocument> results = ranking.getResults();
+		ArrayList<IndexDocument> results = new ArrayList<>(ranking.getResults().keySet());
 		for(IndexDocument d: results){
  			assertTrue(d.getId() == 1);
 		}

@@ -1,5 +1,6 @@
 package index.girindex.implementations;
 
+import index.girindex.AbstractGIRIndex;
 import index.girindex.combinationstrategy.ICombinationStrategy;
 import index.spatialindex.ISpatialIndex;
 import index.textindex.ITextIndex;

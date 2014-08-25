@@ -1,4 +1,4 @@
-package index.combinationstrategy.utils;
+package index.girindex.combinationstrategy.utils;
 
 import java.util.ArrayList;
 import java.util.List;

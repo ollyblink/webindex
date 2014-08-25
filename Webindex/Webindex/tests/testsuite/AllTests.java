@@ -1,6 +1,6 @@
 package testsuite;
 
-import index.combinationstrategy.utils.NormalizerTest;
+import index.girindex.combinationstrategy.utils.NormalizerTest;
 import index.spatialindex.similarities.SpatialRelationshipFactoryTest;
 import index.spatialindex.similarities.pointsimilarities.InRelationshipTest;
 import index.spatialindex.utils.LocationProviderTest;

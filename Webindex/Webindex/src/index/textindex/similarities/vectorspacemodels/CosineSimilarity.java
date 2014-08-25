@@ -1,5 +1,6 @@
 package index.textindex.similarities.vectorspacemodels;
 
+import index.girindex.utils.ScoreTuple;
 import index.textindex.similarities.ITextSimilarity;
 import index.textindex.similarities.tfidfweighting.DocTFIDFTypes;
 import index.textindex.similarities.tfidfweighting.QueryIDFTypes;
@@ -8,12 +9,14 @@ import index.textindex.utils.Term;
 import index.textindex.utils.TermDocumentValues;
 import index.textindex.utils.TextIndexDocumentMetaData;
 import index.utils.IndexDocument;
+import index.utils.IndexUtils;
 import index.utils.Ranking;
 import index.utils.query.TextIndexQuery;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 public final class CosineSimilarity implements ITextSimilarity {
 
@@ -28,12 +31,16 @@ public final class CosineSimilarity implements ITextSimilarity {
 	}
 
 	@Override
-	public Ranking calculateSimilarity(TextIndexQuery query, HashMap<Term, Integer> queryTermFreqs, ArrayList<IndexDocument> documents, boolean isIntersected) {
+	public Ranking calculateSimilarity(TextIndexQuery query, HashMap<Term, Integer> queryTermFreqs, ArrayList<IndexDocument> documents,
+			boolean isIntersected) {
 
 		int maxFreq = getMaxFreq(queryTermFreqs);
 		calculateCosineSimilarity(queryTermFreqs, maxFreq, documents);
-		Collections.sort(documents);
-		Ranking ranking = new Ranking(documents);
+		Map<IndexDocument, ScoreTuple> scores = new HashMap<IndexDocument, ScoreTuple>();
+		for (IndexDocument document : documents) {
+			IndexUtils.createScoreTuple(scores, document, document.getTextIndexDocumentMetaData().getSimilarity(), "text");
+		}
+		Ranking ranking = new Ranking(scores);
 		ranking.setTextQuery(query);
 		return ranking;
 	}

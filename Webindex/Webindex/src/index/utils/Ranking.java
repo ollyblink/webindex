@@ -1,10 +1,11 @@
 package index.utils;
 
+import index.girindex.utils.ScoreTuple;
 import index.utils.query.SpatialIndexQuery;
 import index.utils.query.TextIndexQuery;
 
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -13,14 +14,15 @@ public class Ranking implements Iterable<IndexDocument> {
 
 	private TextIndexQuery textQuery;
 	private SpatialIndexQuery spatialQuery;
-	private ArrayList<IndexDocument> results;
+	private Map<IndexDocument, ScoreTuple> results;  
 
-	public Ranking(ArrayList<IndexDocument> results) {
+	public Ranking(Map<IndexDocument, ScoreTuple> results) {
 		this.results = results;
 		// The following creates the <span></span> html tags around the original terms in the fulltext for displaying.
-		for (IndexDocument doc : results) {
+		for (IndexDocument doc : results.keySet()) {
 			doc.addHiliteSpans();
-		}
+		} 
+ 
 	}
 
 	public Ranking() {
@@ -43,17 +45,18 @@ public class Ranking implements Iterable<IndexDocument> {
 		this.spatialQuery = spatialQuery;
 	}
 
-	public ArrayList<IndexDocument> getResults() {
+	@Override
+	public Iterator<IndexDocument> iterator() {
+		return results.keySet().iterator();
+	}
+
+	public Map<IndexDocument, ScoreTuple> getResults() {
 		return results;
 	}
 
-	public void setResults(ArrayList<IndexDocument> results) {
+	public void setResults(Map<IndexDocument, ScoreTuple> results) {
 		this.results = results;
 	}
 
-	@Override
-	public Iterator<IndexDocument> iterator() {
-		return results.iterator();
-	}
-
+ 
 }

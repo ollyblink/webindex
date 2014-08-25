@@ -1,6 +1,7 @@
-package index.combinationstrategy.utils;
+package index.girindex.combinationstrategy.utils;
 
 import static org.junit.Assert.*;
+import index.girindex.combinationstrategy.utils.Normalizer;
 
 import java.util.ArrayList;
 import java.util.List;
