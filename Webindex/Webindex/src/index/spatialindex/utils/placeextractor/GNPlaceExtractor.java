@@ -17,7 +17,6 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.PrecisionModel;
 
-
 /**
  * This class queries GeoNames to retrieve locations for place queries.
  * 
@@ -36,8 +35,9 @@ public class GNPlaceExtractor implements IPlaceExtractor {
 	private static final double CONSTANT = 62685293.12;
 	/** The user name for GeoNames */
 	public static String DEFAULT_USER_NAME = "ollyblink";
-//	/** Limits the country to the specified code */
-//	private String countryCode;
+
+	// /** Limits the country to the specified code */
+	// private String countryCode;
 
 	/**
 	 * Constructor
@@ -47,23 +47,23 @@ public class GNPlaceExtractor implements IPlaceExtractor {
 	 * @param userName
 	 *            the user name for GeoNames
 	 */
-	public GNPlaceExtractor(String userName) { 
+	public GNPlaceExtractor(String userName) {
 		WebService.setUserName(userName);
 	}
 
 	@Override
-	public List<? extends Geometry> extract(String placeNametext) {
+	public ArrayList<Geometry> extract(String placeNametext) {
 		ToponymSearchCriteria searchCriteria = new ToponymSearchCriteria();
 		searchCriteria.setQ(placeNametext);
 
-//		try {
-//			searchCriteria.setCountryCode(countryCode);
-//		} catch (InvalidParameterException e1) { 
-//			e1.printStackTrace();
-//		}
+		// try {
+		// searchCriteria.setCountryCode(countryCode);
+		// } catch (InvalidParameterException e1) {
+		// e1.printStackTrace();
+		// }
 		searchCriteria.setMaxRows(NUMBER_OF_MAX_ROWS);
 		searchCriteria.setStyle(Style.FULL);
-		List<Polygon> list = new ArrayList<Polygon>();
+		ArrayList<Geometry> list = new ArrayList<Geometry>();
 
 		ToponymSearchResult searchResult = null;
 
@@ -95,16 +95,16 @@ public class GNPlaceExtractor implements IPlaceExtractor {
 				double lonNE = getApproximatedNorthEastLongitude(lon, lat, dist);
 				double latSW = getApproximatedSouthWestLatitude(lat, dist);
 				double lonSW = getApproximatedSouthWestLongitude(lon, lat, dist);
-				 
+
 				Coordinate[] coords = new Coordinate[5];
 				coords[0] = new Coordinate(lonSW, latSW);
 				coords[1] = new Coordinate(lonNE, latSW);
 				coords[2] = new Coordinate(lonNE, latNE);
 				coords[3] = new Coordinate(lonSW, latNE);
 				coords[4] = new Coordinate(lonSW, latSW);
-				list.add(new GeometryFactory(new PrecisionModel(Type.DOUBLE),4326).createPolygon(coords));
+				list.add(new GeometryFactory(new PrecisionModel(Type.DOUBLE), 4326).createPolygon(coords));
 
-			} catch (InsufficientStyleException e) { 
+			} catch (InsufficientStyleException e) {
 				e.printStackTrace();
 			}
 		}

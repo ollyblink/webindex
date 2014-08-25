@@ -1,6 +1,6 @@
 package index.spatialindex.utils.placeextractor;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -25,5 +25,5 @@ public interface IPlaceExtractor {
 	 *         place (e.g. a point or a polygon, minimum bounding rectangle
 	 *         etc.)
 	 */
-	public List<? extends Geometry> extract(String text);
+	public ArrayList<Geometry> extract(String text);
 }

@@ -1,67 +1,65 @@
 package index.textindex.similarities.vectorspacemodels;
 
-import index.textindex.ITextIndex;
-import index.textindex.similarities.AbstractTextSimilarity;
+import index.textindex.similarities.ITextSimilarity;
 import index.textindex.similarities.tfidfweighting.DocTFIDFTypes;
 import index.textindex.similarities.tfidfweighting.QueryIDFTypes;
 import index.textindex.similarities.tfidfweighting.TFWeightingStrategy;
-import index.textindex.utils.QueryFormatter;
 import index.textindex.utils.Term;
 import index.textindex.utils.TermDocumentValues;
 import index.textindex.utils.TextIndexDocumentMetaData;
-import index.textindex.utils.texttransformation.ITextTokenizer;
 import index.utils.IndexDocument;
 import index.utils.Ranking;
+import index.utils.query.TextIndexQuery;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
-public final class CosineSimilarity extends AbstractTextSimilarity {
+public final class CosineSimilarity implements ITextSimilarity {
 
 	private TFWeightingStrategy queryTf;
 	private QueryIDFTypes queryIdf;
 	private DocTFIDFTypes docTfidf;
 
-	public CosineSimilarity(ITextIndex index, ITextTokenizer queryTokenizer, TFWeightingStrategy queryTf, QueryIDFTypes queryIdf, DocTFIDFTypes docTfidf) {
-		super(index, queryTokenizer);
+	public CosineSimilarity(TFWeightingStrategy queryTf, QueryIDFTypes queryIdf, DocTFIDFTypes docTfidf) {
 		this.queryTf = queryTf;
 		this.queryIdf = queryIdf;
 		this.docTfidf = docTfidf;
 	}
 
 	@Override
-	protected Ranking calculateSimilarity(String query, ArrayList<String> indexedTerms, boolean isIntersected) { 
-		ArrayList<IndexDocument> documents = index.getDocTermKeyValues(indexedTerms, isIntersected); 
-		HashMap<Term, Integer> termFreqs = queryTokenizer.transform(query);
-		int maxFreq = getMaxFreq(termFreqs);
-		calculateCosineSimilarity(termFreqs, maxFreq, documents); 
+	public Ranking calculateSimilarity(TextIndexQuery query, HashMap<Term, Integer> queryTermFreqs, ArrayList<IndexDocument> documents, boolean isIntersected) {
+
+		int maxFreq = getMaxFreq(queryTermFreqs);
+		calculateCosineSimilarity(queryTermFreqs, maxFreq, documents);
 		Collections.sort(documents);
-		return new Ranking(QueryFormatter.format(query, isIntersected), documents);
+		Ranking ranking = new Ranking(documents);
+		ranking.setTextQuery(query);
+		return ranking;
 	}
 
 	public static int getMaxFreq(HashMap<Term, Integer> termFreqs) {
 		int maxFreq = Integer.MIN_VALUE;
-		for(Term term: termFreqs.keySet()){
+		for (Term term : termFreqs.keySet()) {
 			int freq = termFreqs.get(term);
-			if(maxFreq < freq){
+			if (maxFreq < freq) {
 				maxFreq = freq;
 			}
 		}
 		return maxFreq;
 	}
-	
+
 	private void calculateCosineSimilarity(HashMap<Term, Integer> queryTerms, int maxFreq, ArrayList<IndexDocument> documents) {
-		HashMap<String, Integer> indexedTerms = new HashMap<String,Integer>();
-		for(Term term: queryTerms.keySet()){
+		HashMap<String, Integer> indexedTerms = new HashMap<String, Integer>();
+		for (Term term : queryTerms.keySet()) {
 			indexedTerms.put(term.getIndexedTerm(), queryTerms.get(term));
-		} 
+		}
 		for (IndexDocument document : documents) {
 			float sumWeight = 0f;
 			for (String queryTerm : indexedTerms.keySet()) {
 				TermDocumentValues values = document.getTextIndexDocumentMetaData().get(queryTerm);
 				if (values != null) {
-					float docTfIdf = getDocTfIdf(values); 
+					float docTfIdf = getDocTfIdf(values);
 					float queryTfIdf = queryTf.tf(indexedTerms.get(queryTerm), maxFreq) * getQueryIdf(values);
 					sumWeight += docTfIdf * queryTfIdf;
 				}

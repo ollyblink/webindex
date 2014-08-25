@@ -1,37 +1,48 @@
 package index.utils;
 
+import index.utils.query.SpatialIndexQuery;
+import index.utils.query.TextIndexQuery;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-public class Ranking implements Iterable<IndexDocument>  {
+public class Ranking implements Iterable<IndexDocument> {
 
-	private String textQuery;
-	private ArrayList<IndexDocument> results; 
+	private TextIndexQuery textQuery;
+	private SpatialIndexQuery spatialQuery;
+	private ArrayList<IndexDocument> results;
 
-	public Ranking(String textQuery, ArrayList<IndexDocument> results) {
-		this.textQuery = textQuery;
-		this.results = results; 
-		//The following creates the <span></span> html tags around the original terms in the fulltext for displaying.
-		for(IndexDocument doc: results){
+	public Ranking(ArrayList<IndexDocument> results) {
+		this.results = results;
+		// The following creates the <span></span> html tags around the original terms in the fulltext for displaying.
+		for (IndexDocument doc : results) {
 			doc.addHiliteSpans();
 		}
 	}
 
-	public Ranking(){
-		
+	public Ranking() {
+
 	}
 	 
-	public String getQuery() {
+	public TextIndexQuery getTextQuery() {
 		return textQuery;
 	}
 
-	public void setQuery(String query) {
-		this.textQuery = query;
+	public void setTextQuery(TextIndexQuery textQuery) {
+		this.textQuery = textQuery;
 	}
- 
+
+	public SpatialIndexQuery getSpatialQuery() {
+		return spatialQuery;
+	}
+
+	public void setSpatialQuery(SpatialIndexQuery spatialQuery) {
+		this.spatialQuery = spatialQuery;
+	}
+
 	public ArrayList<IndexDocument> getResults() {
 		return results;
 	}
@@ -41,14 +52,8 @@ public class Ranking implements Iterable<IndexDocument>  {
 	}
 
 	@Override
-	public String toString() {
-		return "Ranking [query=" + textQuery + ", results=" + results + "]";
-	}
-
-	@Override
 	public Iterator<IndexDocument> iterator() {
 		return results.iterator();
 	}
-	
 
 }

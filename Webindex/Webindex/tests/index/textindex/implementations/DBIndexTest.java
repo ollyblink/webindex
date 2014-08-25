@@ -2,12 +2,11 @@ package index.textindex.implementations;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import index.textindex.implementations.DBTextOnlyIndex;
 import index.textindex.utils.Term;
 import index.textindex.utils.texttransformation.MockTextTokenizer;
+import index.utils.DBDataProvider;
 import index.utils.DBManager;
 import index.utils.IndexDocument;
-import index.utils.dbconnection.PGDBConnector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,10 +19,12 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import testutils.DBInitializer;
+
 public class DBIndexTest {
 
 	public static Map<Long, List<String>> testDocTerms;
-	public static DBTextOnlyIndex index;
+	public static DBDataProvider index;
 	public static DBManager dbManager;
 	public static final long d1 = 1;
 	public static final long d2 = 2;
@@ -40,10 +41,9 @@ public class DBIndexTest {
 
 		MockTextTokenizer tokenizer = new MockTextTokenizer();
 		String[] docs = { "To do is to be. To be is to do.", "To be or not to be. I am what I am.", "I think therefore I am. Do be do be do.", "Do do do, da da da. Let it be, let it be." };
-		
-		
-		dbManager = DBManager.getTestDBManager();
-		index = DBManager.initTestTextDB(tokenizer, dbManager, docs); 
+		 
+		dbManager = DBInitializer.getTestDBManager();
+		index = DBInitializer.initTestTextDB(tokenizer, dbManager, docs); 
 
 		testDocTerms = new HashMap<Long, List<String>>();
 		long counter = 1;
@@ -340,7 +340,7 @@ public class DBIndexTest {
 
 	@AfterClass
 	public static void tearDown() {
-		DBManager.tearDownTestDB(dbManager);
+		DBInitializer.tearDownTestDB(dbManager);
 	}
 
 }

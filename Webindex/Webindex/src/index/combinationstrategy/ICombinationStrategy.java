@@ -1,10 +1,11 @@
 package index.combinationstrategy;
-
-import index.utils.ISimilarityProvider;
+ 
+import index.utils.Ranking;
 
 public interface ICombinationStrategy {
+ 
 
-	public Float combineScores(Float... similarities);
+	public Ranking combineScores(Ranking textRanking, Ranking spatialRanking);
  
 
 }

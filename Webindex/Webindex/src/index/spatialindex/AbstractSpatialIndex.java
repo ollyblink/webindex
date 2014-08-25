@@ -3,9 +3,9 @@ package index.spatialindex;
 import java.util.ArrayList;
 import java.util.List;
 
-import index.spatialindex.utils.IndexDocumentProvider;
 import index.spatialindex.utils.SpatialIndexDocumentMetaData;
 import index.spatialindex.utils.SpatialScoreTriple;
+import index.utils.DBDataProvider;
 import index.utils.IndexDocument;
 
 import com.vividsolutions.jts.index.quadtree.Quadtree;
@@ -13,10 +13,10 @@ import com.vividsolutions.jts.index.quadtree.Quadtree;
 public abstract class AbstractSpatialIndex implements ISpatialIndex {
 
 	protected Quadtree quadTree;
-	protected IndexDocumentProvider docProvider;
+	protected DBDataProvider docProvider;
 	protected Long[] docids;
 
-	public AbstractSpatialIndex(Quadtree quadTree, IndexDocumentProvider docProvider, Long... docids) {
+	public AbstractSpatialIndex(Quadtree quadTree, DBDataProvider docProvider, Long... docids) {
 		this.quadTree = quadTree;
 		this.docProvider = docProvider;
 		this.docids = docids;

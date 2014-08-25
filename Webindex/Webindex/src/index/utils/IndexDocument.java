@@ -1,6 +1,5 @@
 package index.utils;
 
-import index.combinationstrategy.ICombinationStrategy;
 import index.spatialindex.utils.SpatialIndexDocumentMetaData;
 import index.textindex.utils.TermDocumentValues;
 import index.textindex.utils.TextIndexDocumentMetaData;
@@ -64,13 +63,8 @@ public final class IndexDocument implements Comparable<IndexDocument> {
 		this.textIndexDocumentMetaData = textIndexDocumentMetaData;
 	}
 
-	public float getOverallSimilarity(ICombinationStrategy strategy) {
-		return strategy.combineScores(new Float[] { textIndexDocumentMetaData.getSimilarity(), spatialIndexDocumentMetaData.getSimilarity() });
-	}
-
-	public void setOverallSimilarity(float overallSimilarity) {
-		this.overallSimilarity = overallSimilarity;
-	}
+ 
+ 
 
 	@Override
 	public int hashCode() {
@@ -163,4 +157,13 @@ public final class IndexDocument implements Comparable<IndexDocument> {
 		return overallSimilarity.compareTo(o.overallSimilarity);
 	}
 
+	public Float getOverallSimilarity() {
+		return overallSimilarity;
+	}
+
+	public void setOverallSimilarity(Float overallSimilarity) {
+		this.overallSimilarity = overallSimilarity;
+	}
+
+	
 }

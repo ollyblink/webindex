@@ -11,18 +11,19 @@ import com.vividsolutions.jts.geom.Geometry;
 public class InRelationship implements ISpatialRelationship {
 
 	@Override
-	public List<SpatialScoreTriple> calculateSimilarity(final List<? extends Geometry> queryFootPrints, final List<SpatialScoreTriple> documentFootPrints) {
+	public List<SpatialScoreTriple> calculateSimilarity(final List<? extends Geometry> queryFootPrints,
+			final List<SpatialScoreTriple> documentFootPrints) {
 		List<SpatialScoreTriple> results = new ArrayList<SpatialScoreTriple>();
 		for (Geometry qFP : queryFootPrints) {
 			for (SpatialScoreTriple dFP : documentFootPrints) {
 				if (qFP.contains(dFP.getGeometry())) {
-					System.out.println(dFP.getDocid()+"::"+dFP.getGeometry() +" is inside " +qFP);
+					// DEBUG:: System.out.println(dFP.getDocid()+"::"+dFP.getGeometry() +" is inside " +qFP);
 					dFP.setScore(1f);
 					results.add(dFP);
 				}
 			}
-		} 
-		
+		}
+
 		return results;
 	}
 }

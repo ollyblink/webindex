@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -19,15 +20,18 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
 
 public class YPMTest {
 	public static void main(String[] args) {
-		IPlaceExtractor extractor = PEFactory.createPlaceExtractor(PEType.YPM, "ollyblink", "C:/Users/rsp/Desktop/javaEEdev/Webindex/src/utils/placeextractor/yahoopm.xml");
+		IPlaceExtractor extractor = PEFactory.createPlaceExtractor(PEType.YPM, "ollyblink",
+				"C:/Users/rsp/git/Webindex/Webindex/src/files/yahooxml.xml");
 		String content = "";
 		String line = null;
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("C:\\Users\\rsp\\Desktop\\javaEEdev\\Webindex\\src\\com\\clearforest\\test.txt"), "ISO8859_1"));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(
+					"C:/Users/rsp/git/Webindex/Webindex/src/index/spatialindex/utils/placeextractor/calais/test.txt"), "ISO8859_1"));
 			while ((line = reader.readLine()) != null) {
 				content += line + "\n";
 			}
@@ -35,14 +39,14 @@ public class YPMTest {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		List<Polygon> locations = (List<Polygon>) extractor.extract(content);
-		for (Polygon b : locations) {
+		ArrayList<Geometry> locations = extractor.extract(content);
+		for (Geometry b : locations) {
 			System.out.println(b);
 		}
 
 		try {
 			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-			Document parse = builder.parse(new File("C:/Users/rsp/Desktop/javaEEdev/Webindex/src/utils/placeextractor/yahoopm.xml"));
+			Document parse = builder.parse(new File("C:/Users/rsp/git/Webindex/Webindex/src/files/yahooxml.xml"));
 			NodeList nodes = parse.getElementsByTagName("localScope");
 			for (int i = 0; i < nodes.getLength(); ++i) {
 				System.out.println("=============================================");

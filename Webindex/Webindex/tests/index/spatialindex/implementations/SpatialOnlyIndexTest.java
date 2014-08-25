@@ -9,10 +9,13 @@ import index.textindex.utils.texttransformation.MockTextTokenizer;
 import index.utils.DBManager;
 import index.utils.IndexDocument;
 import index.utils.Ranking;
+import index.utils.query.SpatialIndexQuery;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import testutils.DBInitializer;
 
 public class SpatialOnlyIndexTest {
 	private static SpatialOnlyIndex spatialOnlyIndex;
@@ -26,15 +29,15 @@ public class SpatialOnlyIndexTest {
 			"The mayor of London was not amused",
 			"Many people died in World War II when Berlin was bombed by the allies"
 		};
-		dbManager = DBManager.getTestDBManager();
-		DBManager.initTestTextDB(new MockTextTokenizer(), dbManager, docs);
-		spatialOnlyIndex = DBManager.initSpatialTestDB(dbManager, docs);
+		dbManager = DBInitializer.getTestDBManager();
+		DBInitializer.initTestTextDB(new MockTextTokenizer(), dbManager, docs);
+		spatialOnlyIndex = DBInitializer.initSpatialTestDB(dbManager, docs);
 		
 	}
 
 	@Test
 	public void queryTest() { 
-		Ranking ranking = spatialOnlyIndex.queryIndex("point_in", "Switzerland");
+		Ranking ranking = spatialOnlyIndex.queryIndex(new SpatialIndexQuery("point_in", "Switzerland"));
 		ArrayList<IndexDocument> results = ranking.getResults();
 		for(IndexDocument d: results){
  			assertTrue(d.getId() == 1);
@@ -43,6 +46,6 @@ public class SpatialOnlyIndexTest {
 
 	@AfterClass
 	public static void tearDown() {
-		DBManager.tearDownTestDB(dbManager);
+		DBInitializer.tearDownTestDB(dbManager);
 	}
 }

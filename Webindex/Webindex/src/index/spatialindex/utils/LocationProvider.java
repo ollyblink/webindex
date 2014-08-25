@@ -4,7 +4,7 @@ import index.spatialindex.utils.placeextractor.IPlaceExtractor;
 import index.spatialindex.utils.placeextractor.PEFactory;
 import index.spatialindex.utils.placeextractor.PEFactory.PEType;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -21,7 +21,7 @@ public enum LocationProvider {
 		placeExtractor = PEFactory.createPlaceExtractor(type, userName, xmlLocation);
 	}
 
-	public List<? extends Geometry> retrieveLocations(String location) {
+	public ArrayList<Geometry> retrieveLocations(String location) {
 		return placeExtractor.extract(location);
 	}
 

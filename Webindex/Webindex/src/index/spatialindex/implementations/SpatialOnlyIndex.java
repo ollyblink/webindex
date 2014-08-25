@@ -3,13 +3,14 @@ package index.spatialindex.implementations;
 import index.spatialindex.AbstractSpatialIndex;
 import index.spatialindex.similarities.ISpatialRelationship;
 import index.spatialindex.similarities.SpatialRelationshipFactory;
-import index.spatialindex.utils.IndexDocumentProvider;
 import index.spatialindex.utils.LocationProvider;
 import index.spatialindex.utils.SpatialIndexDocumentMetaData;
 import index.spatialindex.utils.SpatialIndexMetaData;
 import index.spatialindex.utils.SpatialScoreTriple;
+import index.utils.DBDataProvider;
 import index.utils.IndexDocument;
 import index.utils.Ranking;
+import index.utils.query.SpatialIndexQuery;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,22 +21,24 @@ import com.vividsolutions.jts.index.quadtree.Quadtree;
 
 public class SpatialOnlyIndex extends AbstractSpatialIndex {
 
-	public SpatialOnlyIndex(Quadtree quadTree, IndexDocumentProvider docProvider, Long... docids) {
+	public SpatialOnlyIndex(Quadtree quadTree, DBDataProvider docProvider, Long... docids) {
 		super(quadTree, docProvider, docids);
 	}
 
 	 
 	@Override
-	public Ranking queryIndex(String spatialRelationship, String location) {
+	public Ranking queryIndex(SpatialIndexQuery query) {
 
 		// Define spatial relationship algorithm
-		ISpatialRelationship spatRelAlgorithm = SpatialRelationshipFactory.create(spatialRelationship);
+		ISpatialRelationship spatRelAlgorithm = SpatialRelationshipFactory.create(query.getSpatialRelationship());
 
 		// =======================================================================================
 		// Querying spatial index
 		// =======================================================================================
 		// Get spatial location geometry
-		List<? extends Geometry> queryFootPrints = LocationProvider.INSTANCE.retrieveLocations(location);
+		ArrayList<Geometry> queryFootPrints = LocationProvider.INSTANCE.retrieveLocations(query.getLocation());
+		query.setQueryFootPrints(queryFootPrints);
+		
 		// Filter stage
 		List<SpatialScoreTriple> documentFootPrints = new ArrayList<SpatialScoreTriple>();
 		for (Geometry qFP : queryFootPrints) {
@@ -56,13 +59,16 @@ public class SpatialOnlyIndex extends AbstractSpatialIndex {
 		Collections.sort(documents);
 
 		// Create the spatial ranking
-		return new Ranking("<spatrel>" + spatialRelationship + "</spatrel><location>" + location + "</location>", documents);
+		Ranking ranking = new Ranking(documents);
+		ranking.setSpatialQuery(query);
+		
+		return ranking;
 	}
 
 	
 
 	@Override
-	public SpatialIndexMetaData getAdditionalIndexInformation() {
+	public SpatialIndexMetaData getSpatialMetaData() {
 		//TODO 
 		throw new NoSuchMethodError();
 	}

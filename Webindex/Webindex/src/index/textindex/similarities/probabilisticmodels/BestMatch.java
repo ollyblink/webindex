@@ -1,43 +1,42 @@
 package index.textindex.similarities.probabilisticmodels;
 
-import index.textindex.ITextIndex;
-import index.textindex.similarities.AbstractTextSimilarity;
-import index.textindex.utils.TextIndexMetaData;
-import index.textindex.utils.QueryFormatter;
+import index.textindex.similarities.ITextSimilarity;
+import index.textindex.utils.Term;
 import index.textindex.utils.TermDocumentValues;
-import index.textindex.utils.texttransformation.ITextTokenizer;
+import index.textindex.utils.TextIndexMetaData;
 import index.utils.IndexDocument;
 import index.utils.Ranking;
+import index.utils.query.TextIndexQuery;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 /**
- * Calculates similarity values accordings to BM formulas. See Modern Information Retrieval Ed. 2, page 106. The implementation needs one of the IBMStrategies (BM1, BM15, BM11, or BM25) as an input strategy.
+ * Calculates similarity values accordings to BM formulas. See Modern Information Retrieval Ed. 2, page 106. The implementation needs one of the
+ * IBMStrategies (BM1, BM15, BM11, or BM25) as an input strategy.
  * 
  * @author rsp
  *
  */
-public class BestMatch extends AbstractTextSimilarity {
+public class BestMatch implements ITextSimilarity {
 
 	private TextIndexMetaData metaData;
 	private float N;
 	private IBMStrategy bmStrategy;
 
-	public BestMatch(ITextIndex index, ITextTokenizer queryTokenizer, IBMStrategy bmStrategy) {
-		super(index, queryTokenizer);
+	public BestMatch(TextIndexMetaData metaData, IBMStrategy bmStrategy) { 
 		this.bmStrategy = bmStrategy;
-		metaData = index.getMetaData();
+		this.metaData = metaData;
 		N = metaData.getN();
 	}
 
 	@Override
-	protected Ranking calculateSimilarity(String query, ArrayList<String> indexedTerms, boolean isIntersected) {
-		ArrayList<IndexDocument> documents = index.getDocTermKeyValues(indexedTerms, isIntersected);
+	public Ranking calculateSimilarity(TextIndexQuery query, HashMap<Term, Integer> queryTermFreqs, ArrayList<IndexDocument> documents, boolean isIntersected) { 
 		for (IndexDocument document : documents) {
 			float sumWeight = 0f;
-			for (String queryTerm : indexedTerms) {
-				TermDocumentValues values = document.getTextIndexDocumentMetaData().get(queryTerm);
+			for (Term queryTerm : queryTermFreqs.keySet()) {
+				TermDocumentValues values = document.getTextIndexDocumentMetaData().get(queryTerm.getIndexedTerm());
 				if (values != null) {
 					float ni = values.getNi();
 					float value = getLog(ni);
@@ -47,7 +46,10 @@ public class BestMatch extends AbstractTextSimilarity {
 			}
 		}
 		Collections.sort(documents);
-		return new Ranking(QueryFormatter.format(query, isIntersected), documents);
+		Ranking ranking = new Ranking(documents);
+		ranking.setTextQuery(query);
+		
+		return ranking;
 	}
 
 	private float getLog(float ni) {

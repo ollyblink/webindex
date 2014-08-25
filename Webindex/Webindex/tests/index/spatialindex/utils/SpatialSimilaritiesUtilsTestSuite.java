@@ -5,7 +5,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ IndexDocumentProviderTest.class, LocationProviderTest.class })
+@SuiteClasses({ DBDataProviderTest.class, LocationProviderTest.class })
 public class SpatialSimilaritiesUtilsTestSuite {
 
 }

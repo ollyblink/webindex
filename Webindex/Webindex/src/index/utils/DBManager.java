@@ -2,7 +2,6 @@ package index.utils;
 
 import index.spatialindex.implementations.SpatialOnlyIndex;
 import index.spatialindex.utils.SpatialIndexDocumentMetaData;
-import index.spatialindex.utils.IndexDocumentProvider;
 import index.spatialindex.utils.LocationProvider;
 import index.textindex.implementations.DBTextOnlyIndex;
 import index.textindex.utils.texttransformation.MockTextTokenizer;
@@ -40,6 +39,7 @@ public class DBManager {
 
 	public static final String dropTables = "drop table if exists terms, documents, term_docs, metadata, original_terms, locations cascade;";
 
+	 
 	private AbstractDBConnector db;
 
 	public DBManager(AbstractDBConnector db) {
@@ -52,9 +52,7 @@ public class DBManager {
 	 * @return
 	 */
 	public final boolean initializeDB() {
-		// for (String sql : sqls) {
-		// System.err.println(sql);
-		// }
+		 
 		if (!db.tableExists("terms")) {
 			try {
 				Statement statement = db.getConnection().createStatement();
@@ -71,6 +69,19 @@ public class DBManager {
 			// System.err.println("tables have already been initialised.");
 			return false;
 		}
+	}
+	
+	public static void main(String[] args) {
+		String host = "localhost";
+		String port = "5432";
+		String database = "girindex";
+		String user = "postgres";
+		String password = "32qjivkd";
+
+		AbstractDBConnector db = new PGDBConnector(host, port, database, user, password);
+		DBManager dBManager = new DBManager(db);
+		dBManager.dropTables();
+		dBManager.initializeDB();
 	}
 
 	public final void dropTables() {
@@ -93,51 +104,7 @@ public class DBManager {
 		db.closeConnection();
 	}
 
-	public static DBTextOnlyIndex initTestTextDB(MockTextTokenizer tokenizer, DBManager dbManager, String[] docs) {
-		DBTextOnlyIndex index = new DBTextOnlyIndex(dbManager, tokenizer, 4000); 
-		List<String> documents = new ArrayList<String>();
-		
-		for(String d:docs){
-			documents.add(d);
-		}  
-		index.addDocuments(documents);
-		return index;
-	}
-
-	public static DBManager getTestDBManager() {
-		String host = "localhost";
-		String port = "5432";
-		String database = "girindex_test";
-		String user = "postgres";
-		String password = "32qjivkd";
-
-		DBManager dbManager =  new DBManager(new PGDBConnector(host, port, database, user, password));
-		dbManager.dropTables();
-		dbManager.initializeDB();
-		
-		return dbManager;
-	}
 	
-	public static void tearDownTestDB(DBManager dbManager){
-		dbManager.dropTables();
-		dbManager.closeConnection();
-	}
-
-	public static SpatialOnlyIndex initSpatialTestDB(DBManager dbManager, String[] docs) {
-		 
-		SpatialOnlyIndex index = new SpatialOnlyIndex(new Quadtree(), new IndexDocumentProvider(dbManager));
-		SpatialIndexDocumentMetaData[] docLocs = new SpatialIndexDocumentMetaData[docs.length];
-		for(int i = 0; i< docs.length;++i){
-			docLocs[i] = new SpatialIndexDocumentMetaData(i+1);
-			List<? extends Geometry> geometries =  LocationProvider.INSTANCE.retrieveLocations(docs[i]); 
-			for(Geometry g: geometries){
-				docLocs[i].addGeometry(g);
-			}
-			
-		}
-		index.addLocations(docLocs);
-		return index;
-	}
 	
 	public AbstractDBConnector getConnector(){
 		return db;
