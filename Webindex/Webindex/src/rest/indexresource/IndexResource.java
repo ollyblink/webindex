@@ -22,8 +22,7 @@ public class IndexResource {
 	@POST
 	@Path("/docupload")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postDocument(@FormDataParam("file") String text, @FormDataParam("file") FormDataContentDisposition fileHeader) {
-     
+	public Response postDocument(@FormDataParam("file") String text, @FormDataParam("file") FormDataContentDisposition fileHeader) { 
 		if (text != null && text.length() > 0) {
 			IndexDao.INSTANCE.addDocument(text); 
 			return Response.status(204).entity("Indexing success: could upload file.").build();

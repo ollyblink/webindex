@@ -1,4 +1,4 @@
-package utils;
+package utils.fileutils;
 
 public class FileExtensionExtractor {
 	public static String getExtension(String docToAdd) {

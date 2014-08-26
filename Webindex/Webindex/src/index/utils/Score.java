@@ -54,6 +54,11 @@ public class Score implements Comparable<Score> {
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return "<" + docid + ", " + score + ">";
+	}
 	
 	
 	

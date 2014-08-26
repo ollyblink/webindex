@@ -1,4 +1,4 @@
-package rest.testclient;
+package rest.uploadclient;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,14 +14,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.JAXBException;
 
-import utils.FilePathRetriever;
+import utils.fileutils.FilePathRetriever;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.multipart.FormDataMultiPart;
 
-public class TestClient {
+public class UploadClient {
 	public static void main(String[] args) throws FileNotFoundException, JAXBException, InstantiationException, IllegalAccessException, ClassNotFoundException {
 
 //		String start = "C:/Users/rsp/Desktop/politics";

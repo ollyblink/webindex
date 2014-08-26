@@ -1,7 +1,8 @@
 package index.girindex.combinationstrategy.utils;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 import index.girindex.combinationstrategy.utils.Normalizer;
+import index.utils.Score;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,34 +12,33 @@ import org.junit.Test;
 
 public class NormalizerTest {
 
-	private static ArrayList<Float> values;
+	private static ArrayList<Score> values;
 	private static float minMax;
 	private static float min;
+	private static int N;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 
-		values = new ArrayList<Float>();
+		values = new ArrayList<Score>();
 
-		values.add(1f);
-		values.add(2f);
-		values.add(4f);
-		values.add(8f);
-		values.add(16f);
-		values.add(32f);
+		N = 100;
+		for(int i = 0; i < N;++i){
+			values.add(new Score(new Long(i), new Float(Math.pow(2, i))));
+		}
 
-		minMax = 31f;
+		minMax = (float)((Math.pow(2, N-1))-1)-min;
 		min = 1f;
 	}
 
 	@Test
 	public void test() {
-		List<Float> normalizedValues = Normalizer.normalizeMinMax(values);
+		List<Score> normalizedValues = Normalizer.normalizeMinMax(values);
 		assertTrue(normalizedValues != null);
 		assertTrue(normalizedValues != values);
-		assertTrue(normalizedValues.size() == values.size());
-		for (int i = 0; i < normalizedValues.size(); ++i) {
-			assertTrue(normalizedValues.get(i) == ((values.get(i) - min) / minMax));
+		assertTrue(normalizedValues.size() == values.size()); 
+		for (int i = 0; i < normalizedValues.size(); ++i) {  
+			assertTrue(normalizedValues.get(i).getScore() == ((values.get(i).getScore() - min) / minMax));
 		}
 	}
 

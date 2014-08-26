@@ -5,18 +5,19 @@ import index.spatialindex.utils.SpatialIndexDocumentMetaData;
 import index.spatialindex.utils.SpatialIndexMetaData;
 import index.spatialindex.utils.SpatialIndexUtils;
 import index.spatialindex.utils.SpatialScoreTriple;
-import index.utils.DBDataProvider;
 import index.utils.Ranking;
 import index.utils.query.SpatialIndexQuery;
 
 import java.util.List;
+
+import utils.dbcrud.DBDataManager;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.index.quadtree.Quadtree;
 
 public class SpatialOnlyIndex extends AbstractSpatialIndex {
 
-	public SpatialOnlyIndex(Quadtree quadTree, DBDataProvider docProvider, Long... docids) {
+	public SpatialOnlyIndex(Quadtree quadTree, DBDataManager docProvider, Long... docids) {
 		super(quadTree, docProvider, docids);
 	}
 
@@ -49,10 +50,5 @@ public class SpatialOnlyIndex extends AbstractSpatialIndex {
 		}
 	}
 
-
-	@Override
-	public void refill() {
-		refillQuadtree();
-	}
-
+ 
 }

@@ -7,7 +7,7 @@ import java.util.Set;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
- * Much simpler version of {@link IndexDocument}. Only provides the indexed terms (not original terms, may be stemmed and analyzed), the document's
+ * Much simpler version of {@link Document}. Only provides the indexed terms (not original terms, may be stemmed and analyzed), the document's
  * identifier and the documents spatial footprints. To be used in {@link TextPrimarySpatialIndex}
  * 
  * @author rsp

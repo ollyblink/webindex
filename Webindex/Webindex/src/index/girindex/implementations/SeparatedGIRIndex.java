@@ -3,42 +3,38 @@ package index.girindex.implementations;
 import index.girindex.AbstractGIRIndex;
 import index.girindex.combinationstrategy.ICombinationStrategy;
 import index.spatialindex.ISpatialIndex;
-import index.textindex.ITextIndex;
-import index.utils.DBDataProvider;
+import index.spatialindex.utils.SpatialIndexDocumentMetaData;
+import index.spatialindex.utils.SpatialIndexMetaData;
+import index.textindex.implementations.ITextIndex;
+import index.textindex.utils.TextIndexMetaData;
+import index.textindex.utils.texttransformation.ITextTokenizer;
 import index.utils.Ranking;
-import index.utils.indexchangelistener.IIndexChangeListener;
-import index.utils.indexchangelistener.IIndexChangeSubject;
 import index.utils.query.SpatialIndexQuery;
 import index.utils.query.TextIndexQuery;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class SeparatedGIRIndex extends AbstractGIRIndex implements  IIndexChangeSubject {
+import utils.dbcrud.DBDataManager;
+
+public class SeparatedGIRIndex extends AbstractGIRIndex {
 	private ITextIndex textIndex;
 	private ISpatialIndex spatialIndex;
-	
-	private List<IIndexChangeListener> changeListeners;
+	 
 
-	public SeparatedGIRIndex(DBDataProvider dbDataProvider, ITextIndex textIndex, ISpatialIndex spatialIndex, ICombinationStrategy combinationStrategy) {
+	public SeparatedGIRIndex(DBDataManager dbDataProvider, ITextIndex textIndex, ISpatialIndex spatialIndex, ICombinationStrategy combinationStrategy) {
 		super(dbDataProvider, combinationStrategy); 
 		this.textIndex = textIndex;
-		this.spatialIndex = spatialIndex; 
-		this.changeListeners = new ArrayList<IIndexChangeListener>();
-		this.changeListeners.add(textIndex);
-		this.changeListeners.add(spatialIndex);
+		this.spatialIndex = spatialIndex;  
 	}
 
 	@Override
 	public void addDocument(String text) {
-		dbDataProvider.addDocument(text);  
-		updateIndexChangeListener();
+		dbDataProvider.addDocument(text);   
 	}
 
 	@Override
 	public void addDocuments(List<String> texts) {
-		dbDataProvider.addDocuments(texts); 
-		updateIndexChangeListener();
+		dbDataProvider.addDocuments(texts);  
 	}
 
 	@Override
@@ -50,14 +46,46 @@ public class SeparatedGIRIndex extends AbstractGIRIndex implements  IIndexChange
 	}
 
 	@Override
-	public void addIndexChangeListener(IIndexChangeListener listener) {
-		this.changeListeners.add(listener);
+	public void close() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
-	public void updateIndexChangeListener() {
-		for(IIndexChangeListener cL: changeListeners){
-			cL.refill();
-		}
+	public ITextTokenizer getTokenizer() {
+		// TODO Auto-generated method stub
+		return null;
 	}
+
+	@Override
+	public TextIndexMetaData getTextMetaData() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Ranking queryIndex(TextIndexQuery query) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void addLocations(SpatialIndexDocumentMetaData... documentFootPrints) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public SpatialIndexMetaData getSpatialMetaData() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Ranking queryIndex(SpatialIndexQuery query) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	 
 }

@@ -1,17 +1,22 @@
 package index.textindex.similarities.probabilisticmodels;
 
+import index.textindex.similarities.AbstractTextSimilarity;
 import index.textindex.similarities.ITextSimilarity;
 import index.textindex.utils.Term;
-import index.textindex.utils.TermDocumentValues;
-import index.textindex.utils.TextIndexMetaData;
-import index.utils.IndexDocument;
+import index.textindex.utils.TermDocs;
+import index.textindex.utils.texttransformation.AbstractTextTokenizer;
+import index.utils.Document;
 import index.utils.Ranking;
 import index.utils.Score;
+import index.utils.identifers.TermDocsIdentifier;
+import index.utils.indexmetadata.TextIndexMetaData;
 import index.utils.query.TextIndexQuery;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Calculates similarity values accordings to BM formulas. See Modern Information Retrieval Ed. 2, page 106. The implementation needs one of the
@@ -20,41 +25,52 @@ import java.util.HashMap;
  * @author rsp
  *
  */
-public class BestMatch implements ITextSimilarity {
+public class BestMatch extends AbstractTextSimilarity {
 
-	private TextIndexMetaData metaData;
-	private float N;
 	private IBMStrategy bmStrategy;
 
-	public BestMatch(TextIndexMetaData metaData, IBMStrategy bmStrategy) { 
+	public BestMatch(IBMStrategy bmStrategy) {
 		this.bmStrategy = bmStrategy;
-		this.metaData = metaData;
-		N = metaData.getN();
 	}
 
 	@Override
-	public Ranking calculateSimilarity(TextIndexQuery query, HashMap<Term, Integer> queryTermFreqs, ArrayList<IndexDocument> documents, boolean isIntersected) { 
-		ArrayList<Score> scores = new ArrayList<Score>();
-	 	for (IndexDocument document : documents) {
-			float sumWeight = 0f;
-			for (Term queryTerm : queryTermFreqs.keySet()) {
-				TermDocumentValues values = document.getTextIndexDocumentMetaData().get(queryTerm.getIndexedTerm());
-				if (values != null) {
-					float ni = values.getNi();
-					float value = getLog(ni);
-					sumWeight += bmStrategy.calculateSimilarity(value, values, document, metaData);
-				}
-				scores.add(new Score(document.getId(), sumWeight));
-			} 
-			
+	public Ranking calculateSimilarity(TextIndexQuery query, HashMap<Term, Integer> queryTermFreqs, HashMap<Term, List<Document>> relevantDocuments,
+			TextIndexMetaData metaData, boolean isIntersected) {
+
+		int N = metaData.getOverallIndexMetaData().getN();
+
+		for (Term queryTerm : queryTermFreqs.keySet()) {
+			List<Document> relevantDocumentsForTerm = relevantDocuments.get(queryTerm);
+
+			for (Document document : relevantDocumentsForTerm) {
+
+				float ni = findNi(queryTerm, relevantDocuments);
+
+				float value = getLog(ni, N);
+				TermDocs termDocs = metaData.getTermDocRelationship().get(
+						new TermDocsIdentifier(queryTerm.getIndexedTerm().getTermId(), document.getId().getId()));
+				float score = bmStrategy.calculateSimilarity(value, document, termDocs, metaData.getOverallIndexMetaData());
+
+				updateScore(document, score);
+			}
 		}
-		Collections.sort(scores);
-		return new Ranking(scores); 
-		 
+
+		ArrayList<Score> scoreList = new ArrayList<Score>(scoreMap.values());
+		Collections.sort(scoreList);
+		return new Ranking(scoreList);
+
 	}
 
+	private float findNi(Term queryTerm, HashMap<Term, List<Document>> relevantDocuments) {
+		for (Term term : relevantDocuments.keySet()) {
+			if (term.equals(queryTerm)) {
+				return term.getNi();
+			}
+		}
+		return 0f;
+	}
 
-	private float getLog(float ni) {
+	private float getLog(float ni, float N) {
 		return (float) ((N - ni + 0.5) / (ni + 0.5));
 	}
 

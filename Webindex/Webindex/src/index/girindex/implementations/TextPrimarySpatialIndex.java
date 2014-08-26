@@ -2,11 +2,13 @@ package index.girindex.implementations;
 
 import index.girindex.AbstractGIRIndex;
 import index.girindex.combinationstrategy.ICombinationStrategy;
+import index.spatialindex.utils.SpatialIndexDocumentMetaData;
+import index.spatialindex.utils.SpatialIndexMetaData;
 import index.spatialindex.utils.SpatialIndexUtils;
 import index.textindex.utils.Term;
+import index.textindex.utils.TextIndexMetaData;
 import index.textindex.utils.TextIndexUtils;
 import index.textindex.utils.texttransformation.ITextTokenizer;
-import index.utils.DBDataProvider;
 import index.utils.Ranking;
 import index.utils.Score;
 import index.utils.SimpleIndexDocument;
@@ -19,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import utils.dbcrud.DBDataManager;
+
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.index.quadtree.Quadtree;
 
@@ -30,7 +34,7 @@ public class TextPrimarySpatialIndex extends AbstractGIRIndex {
 	private Map<String /* Term */, Quadtree /* Spatial footprints */> index;
 	protected ITextTokenizer tokenizer;
 
-	public TextPrimarySpatialIndex(DBDataProvider dbDataProvider, ITextTokenizer tokenizer, ICombinationStrategy combinationStrategy) {
+	public TextPrimarySpatialIndex(DBDataManager dbDataProvider, ITextTokenizer tokenizer, ICombinationStrategy combinationStrategy) {
 		super(dbDataProvider, combinationStrategy);
 		this.tokenizer = tokenizer;
 		fillInMemoryIndex();
@@ -44,7 +48,6 @@ public class TextPrimarySpatialIndex extends AbstractGIRIndex {
 		for (SimpleIndexDocument document : documents) {
 			Set<String> terms = document.getIndexTerms();
 			Set<Geometry> documentFootPrints = document.getDocumentFootPrints();
-
 			// Inserting all terms into the in memory inverted index
 			for (String term : terms) {
 				Quadtree tree = index.get(term);
@@ -134,6 +137,48 @@ public class TextPrimarySpatialIndex extends AbstractGIRIndex {
 				return finalScore;
 			}
 		}
+		return null;
+	}
+
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public ITextTokenizer getTokenizer() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public TextIndexMetaData getTextMetaData() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Ranking queryIndex(TextIndexQuery query) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void addLocations(SpatialIndexDocumentMetaData... documentFootPrints) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public SpatialIndexMetaData getSpatialMetaData() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Ranking queryIndex(SpatialIndexQuery query) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 

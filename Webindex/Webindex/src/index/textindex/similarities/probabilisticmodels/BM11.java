@@ -1,8 +1,9 @@
 package index.textindex.similarities.probabilisticmodels;
 
-import index.textindex.utils.TextIndexMetaData;
-import index.textindex.utils.TermDocumentValues;
-import index.utils.IndexDocument;
+import index.textindex.utils.TermDocs;
+import index.utils.Document;
+import index.utils.indexmetadata.OverallTextIndexMetaData;
+
 
 public class BM11 extends AbstractBMStrategy {
 
@@ -15,9 +16,9 @@ public class BM11 extends AbstractBMStrategy {
 
 
 	@Override
-	public float calculateSimilarity(float value, TermDocumentValues values, IndexDocument document, TextIndexMetaData metaData) {
-		float fij = values.getFij();
-		return (((K1 + 1)*fij)/(((K1*document.getTextIndexDocumentMetaData().getIndexedNrOfWords())/metaData.getAverageDocLengthIndexedNrOfTerms())+fij))*log(value);
+	public float calculateSimilarity(float value, Document document, TermDocs termDocMetaData, OverallTextIndexMetaData indexMetaData) {
+		float fij = termDocMetaData.getFij();
+		return (((K1 + 1)*fij)/(((K1*document.getIndexedNrOfWords())/indexMetaData.getAvgDocLengthIndexedNrOfWords())+fij))*log(value);
 	}
 
  

@@ -3,20 +3,20 @@ package index.spatialindex;
 import java.util.ArrayList;
 import java.util.List;
 
+import utils.dbcrud.DBDataManager;
 import index.spatialindex.utils.SpatialIndexDocumentMetaData;
 import index.spatialindex.utils.SpatialScoreTriple;
-import index.utils.DBDataProvider;
-import index.utils.IndexDocument;
+import index.utils.Document;
 
 import com.vividsolutions.jts.index.quadtree.Quadtree;
 
 public abstract class AbstractSpatialIndex implements ISpatialIndex {
 
 	protected Quadtree quadTree;
-	protected DBDataProvider docProvider;
+	protected DBDataManager docProvider;
 	protected Long[] docids;
 
-	public AbstractSpatialIndex(Quadtree quadTree, DBDataProvider docProvider, Long... docids) {
+	public AbstractSpatialIndex(Quadtree quadTree, DBDataManager docProvider, Long... docids) {
 		this.quadTree = quadTree;
 		this.docProvider = docProvider;
 		this.docids = docids;

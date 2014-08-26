@@ -1,14 +1,14 @@
 package index.girindex;
 
+import utils.dbcrud.DBDataManager;
 import index.girindex.combinationstrategy.ICombinationStrategy;
-import index.utils.DBDataProvider;
 
 public abstract class AbstractGIRIndex implements IGIRIndex {
 
-	protected DBDataProvider dbDataProvider;
+	protected DBDataManager dbDataProvider;
 	protected ICombinationStrategy combinationStrategy;
 
-	public AbstractGIRIndex(DBDataProvider dbDataProvider, ICombinationStrategy combinationStrategy) {
+	public AbstractGIRIndex(DBDataManager dbDataProvider, ICombinationStrategy combinationStrategy) {
 		this.dbDataProvider = dbDataProvider;
 		this.combinationStrategy = combinationStrategy;
 	}

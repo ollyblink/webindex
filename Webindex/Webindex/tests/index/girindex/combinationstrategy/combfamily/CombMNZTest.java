@@ -41,12 +41,9 @@ public class CombMNZTest {
 		scores3.add(new Score(7l, 0.5f));
 		scores3.add(new Score(1l, 0.5f));
 		scores3.add(new Score(2l, 0.5f));
-		rankings[2] = new Ranking(scores3); 
-		
-		
-		 
-		 
+		rankings[2] = new Ranking(scores3);  
 	}
+	
 	@Test
 	public void testCombination() { 
 		boolean isIntersected = false;

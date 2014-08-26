@@ -2,8 +2,7 @@ package index.spatialindex.utils;
 
 import index.spatialindex.similarities.ISpatialRelationship;
 import index.spatialindex.similarities.SpatialRelationshipFactory;
-import index.utils.DBDataProvider;
-import index.utils.IndexDocument;
+import index.utils.Document;
 import index.utils.Ranking;
 import index.utils.Score;
 import index.utils.query.SpatialIndexQuery;
@@ -12,11 +11,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import utils.dbcrud.DBDataManager;
+
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.index.quadtree.Quadtree;
 
 public class SpatialIndexUtils {
-	public static Ranking performSpatialQuery(SpatialIndexQuery query, Quadtree quadTree, DBDataProvider dbDataProvider) {
+	public static Ranking performSpatialQuery(SpatialIndexQuery query, Quadtree quadTree, DBDataManager dbDataProvider) {
 		// Define spatial relationship algorithm
 		ISpatialRelationship spatRelAlgorithm = SpatialRelationshipFactory.create(query.getSpatialRelationship());
 
@@ -57,7 +58,7 @@ public class SpatialIndexUtils {
 	 * 
 	 * @return a list of documents according to the locations
 	 */
-	public static ArrayList<IndexDocument> getDocuments(List<SpatialScoreTriple> dFPs, DBDataProvider dbDataProvider) {
+	public static ArrayList<Document> getDocuments(List<SpatialScoreTriple> dFPs, DBDataManager dbDataProvider) {
 		return dbDataProvider.getDocumentIdAndFulltext(dFPs);
 	}
 
