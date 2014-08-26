@@ -2,6 +2,8 @@ package utils.dbcrud;
 
 import index.spatialindex.utils.GeometryConverter;
 import index.spatialindex.utils.Location;
+import index.spatialindex.utils.SpatialIndexDocumentMetaData;
+import index.spatialindex.utils.SpatialScoreTriple;
 import index.textindex.implementations.ITextIndex;
 import index.textindex.implementations.RAMTextOnlyIndex;
 import index.textindex.utils.Term;
@@ -9,6 +11,7 @@ import index.textindex.utils.TermDocs;
 import index.textindex.utils.texttransformation.ITextTokenizer;
 import index.textindex.utils.texttransformation.MockTextTokenizer;
 import index.utils.Document;
+import index.utils.SimpleIndexDocument;
 import index.utils.identifers.TermDocsIdentifier;
 import index.utils.indexmetadata.OverallTextIndexMetaData;
 import index.utils.indexmetadata.TextIndexMetaData;
@@ -21,6 +24,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -30,6 +34,8 @@ import org.postgis.PGgeometry;
 
 import testutils.DBInitializer;
 import utils.dbconnection.AbstractDBConnector;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * Implements all the database indexing and access methods used by the text and spatial indexes. Does the whole logic of the database. Uses a DBTablesManager to initialise and drop tables.
@@ -497,179 +503,164 @@ public class DBDataManager implements IDataProvider {
 	 * @param docids
 	 * @return
 	 */
-	// public List<SpatialIndexDocumentMetaData> getDocumentLocations(Long...
-	// docids) {
-	// if (dbTablesManager.getConnector().tableExists("locations")) {
-	// String sql = "Select l.docid, l.geometry from locations l " +
-	// getWhereClause("l", docids);
-	// return new ArrayList<>(retrieveDocuments(sql).values());
-	// }
-	// return new ArrayList<>();
-	// }
+	public List<SpatialIndexDocumentMetaData> getDocumentLocations(Long... docids) {
+		if (dbTablesManager.getConnector().tableExists("locations")) {
+			String sql = "Select l.docid, l.geometry from locations l " + getWhereClause("l", docids);
+			return new ArrayList<>(retrieveDocuments(sql).values());
+		}
+		return new ArrayList<>();
+	}
 
-	// /**
-	// * Used by spatial indexes
-	// *
-	// * @param ranking
-	// * @return
-	// */
-	// public ArrayList<Document>
-	// getDocumentIdAndFulltext(List<SpatialScoreTriple> ranking) {
-	// HashMap<Long, Document> indexDocuments = new HashMap<Long, Document>();
-	// try {
-	// PreparedStatement statement =
-	// dbTablesManager.getConnection().prepareStatement(
-	// "Select d.id, d.fulltext from documents d " + getWhereClause(ranking));
-	// ResultSet set = statement.executeQuery();
-	// while (set.next()) {
-	// long id = set.getLong(1);
-	// Document document = indexDocuments.get(id);
-	// if (document == null) {
-	// document = new Document(set.getLong(1), set.getString(2));
-	// indexDocuments.put(id, document);
-	// }
-	// for (SpatialScoreTriple data : ranking) {
-	// if (data.getDocid() == id) {
-	// document.getSpatialIndexDocumentMetaData().addSpatialScore(data.getGeometry(),
-	// data.getScore());
-	// }
-	// }
-	// }
-	// } catch (SQLException e) {
-	// e.printStackTrace();
-	// }
-	// return new ArrayList<>(indexDocuments.values());
-	// }
+	/**
+	 * Used by spatial indexes
+	 *
+	 * @param ranking
+	 * @return
+	 */
+	public ArrayList<Document> getDocumentIdAndFulltext(List<SpatialScoreTriple> ranking) {
+		HashMap<Long, Document> indexDocuments = new HashMap<Long, Document>();
+		try {
+			PreparedStatement statement = dbTablesManager.getConnection().prepareStatement("Select d.id, d.fulltext from documents d " + getWhereClause(ranking));
+			ResultSet set = statement.executeQuery();
+			while (set.next()) {
+				long id = set.getLong(1);
+				Document document = indexDocuments.get(id);
+				if (document == null) {
+					document = new Document(set.getLong(1), set.getString(2));
+					indexDocuments.put(id, document);
+				}
+				for (SpatialScoreTriple data : ranking) {
+					if (data.getDocid() == id) {
+						document.getSpatialIndexDocumentMetaData().addSpatialScore(data.getGeometry(), data.getScore());
+					}
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return new ArrayList<>(indexDocuments.values());
+	}
 
 	/**
 	 * Used by spatial indexes
 	 * 
 	 * @param dFPs
 	 */
-	// public void storePersistently(SpatialIndexDocumentMetaData... dFPs) {
-	// if (dFPs == null) {
-	// return;
-	// } else {
-	// if (dbTablesManager.getConnector().tableExists("locations")) {
-	// String sql = "Insert into locations(docid, geometry) values (?,?);";
-	// try {
-	// PreparedStatement statement =
-	// dbTablesManager.getConnection().prepareStatement(sql);
-	// for (SpatialIndexDocumentMetaData docLoc : dFPs) {
-	// List<Geometry> geometries = docLoc.getGeometries();
-	// for (Geometry geometry : geometries) {
-	// statement.setLong(1, docLoc.getDocid());
-	// statement.setObject(2, GeometryConverter.convertJTStoPostGis(geometry));
-	// statement.executeUpdate();
-	// }
-	// }
-	// } catch (SQLException | NoSuchObjectException e) {
-	// e.printStackTrace();
-	// }
-	// } else {
-	// System.err.println("IndexDocumentProvider::storePersistently::could not insert, locations does not exist.");
-	// }
-	// }
-	//
-	// }
+	public void storePersistently(SpatialIndexDocumentMetaData... dFPs) {
+		if (dFPs == null) {
+			return;
+		} else {
+			if (dbTablesManager.getConnector().tableExists("locations")) {
+				String sql = "Insert into locations(docid, geometry) values (?,?);";
+				try {
+					PreparedStatement statement = dbTablesManager.getConnection().prepareStatement(sql);
+					for (SpatialIndexDocumentMetaData docLoc : dFPs) {
+						List<Geometry> geometries = docLoc.getGeometries();
+						for (Geometry geometry : geometries) {
+							statement.setLong(1, docLoc.getDocid());
+							statement.setObject(2, GeometryConverter.convertJTStoPostGis(geometry));
+							statement.executeUpdate();
+						}
+					}
+				} catch (SQLException | NoSuchObjectException e) {
+					e.printStackTrace();
+				}
+			} else {
+				System.err.println("IndexDocumentProvider::storePersistently::could not insert, locations does not exist.");
+			}
+		}
 
-	// private String getWhereClause(List<SpatialScoreTriple> dFPs) {
-	//
-	// if (dFPs == null || dFPs.size() == 0) {
-	// return ";";
-	// }
-	// int counter = 0;
-	// String whereClause = "where ";
-	// for (SpatialScoreTriple dFP : dFPs) {
-	// if (++counter == dFPs.size()) {
-	// whereClause += "d.id=" + dFP.getDocid() + ";";
-	// } else {
-	// whereClause += "d.id=" + dFP.getDocid() + " OR ";
-	// }
-	// }
-	// return whereClause;
-	// }
-	//
-	// private String getWhereClause(String tableName, Long... ids) {
-	// if (ids == null || ids.length == 0) {
-	// return ";";
-	// }
-	// int counter = 0;
-	// String whereClause = " where ";
-	// for (Long id : ids) {
-	// if (++counter == ids.length) {
-	// whereClause += tableName + ".id=" + id + ";";
-	// } else {
-	// whereClause += tableName + ".id=" + id + " OR ";
-	// }
-	// }
-	// return whereClause;
-	// }
-	//
-	// private Map<Long, SpatialIndexDocumentMetaData> retrieveDocuments(String
-	// sql) {
-	// Map<Long, SpatialIndexDocumentMetaData> docLocs = new HashMap<>();
-	// try {
-	// Statement statement = dbTablesManager.getConnection().createStatement();
-	// ResultSet set = statement.executeQuery(sql);
-	// while (set.next()) {
-	// long id = set.getLong(1);
-	// SpatialIndexDocumentMetaData docLoc = docLocs.get(id);
-	// if (docLoc == null) {
-	// docLoc = new SpatialIndexDocumentMetaData(set.getLong(1));
-	// docLocs.put(id, docLoc);
-	// }
-	// docLoc.addGeometry(GeometryConverter.convertPostGisToJTS((PGgeometry)
-	// set.getObject(2)));
-	// }
-	// statement.close();
-	// } catch (SQLException | NoSuchObjectException e) {
-	// e.printStackTrace();
-	// }
-	// return docLocs;
-	// }
-	//
-	// /**
-	// * If ids is null or empty, all documents are retrieved.
-	// *
-	// * @param ids
-	// * @return
-	// */
-	// public List<SimpleIndexDocument> getDocTermLocationKeyValues(Long... ids)
-	// {
-	// Map<Long /* doc id */, SimpleIndexDocument> documents = new HashMap<Long,
-	// SimpleIndexDocument>();
-	//
-	// try {
-	// PreparedStatement statement =
-	// dbTablesManager.getConnection().prepareStatement(
-	// "Select td.termid, td.docid, l.geometry from term_docs td inner join locations l on td.docid = l.docid"
-	// + getWhereClause("td", ids));
-	//
-	// ResultSet set = statement.executeQuery();
-	// while (set.next()) {
-	// String term = set.getString(1);
-	// Long docid = set.getLong(2);
-	// Geometry documentFootPrint =
-	// GeometryConverter.convertPostGisToJTS((PGgeometry) set.getObject(0));
-	//
-	// SimpleIndexDocument document = documents.get(docid);
-	// if (document == null) {
-	// document = new SimpleIndexDocument(docid, new HashSet<>(), new
-	// HashSet<>());
-	// documents.put(docid, document);
-	// }
-	// document.addTerm(term);
-	// document.addDocumentFootprint(documentFootPrint);
-	//
-	// }
-	//
-	// } catch (SQLException | NoSuchObjectException e) {
-	// e.printStackTrace();
-	// }
-	//
-	// return new ArrayList<>(documents.values());
-	// }
+	}
+
+	private String getWhereClause(List<SpatialScoreTriple> dFPs) {
+
+		if (dFPs == null || dFPs.size() == 0) {
+			return ";";
+		}
+		int counter = 0;
+		String whereClause = "where ";
+		for (SpatialScoreTriple dFP : dFPs) {
+			if (++counter == dFPs.size()) {
+				whereClause += "d.id=" + dFP.getDocid() + ";";
+			} else {
+				whereClause += "d.id=" + dFP.getDocid() + " OR ";
+			}
+		}
+		return whereClause;
+	}
+
+	private String getWhereClause(String tableName, Long... ids) {
+		if (ids == null || ids.length == 0) {
+			return ";";
+		}
+		int counter = 0;
+		String whereClause = " where ";
+		for (Long id : ids) {
+			if (++counter == ids.length) {
+				whereClause += tableName + ".id=" + id + ";";
+			} else {
+				whereClause += tableName + ".id=" + id + " OR ";
+			}
+		}
+		return whereClause;
+	}
+
+	private Map<Long, SpatialIndexDocumentMetaData> retrieveDocuments(String sql) {
+		Map<Long, SpatialIndexDocumentMetaData> docLocs = new HashMap<>();
+		try {
+			Statement statement = dbTablesManager.getConnection().createStatement();
+			ResultSet set = statement.executeQuery(sql);
+			while (set.next()) {
+				long id = set.getLong(1);
+				SpatialIndexDocumentMetaData docLoc = docLocs.get(id);
+				if (docLoc == null) {
+					docLoc = new SpatialIndexDocumentMetaData(set.getLong(1));
+					docLocs.put(id, docLoc);
+				}
+				docLoc.addGeometry(GeometryConverter.convertPostGisToJTS((PGgeometry) set.getObject(2)));
+			}
+			statement.close();
+		} catch (SQLException | NoSuchObjectException e) {
+			e.printStackTrace();
+		}
+		return docLocs;
+	}
+
+	/**
+	 * If ids is null or empty, all documents are retrieved.
+	 *
+	 * @param ids
+	 * @return
+	 */
+	public List<SimpleIndexDocument> getDocTermLocationKeyValues(Long... ids) {
+		Map<Long /* doc id */, SimpleIndexDocument> documents = new HashMap<Long, SimpleIndexDocument>();
+
+		try {
+			PreparedStatement statement = dbTablesManager.getConnection().prepareStatement(
+					"Select td.termid, td.docid, l.geometry from term_docs td inner join locations l on td.docid = l.docid" + getWhereClause("td", ids));
+
+			ResultSet set = statement.executeQuery();
+			while (set.next()) {
+				String term = set.getString(1);
+				Long docid = set.getLong(2);
+				Geometry documentFootPrint = GeometryConverter.convertPostGisToJTS((PGgeometry) set.getObject(0));
+
+				SimpleIndexDocument document = documents.get(docid);
+				if (document == null) {
+					document = new SimpleIndexDocument(docid, new HashSet<>(), new HashSet<>());
+					documents.put(docid, document);
+				}
+				document.addTerm(term);
+				document.addDocumentFootprint(documentFootPrint);
+
+			}
+
+		} catch (SQLException | NoSuchObjectException e) {
+			e.printStackTrace();
+		}
+
+		return new ArrayList<>(documents.values());
+	}
 
 	//
 
@@ -746,7 +737,7 @@ public class DBDataManager implements IDataProvider {
 		for (TermDocs t : termDocs) {
 			termDocsMeta.put(t.getId(), t);
 		}
-		RAMTextOnlyIndex ramTextOnlyIndex = new RAMTextOnlyIndex(new HashMap<>(), new TextIndexMetaData(termDocsMeta, dbDataManager.getOverallTextIndexMetaData()), null);
+		RAMTextOnlyIndex ramTextOnlyIndex = new RAMTextOnlyIndex(new TextIndexMetaData(termDocsMeta, dbDataManager.getOverallTextIndexMetaData()), null, null);
 		ramTextOnlyIndex.addDocuments(documents);
 		return ramTextOnlyIndex;
 	}

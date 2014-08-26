@@ -13,6 +13,10 @@ public class BM11 extends AbstractBMStrategy {
 	public BM11(float K1) {
 		this.K1 = K1;
 	}
+	
+	public BM11(){
+		this.K1 = 1.2f;
+	}
 
 
 	@Override

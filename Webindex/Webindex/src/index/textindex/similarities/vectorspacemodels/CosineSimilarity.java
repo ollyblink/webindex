@@ -10,7 +10,6 @@ import index.utils.Document;
 import index.utils.Ranking;
 import index.utils.Score;
 import index.utils.identifers.TermDocsIdentifier;
-import index.utils.indexmetadata.OverallTextIndexMetaData;
 import index.utils.indexmetadata.TextIndexMetaData;
 import index.utils.query.TextIndexQuery;
 
@@ -49,7 +48,7 @@ public final class CosineSimilarity extends AbstractTextSimilarity {
 		for (Term queryTerm : queryTermFreqs.keySet()) {
 			Term actualTerm = findTerm(relevantDocuments, queryTerm);
 
-			for (Document document : relevantDocuments.get(queryTerm)) { 
+			for (Document document : relevantDocuments.get(queryTerm)) {
 
 				TermDocsIdentifier id = new TermDocsIdentifier(queryTerm.getIndexedTerm().getTermId(), document.getId().getId());
 
@@ -61,7 +60,7 @@ public final class CosineSimilarity extends AbstractTextSimilarity {
 
 				float queryTfIdf = queryTf.tf(freq, maxFreq) * getQueryIdf(actualTerm);
 				float weight = docTfIdf * queryTfIdf;
- 
+
 				updateScore(document, weight);
 
 				Float vectorNorm = vectorNormsPerDoc.get(document.getId().getId());
@@ -74,7 +73,7 @@ public final class CosineSimilarity extends AbstractTextSimilarity {
 
 		// Normalize all scores by their vector norm
 		for (Long id : scoreMap.keySet()) {
-			Score score = scoreMap.get(id); 
+			Score score = scoreMap.get(id);
 			score.setScore(score.getScore() / vectorNormsPerDoc.get(id));
 		}
 		ArrayList<Score> scoreList = new ArrayList<Score>(scoreMap.values());

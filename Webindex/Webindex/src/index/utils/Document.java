@@ -125,6 +125,12 @@ public final class Document {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "Document [id=" + id + ", fulltext=" + fulltext + ", sizeInBytes=" + sizeInBytes + ", indexedNrOfWords=" + indexedNrOfWords + ", rawNrOfWords=" + rawNrOfWords + ", docVectorNorm1="
+				+ docVectorNorm1 + ", docVectorNorm2=" + docVectorNorm2 + ", docVectorNorm3=" + docVectorNorm3 + "]";
+	}
+
 	// public void addHiliteSpans() {
 	// Map<Integer, Boolean> hilitedIndexes = new HashMap<Integer, Boolean>();
 	//

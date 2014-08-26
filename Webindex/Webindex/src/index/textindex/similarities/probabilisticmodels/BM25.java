@@ -14,6 +14,11 @@ public class BM25 extends AbstractBMStrategy {
 		K1 = k1;
 		this.b = b;
 	}
+	public BM25(){
+		this.K1 = 1.2f;
+		this.b = 0.75f;
+	}
+
 
 	@Override
 	public float calculateSimilarity(float value, Document document, TermDocs termDocMetaData, OverallTextIndexMetaData indexMetaData) {

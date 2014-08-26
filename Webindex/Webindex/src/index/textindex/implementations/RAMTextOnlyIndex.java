@@ -1,5 +1,6 @@
 package index.textindex.implementations;
 
+import index.textindex.similarities.AbstractTextSimilarity;
 import index.textindex.similarities.ITextSimilarity;
 import index.textindex.similarities.tfidfweighting.DocTFIDFTypes;
 import index.textindex.similarities.tfidfweighting.Formula3TFStrategy;
@@ -7,6 +8,8 @@ import index.textindex.similarities.tfidfweighting.QueryIDFTypes;
 import index.textindex.similarities.vectorspacemodels.CosineSimilarity;
 import index.textindex.utils.Term;
 import index.textindex.utils.TermDocs;
+import index.textindex.utils.texttransformation.ITextTokenizer;
+import index.textindex.utils.texttransformation.MockTextTokenizer;
 import index.utils.Document;
 import index.utils.Ranking;
 import index.utils.identifers.TermDocsIdentifier;
@@ -25,8 +28,8 @@ import java.util.Map;
  *
  */
 public class RAMTextOnlyIndex implements ITextIndex {
-	private static final ITextSimilarity DEFAULT_SIMILARITY = new CosineSimilarity(new Formula3TFStrategy(), QueryIDFTypes.TERM_IDF1,
-			DocTFIDFTypes.DOC_TFIDF3);
+
+	private static final ITextSimilarity DEFAULT_SIMILARITY = new CosineSimilarity(new Formula3TFStrategy(), QueryIDFTypes.TERM_IDF1, DocTFIDFTypes.DOC_TFIDF3);
 
 	/** Index storing all terms and document occurrence lists */
 	private Map<Term /* Term */, List<Document> /* Document occurrences */> index;
@@ -37,10 +40,14 @@ public class RAMTextOnlyIndex implements ITextIndex {
 	/** The currently used similarity */
 	private ITextSimilarity currentSimilarity;
 
-	public RAMTextOnlyIndex(Map<Term, List<Document>> index, TextIndexMetaData indexMetaData, ITextSimilarity currentSimilarity) {
-		this.index = index;
-		this.indexMetaData = indexMetaData;
+	/** The used tokenizer to analyse the query */
+	private ITextTokenizer tokenizer;
+
+	public RAMTextOnlyIndex(TextIndexMetaData indexMetaData, ITextSimilarity currentSimilarity, ITextTokenizer tokenizer) {
+		this.index = new HashMap<>();
+		this.indexMetaData = indexMetaData; 
 		this.currentSimilarity = (currentSimilarity == null ? DEFAULT_SIMILARITY : currentSimilarity);
+		this.tokenizer = (tokenizer == null ? new MockTextTokenizer() : tokenizer);
 	}
 
 	@Override
@@ -68,7 +75,7 @@ public class RAMTextOnlyIndex implements ITextIndex {
 		if (documents == null) {
 			return;
 		}
-		for (Term term : documents.keySet()) { 
+		for (Term term : documents.keySet()) {
 			for (Document doc : documents.get(term)) {
 				addDocument(term, doc);
 			}
@@ -76,15 +83,29 @@ public class RAMTextOnlyIndex implements ITextIndex {
 	}
 
 	@Override
-	public void close() {
-		index.clear();
-		System.gc();
+	public Ranking queryIndex(TextIndexQuery query) {
+		// Tokenize query, create terms and calculate term occurrences (fiq) in query
+		HashMap<Term, Integer> queryTermFreqs = tokenizer.transform(query.getTextQuery());
+		// Retrieve the relevant documents from the index (only those that contain one or more query term)
+		HashMap<Term, List<Document>> relevantDocuments = getAllRelevantDocs(queryTermFreqs.keySet()); 
+		// Create the correct similarity
+		currentSimilarity = AbstractTextSimilarity.getSimilarity(query.getSimilarity());  
+		// Calculate the similarity between the query and the documents and create a ranked list of documents
+		Ranking ranking = currentSimilarity.calculateSimilarity(query, queryTermFreqs, relevantDocuments, indexMetaData, query.isIntersected());
+
+		return ranking;
 	}
 
-	@Override
-	public Ranking queryIndex(TextIndexQuery query) {
-		// TODO Auto-generated method stub
-		return null;
+	private HashMap<Term, List<Document>> getAllRelevantDocs(Iterable<Term> terms) {
+		HashMap<Term, List<Document>> relevantDocuments = new HashMap<>();
+		for (Term term : terms) {
+			Term actualTerm = findActualTerm(term);
+			List<Document> docs = index.get(actualTerm); 
+			if (docs != null) {
+				relevantDocuments.put(actualTerm, docs);
+			}
+		}
+		return relevantDocuments;
 	}
 
 	@Override
@@ -129,23 +150,22 @@ public class RAMTextOnlyIndex implements ITextIndex {
 
 	@Override
 	public HashMap<Term, List<Document>> getSubsetFor(List<Term> terms) {
- 
 
 		HashMap<Term, List<Document>> subset = new HashMap<Term, List<Document>>();
 		for (Term term : terms) {
 			List<Document> docs = index.get(term);
-			if (docs != null) {
-				Term actualTerm = findActualTerm(term);  
+			if (docs != null) { 
+				Term actualTerm = findActualTerm(term);
 				subset.put(actualTerm, docs);
 			}
 		}
-		 
+
 		return subset;
 	}
 
 	private Term findActualTerm(Term term) {
 		for (Term t : index.keySet()) {
-			if (t.equals(term)) { 
+			if (t.equals(term)) {
 				return t;
 			}
 		}
@@ -156,10 +176,10 @@ public class RAMTextOnlyIndex implements ITextIndex {
 	public TextIndexMetaData getMetaData(Map<Term, List<Document>> docTerms) {
 		Map<TermDocsIdentifier, TermDocs> subSet = new HashMap<TermDocsIdentifier, TermDocs>();
 
-		for (Term term : docTerms.keySet()) { 
+		for (Term term : docTerms.keySet()) {
 			for (Document document : docTerms.get(term)) {
-				TermDocsIdentifier termDocsIdentifier = new TermDocsIdentifier(term.getIndexedTerm().getTermId(), document.getId().getId()); 
-				subSet.put(termDocsIdentifier, indexMetaData.getTermDocRelationship().get(termDocsIdentifier)); 
+				TermDocsIdentifier termDocsIdentifier = new TermDocsIdentifier(term.getIndexedTerm().getTermId(), document.getId().getId());
+				subSet.put(termDocsIdentifier, indexMetaData.getTermDocRelationship().get(termDocsIdentifier));
 			}
 		}
 		TextIndexMetaData textIndexMetaData = new TextIndexMetaData(subSet, indexMetaData.getOverallIndexMetaData());

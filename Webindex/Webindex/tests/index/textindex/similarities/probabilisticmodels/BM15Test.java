@@ -21,16 +21,14 @@ public class BM15Test {
 	@BeforeClass
 	public static void init() {
 		similarityTestUtils = new SimilarityTestUtils();
-		similarity = new BestMatch(new BM1());
+		float k1 = 1.2f;
+		similarity = new BestMatch(new BM15(k1));
 	}
 
 	@Test
 	public void testCalculateSimilarity() {
-		Ranking hits = similarity.calculateSimilarity(new TextIndexQuery(
-				similarityTestUtils.query, "bm1", true),
-				similarityTestUtils.queryTermFreqs,
-				similarityTestUtils.docSubset, similarityTestUtils.metaData,
-				false);
+		Ranking hits = similarity.calculateSimilarity(new TextIndexQuery(similarityTestUtils.query, "bm1", true), similarityTestUtils.queryTermFreqs, similarityTestUtils.docSubset,
+				similarityTestUtils.metaData, false);
 
 		HashMap<Long, Float> values = new HashMap<Long, Float>();
 		values.put(1l, -1.222f);

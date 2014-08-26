@@ -26,8 +26,7 @@ public interface ITextIndex {
 	 * @param texts
 	 */
 	public void addDocuments(Map<Term, List<Document>> documents);
-
-	public void close();
+       
 
 	public Ranking queryIndex(TextIndexQuery query);
 

@@ -21,7 +21,9 @@ public class BM25Test {
 	@BeforeClass
 	public static void init() {
 		similarityTestUtils = new SimilarityTestUtils();
-		similarity = new BestMatch(new BM1());
+		float k1 = 1.2f;
+		float b = 0.75f;
+		similarity = new BestMatch(new BM25(k1, b));
 	}
 
 	@Test

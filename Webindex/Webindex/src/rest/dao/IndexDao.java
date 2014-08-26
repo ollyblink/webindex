@@ -23,7 +23,7 @@ public enum IndexDao {
 	private IndexDao() {
 		String host = "localhost";
 		String port = "5432";
-		String database = "girindex";
+		String database = "girindex_test";
 		String user = "postgres";
 		String password = "32qjivkd";
 
