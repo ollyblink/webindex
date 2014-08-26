@@ -16,17 +16,21 @@ import org.junit.Test;
 public class BM1Test {
 
 	private static BestMatch similarity;
-	private static SimilarityTestUtils similarityTestUtils; 
+	private static SimilarityTestUtils similarityTestUtils;
 
 	@BeforeClass
-	public static void init() { 
+	public static void init() {
 		similarityTestUtils = new SimilarityTestUtils();
 		similarity = new BestMatch(new BM1());
 	}
 
 	@Test
-	public void testCalculateSimilarity() { 
-		Ranking hits = similarity.calculateSimilarity(new TextIndexQuery(similarityTestUtils.query, "bm1", true), similarityTestUtils.queryTermFreqs, similarityTestUtils.docSubset, similarityTestUtils.metaData, false);
+	public void testCalculateSimilarity() {
+		Ranking hits = similarity.calculateSimilarity(new TextIndexQuery(
+				similarityTestUtils.query, "bm1", true),
+				similarityTestUtils.queryTermFreqs,
+				similarityTestUtils.docSubset, similarityTestUtils.metaData,
+				false);
 
 		HashMap<Long, Float> values = new HashMap<Long, Float>();
 		values.put(1l, -1.222f);
@@ -40,7 +44,7 @@ public class BM1Test {
 
 	@AfterClass
 	public static void tearDown() {
-		// DBDataProviderTest.dbManager.dropTables();
+		DBDataProviderTest.dbManager.dropTables();
 		DBDataProviderTest.index.close();
 
 	}

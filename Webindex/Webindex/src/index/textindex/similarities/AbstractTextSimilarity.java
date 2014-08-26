@@ -9,12 +9,13 @@ import java.util.Map;
 public abstract class AbstractTextSimilarity implements ITextSimilarity{
 	protected Map<Long, Score> scoreMap = new HashMap<Long, Score>();
 
-	protected void updateScore(Document document, float sumWeight) {
-		Score score = scoreMap.get(document);
+	protected void updateScore(Document document, float weight) {
+		Score score = scoreMap.get(document.getId().getId());
 		if (score == null) {
 			score = new Score(document.getId().getId(), 0f);
 			scoreMap.put(document.getId().getId(), score);
 		}
-		score.setScore(score.getScore() + sumWeight);
+		float newWeight = score.getScore() + weight; 
+		score.setScore(newWeight);
 	}
 }
