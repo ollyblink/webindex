@@ -1,9 +1,9 @@
 package rest.dao;
 
+import index.girindex.utils.girtexttransformation.informationextractiontools.GermanTextInformationExtractor;
+import index.girindex.utils.girtexttransformation.informationextractiontools.ITextInformationExtractor;
+import index.girindex.utils.girtexttransformation.informationextractiontools.MockTextInformationExtractor;
 import index.textindex.implementations.ITextIndex;
-import index.textindex.utils.texttransformation.GermanTextTokenizer;
-import index.textindex.utils.texttransformation.ITextTokenizer;
-import index.textindex.utils.texttransformation.MockTextTokenizer;
 import index.utils.Ranking;
 import index.utils.query.TextIndexQuery;
 import testutils.DBInitializer;
@@ -17,7 +17,7 @@ public enum IndexDao {
 
 	private ITextIndex index;
 	private DBDataManager dbDataProvider;
-	private ITextTokenizer tokenizer;
+	private ITextInformationExtractor tokenizer;
 	private static final int QUEUE_SIZE = 5002;
 
 	private IndexDao() {
@@ -29,7 +29,7 @@ public enum IndexDao {
 
 		AbstractDBConnector db = new PGDBConnector(host, port, database, user, password);
 		DBTablesManager dbManager = new DBTablesManager(db);
-		this.tokenizer = new GermanTextTokenizer();
+		this.tokenizer = new GermanTextInformationExtractor();
 		this.dbDataProvider = new DBDataManager(dbManager, tokenizer, QUEUE_SIZE);
 		this.index = null;
 	}
@@ -62,7 +62,7 @@ public enum IndexDao {
 	}
 
 	public static void main(String[] args) {
-		MockTextTokenizer tokenizer = new MockTextTokenizer();
+		MockTextInformationExtractor tokenizer = new MockTextInformationExtractor();
 		String[] docs = { "To do is to be. To be is to do.", "To be or not to be. I am what I am.", "I think therefore I am. Do be do be do.",
 				"Do do do, da da da. Let it be, let it be." };
 		

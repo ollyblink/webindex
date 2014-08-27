@@ -1,17 +1,16 @@
 package utils.dbcrud;
 
+import index.girindex.utils.girtexttransformation.informationextractiontools.ITextInformationExtractor;
+import index.girindex.utils.girtexttransformation.informationextractiontools.MockTextInformationExtractor;
 import index.spatialindex.utils.GeometryConverter;
-import index.spatialindex.utils.Location;
-import index.spatialindex.utils.SpatialIndexDocumentMetaData;
-import index.spatialindex.utils.SpatialScoreTriple;
+import index.spatialindex.utils.SpatialDocument;
 import index.textindex.implementations.ITextIndex;
 import index.textindex.implementations.RAMTextOnlyIndex;
 import index.textindex.utils.Term;
 import index.textindex.utils.TermDocs;
-import index.textindex.utils.texttransformation.ITextTokenizer;
-import index.textindex.utils.texttransformation.MockTextTokenizer;
 import index.utils.Document;
 import index.utils.SimpleIndexDocument;
+import index.utils.SpatialScore;
 import index.utils.identifers.TermDocsIdentifier;
 import index.utils.indexmetadata.OverallTextIndexMetaData;
 import index.utils.indexmetadata.TextIndexMetaData;
@@ -38,7 +37,8 @@ import utils.dbconnection.AbstractDBConnector;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
- * Implements all the database indexing and access methods used by the text and spatial indexes. Does the whole logic of the database. Uses a DBTablesManager to initialise and drop tables.
+ * Implements all the database indexing and access methods used by the text and spatial indexes. Does the whole logic of the database. Uses a
+ * DBTablesManager to initialise and drop tables.
  * 
  * @author rsp
  *
@@ -49,7 +49,7 @@ public class DBDataManager implements IDataProvider {
 	private BlockingQueue<String> documentQueue;
 	private DocumentConsumer consumer;
 	private boolean indexIsRunning;
-	private ITextTokenizer tokenizer;
+	private ITextInformationExtractor tokenizer;
 
 	private final class DocumentConsumer implements Runnable {
 
@@ -106,7 +106,7 @@ public class DBDataManager implements IDataProvider {
 
 	}
 
-	public DBDataManager(DBTablesManager dbManager, ITextTokenizer tokenizer, int queueSize) {
+	public DBDataManager(DBTablesManager dbManager, ITextInformationExtractor tokenizer, int queueSize) {
 		this.dbTablesManager = dbManager;
 		this.tokenizer = tokenizer;
 		this.indexIsRunning = true;
@@ -128,7 +128,8 @@ public class DBDataManager implements IDataProvider {
 			ResultSet r = statement.executeQuery();
 
 			while (r.next()) {
-				TermDocs td = new TermDocs(r.getString(1), r.getLong(2), r.getInt(3), r.getFloat(4), r.getFloat(5), r.getFloat(6), r.getFloat(7), r.getFloat(8));
+				TermDocs td = new TermDocs(r.getString(1), r.getLong(2), r.getInt(3), r.getFloat(4), r.getFloat(5), r.getFloat(6), r.getFloat(7),
+						r.getFloat(8));
 				termDocs.add(td);
 			}
 			statement.close();
@@ -171,7 +172,8 @@ public class DBDataManager implements IDataProvider {
 			PreparedStatement statement = dbTablesManager.getConnection().prepareStatement(sql);
 			ResultSet r = statement.executeQuery();
 			while (r.next()) {
-				Document d = new Document(r.getLong(1), r.getString(2), r.getInt(3), r.getInt(4), r.getInt(5), r.getFloat(6), r.getFloat(7), r.getFloat(8));
+				Document d = new Document(r.getLong(1), r.getString(2), r.getInt(3), r.getInt(4), r.getInt(5), r.getFloat(6), r.getFloat(7),
+						r.getFloat(8));
 				documents.add(d);
 			}
 			statement.close();
@@ -182,16 +184,16 @@ public class DBDataManager implements IDataProvider {
 	}
 
 	@Override
-	public ArrayList<Location> getLocations() {
-		ArrayList<Location> locations = new ArrayList<>();
+	public ArrayList<SpatialDocument> getLocations() {
+		ArrayList<SpatialDocument> locations = new ArrayList<>();
 		String sql = "select * from locations";
 		try {
 			PreparedStatement statement = dbTablesManager.getConnection().prepareStatement(sql);
 			ResultSet r = statement.executeQuery();
 			while (r.next()) {
-				Location l = null;
+				SpatialDocument l = null;
 				try {
-					l = new Location(r.getLong(1), GeometryConverter.convertPostGisToJTS((PGgeometry) r.getObject(2)));
+					l = new SpatialDocument(r.getLong(1), GeometryConverter.convertPostGisToJTS((PGgeometry) r.getObject(2)));
 				} catch (NoSuchObjectException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -213,7 +215,8 @@ public class DBDataManager implements IDataProvider {
 			PreparedStatement statement = dbTablesManager.getConnection().prepareStatement(sql);
 			ResultSet r = statement.executeQuery();
 			while (r.next()) {
-				metaData = new OverallTextIndexMetaData(r.getFloat(2), r.getFloat(3), r.getFloat(4), r.getFloat(5), r.getFloat(6), r.getFloat(7), r.getInt(8));
+				metaData = new OverallTextIndexMetaData(r.getFloat(2), r.getFloat(3), r.getFloat(4), r.getFloat(5), r.getFloat(6), r.getFloat(7),
+						r.getInt(8));
 			}
 			statement.close();
 		} catch (SQLException e) {
@@ -254,13 +257,17 @@ public class DBDataManager implements IDataProvider {
 	private void addDocument(final String text) {
 		String transformedText = text.replace("´", "'");
 
-		Map<Term, Integer> termFreqs = tokenizer.transform(transformedText);
+		Map<Term, Integer> termFreqs = tokenizer.fullTransformation(transformedText);
+		
+		
 		try {
 			PreparedStatement termInsertion = dbTablesManager.getConnection().prepareStatement("insert into terms(id) values(?);");
-			PreparedStatement originalTermInsertion = dbTablesManager.getConnection().prepareStatement("insert into original_terms(original_term, termid) values(?,?);");
-			PreparedStatement documentInsertion = dbTablesManager.getConnection()
-					.prepareStatement("insert into documents(fulltext,size_in_bytes,raw_nr_of_words,indexed_nr_of_terms) values(?,?,?,?);");
-			PreparedStatement termInDocInsertion = dbTablesManager.getConnection().prepareStatement("insert into term_docs(termid, docid, fij, doc_tf1, doc_tf2_3) values (?,?,?,?,?)");
+			PreparedStatement originalTermInsertion = dbTablesManager.getConnection().prepareStatement(
+					"insert into original_terms(original_term, termid) values(?,?);");
+			PreparedStatement documentInsertion = dbTablesManager.getConnection().prepareStatement(
+					"insert into documents(fulltext,size_in_bytes,raw_nr_of_words,indexed_nr_of_terms) values(?,?,?,?);");
+			PreparedStatement termInDocInsertion = dbTablesManager.getConnection().prepareStatement(
+					"insert into term_docs(termid, docid, fij, doc_tf1, doc_tf2_3) values (?,?,?,?,?)");
 
 			insertDocument(transformedText, new ArrayList<>(termFreqs.keySet()), documentInsertion);
 
@@ -272,6 +279,31 @@ public class DBDataManager implements IDataProvider {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Used by spatial indexes
+	 * 
+	 * @param dFPs
+	 * @throws SQLException
+	 * @throws NoSuchObjectException
+	 */
+	public void insertLocation(List<SpatialDocument> dFPs) throws SQLException, NoSuchObjectException {
+		if (dFPs == null) {
+			return;
+		} else {
+			if (dbTablesManager.getConnector().tableExists("locations")) {
+				String sql = "Insert into locations(docid, geometry) values (?,?);";
+				PreparedStatement statement = dbTablesManager.getConnection().prepareStatement(sql);
+				for (SpatialDocument dFP : dFPs) {
+					statement.setLong(1, dFP.getDocid().getDocId());
+					statement.setObject(2, GeometryConverter.convertJTStoPostGis(dFP.getDocumentFootprint()));
+					statement.executeUpdate();
+				}
+			} else {
+				System.err.println("IndexDocumentProvider::storePersistently::could not insert, \"locations\" table does not exist.");
+			}
 		}
 	}
 
@@ -329,7 +361,8 @@ public class DBDataManager implements IDataProvider {
 		}
 	}
 
-	private void insertTermDocs(String transformedText, Map<Term, Integer> termFreqs, PreparedStatement termInDocInsertion, Term indexTerm) throws SQLException {
+	private void insertTermDocs(String transformedText, Map<Term, Integer> termFreqs, PreparedStatement termInDocInsertion, Term indexTerm)
+			throws SQLException {
 		Statement statement = dbTablesManager.getConnection().createStatement();
 		ResultSet lastDocId = statement.executeQuery("select id from documents where fulltext like '%" + transformedText + "%';");
 		long docId = 0;
@@ -339,7 +372,8 @@ public class DBDataManager implements IDataProvider {
 		statement.close();
 
 		int freq = termFreqs.get(indexTerm);
-		if (!alreadyIndexed("select count(*) from term_docs where termid = '" + indexTerm.getIndexedTerm().getTermId() + "' AND docid='" + docId + "';")) {
+		if (!alreadyIndexed("select count(*) from term_docs where termid = '" + indexTerm.getIndexedTerm().getTermId() + "' AND docid='" + docId
+				+ "';")) {
 			termInDocInsertion.setString(1, indexTerm.getIndexedTerm().getTermId());
 			termInDocInsertion.setLong(2, docId);
 			termInDocInsertion.setInt(3, freq);
@@ -415,13 +449,15 @@ public class DBDataManager implements IDataProvider {
 			String N = "(select count(id) from documents)";
 			if (!alreadyIndexed("select count(*) from metadata;")) {
 				metadataSql = dbTablesManager.getConnection().prepareStatement(
-						"insert into metadata(" + "avg_doc_length_size_in_bytes, " + "avg_doc_length_raw_nr_of_words," + "avg_doc_length_indexed_nr_of_words," + "N" + ") values("
-								+ avgDocLengthSizeInBytesSQL + "," + avgDocLengthRawNrOfWords + "," + avgDocLengthIndexedNrOfTerms + ", " + N + ");");
+						"insert into metadata(" + "avg_doc_length_size_in_bytes, " + "avg_doc_length_raw_nr_of_words,"
+								+ "avg_doc_length_indexed_nr_of_words," + "N" + ") values(" + avgDocLengthSizeInBytesSQL + ","
+								+ avgDocLengthRawNrOfWords + "," + avgDocLengthIndexedNrOfTerms + ", " + N + ");");
 
 			} else {
 				metadataSql = dbTablesManager.getConnection().prepareStatement(
-						"update metadata set " + "avg_doc_length_size_in_bytes = " + avgDocLengthSizeInBytesSQL + ", " + "avg_doc_length_raw_nr_of_words = " + avgDocLengthRawNrOfWords + ","
-								+ "avg_doc_length_indexed_nr_of_words = " + avgDocLengthIndexedNrOfTerms + "," + "N = " + N + " where id=1");
+						"update metadata set " + "avg_doc_length_size_in_bytes = " + avgDocLengthSizeInBytesSQL + ", "
+								+ "avg_doc_length_raw_nr_of_words = " + avgDocLengthRawNrOfWords + "," + "avg_doc_length_indexed_nr_of_words = "
+								+ avgDocLengthIndexedNrOfTerms + "," + "N = " + N + " where id=1");
 
 			}
 
@@ -439,8 +475,8 @@ public class DBDataManager implements IDataProvider {
 			String docVectorNorm3 = "(select avg(doc_vectornorm3) from documents)";
 
 			PreparedStatement metadataSql = dbTablesManager.getConnection().prepareStatement(
-					"update metadata set " + "avg_doc_length_vectornorm1 = " + docVectorNorm1 + "," + "avg_doc_length_vectornorm2 = " + docVectorNorm2 + "," + "avg_doc_length_vectornorm3 = "
-							+ docVectorNorm3);
+					"update metadata set " + "avg_doc_length_vectornorm1 = " + docVectorNorm1 + "," + "avg_doc_length_vectornorm2 = "
+							+ docVectorNorm2 + "," + "avg_doc_length_vectornorm3 = " + docVectorNorm3);
 			metadataSql.execute();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -491,95 +527,21 @@ public class DBDataManager implements IDataProvider {
 	}
 
 	/*
-	 * END Text only retrieval
+	 * END Text only
 	 */
 
 	/*
-	 * Spatial only retrieval
+	 * Spatial only
 	 */
-	/**
-	 * Used by spatial indexes. this method returns all docs if the docids parameter is not specified or null. Else only returns the docs specified.
-	 * 
-	 * @param docids
-	 * @return
-	 */
-	public List<SpatialIndexDocumentMetaData> getDocumentLocations(Long... docids) {
-		if (dbTablesManager.getConnector().tableExists("locations")) {
-			String sql = "Select l.docid, l.geometry from locations l " + getWhereClause("l", docids);
-			return new ArrayList<>(retrieveDocuments(sql).values());
-		}
-		return new ArrayList<>();
-	}
 
-	/**
-	 * Used by spatial indexes
-	 *
-	 * @param ranking
-	 * @return
-	 */
-	public ArrayList<Document> getDocumentIdAndFulltext(List<SpatialScoreTriple> ranking) {
-		HashMap<Long, Document> indexDocuments = new HashMap<Long, Document>();
-		try {
-			PreparedStatement statement = dbTablesManager.getConnection().prepareStatement("Select d.id, d.fulltext from documents d " + getWhereClause(ranking));
-			ResultSet set = statement.executeQuery();
-			while (set.next()) {
-				long id = set.getLong(1);
-				Document document = indexDocuments.get(id);
-				if (document == null) {
-					document = new Document(set.getLong(1), set.getString(2));
-					indexDocuments.put(id, document);
-				}
-				for (SpatialScoreTriple data : ranking) {
-					if (data.getDocid() == id) {
-						document.getSpatialIndexDocumentMetaData().addSpatialScore(data.getGeometry(), data.getScore());
-					}
-				}
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return new ArrayList<>(indexDocuments.values());
-	}
-
-	/**
-	 * Used by spatial indexes
-	 * 
-	 * @param dFPs
-	 */
-	public void storePersistently(SpatialIndexDocumentMetaData... dFPs) {
-		if (dFPs == null) {
-			return;
-		} else {
-			if (dbTablesManager.getConnector().tableExists("locations")) {
-				String sql = "Insert into locations(docid, geometry) values (?,?);";
-				try {
-					PreparedStatement statement = dbTablesManager.getConnection().prepareStatement(sql);
-					for (SpatialIndexDocumentMetaData docLoc : dFPs) {
-						List<Geometry> geometries = docLoc.getGeometries();
-						for (Geometry geometry : geometries) {
-							statement.setLong(1, docLoc.getDocid());
-							statement.setObject(2, GeometryConverter.convertJTStoPostGis(geometry));
-							statement.executeUpdate();
-						}
-					}
-				} catch (SQLException | NoSuchObjectException e) {
-					e.printStackTrace();
-				}
-			} else {
-				System.err.println("IndexDocumentProvider::storePersistently::could not insert, locations does not exist.");
-			}
-		}
-
-	}
-
-	private String getWhereClause(List<SpatialScoreTriple> dFPs) {
+	private String getWhereClause(List<SpatialScore> dFPs) {
 
 		if (dFPs == null || dFPs.size() == 0) {
 			return ";";
 		}
 		int counter = 0;
 		String whereClause = "where ";
-		for (SpatialScoreTriple dFP : dFPs) {
+		for (SpatialScore dFP : dFPs) {
 			if (++counter == dFPs.size()) {
 				whereClause += "d.id=" + dFP.getDocid() + ";";
 			} else {
@@ -589,14 +551,14 @@ public class DBDataManager implements IDataProvider {
 		return whereClause;
 	}
 
-	private String getWhereClause(String tableName, Long... ids) {
-		if (ids == null || ids.length == 0) {
+	private String getWhereClause(String tableName, List<Long> ids) {
+		if (ids == null || ids.size() == 0) {
 			return ";";
 		}
 		int counter = 0;
 		String whereClause = " where ";
 		for (Long id : ids) {
-			if (++counter == ids.length) {
+			if (++counter == ids.size()) {
 				whereClause += tableName + ".id=" + id + ";";
 			} else {
 				whereClause += tableName + ".id=" + id + " OR ";
@@ -605,61 +567,40 @@ public class DBDataManager implements IDataProvider {
 		return whereClause;
 	}
 
-	private Map<Long, SpatialIndexDocumentMetaData> retrieveDocuments(String sql) {
-		Map<Long, SpatialIndexDocumentMetaData> docLocs = new HashMap<>();
-		try {
-			Statement statement = dbTablesManager.getConnection().createStatement();
-			ResultSet set = statement.executeQuery(sql);
-			while (set.next()) {
-				long id = set.getLong(1);
-				SpatialIndexDocumentMetaData docLoc = docLocs.get(id);
-				if (docLoc == null) {
-					docLoc = new SpatialIndexDocumentMetaData(set.getLong(1));
-					docLocs.put(id, docLoc);
+	@Override
+	public ArrayList<SpatialDocument> getSpatialDocuments(List<Long> docids) {
+		if (!(docids == null || docids.size() == 0)) {
+			if (dbTablesManager.getConnector().tableExists("locations")) {
+				try {
+					String sql = "Select l.docid, l.geometry from locations l " + getWhereClause("l", docids);
+					return retrieveDocuments(sql);
+				} catch (SQLException | NoSuchObjectException e) {
+					e.printStackTrace();
+					return new ArrayList<>();
 				}
-				docLoc.addGeometry(GeometryConverter.convertPostGisToJTS((PGgeometry) set.getObject(2)));
+			} else {
+				System.err.println("IndexDocumentProvider::getSpatialDocuments::could not retrieve, \"locations\" table does not exist.");
+				return new ArrayList<>();
 			}
-			statement.close();
-		} catch (SQLException | NoSuchObjectException e) {
-			e.printStackTrace();
+		} else {
+			return new ArrayList<>();
 		}
-		return docLocs;
 	}
 
-	/**
-	 * If ids is null or empty, all documents are retrieved.
-	 *
-	 * @param ids
-	 * @return
-	 */
-	public List<SimpleIndexDocument> getDocTermLocationKeyValues(Long... ids) {
-		Map<Long /* doc id */, SimpleIndexDocument> documents = new HashMap<Long, SimpleIndexDocument>();
+	private ArrayList<SpatialDocument> retrieveDocuments(String sql) throws NoSuchObjectException, SQLException {
+		ArrayList<SpatialDocument> spatialDocuments = new ArrayList<>();
 
-		try {
-			PreparedStatement statement = dbTablesManager.getConnection().prepareStatement(
-					"Select td.termid, td.docid, l.geometry from term_docs td inner join locations l on td.docid = l.docid" + getWhereClause("td", ids));
-
-			ResultSet set = statement.executeQuery();
-			while (set.next()) {
-				String term = set.getString(1);
-				Long docid = set.getLong(2);
-				Geometry documentFootPrint = GeometryConverter.convertPostGisToJTS((PGgeometry) set.getObject(0));
-
-				SimpleIndexDocument document = documents.get(docid);
-				if (document == null) {
-					document = new SimpleIndexDocument(docid, new HashSet<>(), new HashSet<>());
-					documents.put(docid, document);
-				}
-				document.addTerm(term);
-				document.addDocumentFootprint(documentFootPrint);
-
-			}
-
-		} catch (SQLException | NoSuchObjectException e) {
-			e.printStackTrace();
+		Statement statement = dbTablesManager.getConnection().createStatement();
+		ResultSet set = statement.executeQuery(sql);
+		while (set.next()) {
+			Long id = set.getLong(1);
+			Geometry documentFootprint = GeometryConverter.convertPostGisToJTS((PGgeometry) set.getObject(2));
+			SpatialDocument spatialDocument = new SpatialDocument(id, documentFootprint);
+			spatialDocuments.add(spatialDocument);
 		}
+		statement.close();
 
-		return new ArrayList<>(documents.values());
+		return spatialDocuments;
 	}
 
 	//
@@ -692,9 +633,10 @@ public class DBDataManager implements IDataProvider {
 	}
 
 	public static HashMap<Term, List<Document>> createIndexableDocuments() {
-		String[] d = { "To do is to be. To be is to do.", "To be or not to be. I am what I am.", "I think therefore I am. Do be do be do.", "Do do do, da da da. Let it be, let it be." };
+		String[] d = { "To do is to be. To be is to do.", "To be or not to be. I am what I am.", "I think therefore I am. Do be do be do.",
+				"Do do do, da da da. Let it be, let it be." };
 
-		DBDataManager dbDataManager = DBInitializer.initTestTextDB(new MockTextTokenizer(), DBInitializer.getTestDBManager(), d);
+		DBDataManager dbDataManager = DBInitializer.initTestTextDB(new MockTextInformationExtractor(), DBInitializer.getTestDBManager(), d);
 		ArrayList<Term> terms = dbDataManager.getTerms();
 		ArrayList<Document> documents = dbDataManager.getDocuments();
 		ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs();
@@ -737,7 +679,8 @@ public class DBDataManager implements IDataProvider {
 		for (TermDocs t : termDocs) {
 			termDocsMeta.put(t.getId(), t);
 		}
-		RAMTextOnlyIndex ramTextOnlyIndex = new RAMTextOnlyIndex(new TextIndexMetaData(termDocsMeta, dbDataManager.getOverallTextIndexMetaData()), null, null);
+		RAMTextOnlyIndex ramTextOnlyIndex = new RAMTextOnlyIndex(new TextIndexMetaData(termDocsMeta, dbDataManager.getOverallTextIndexMetaData()),
+				null, null);
 		ramTextOnlyIndex.addDocuments(documents);
 		return ramTextOnlyIndex;
 	}

@@ -1,5 +1,7 @@
 package index.textindex.implementations;
 
+import index.girindex.utils.girtexttransformation.informationextractiontools.ITextInformationExtractor;
+import index.girindex.utils.girtexttransformation.informationextractiontools.MockTextInformationExtractor;
 import index.textindex.similarities.AbstractTextSimilarity;
 import index.textindex.similarities.ITextSimilarity;
 import index.textindex.similarities.tfidfweighting.DocTFIDFTypes;
@@ -8,8 +10,6 @@ import index.textindex.similarities.tfidfweighting.QueryIDFTypes;
 import index.textindex.similarities.vectorspacemodels.CosineSimilarity;
 import index.textindex.utils.Term;
 import index.textindex.utils.TermDocs;
-import index.textindex.utils.texttransformation.ITextTokenizer;
-import index.textindex.utils.texttransformation.MockTextTokenizer;
 import index.utils.Document;
 import index.utils.Ranking;
 import index.utils.identifers.TermDocsIdentifier;
@@ -29,7 +29,8 @@ import java.util.Map;
  */
 public class RAMTextOnlyIndex implements ITextIndex {
 
-	private static final ITextSimilarity DEFAULT_SIMILARITY = new CosineSimilarity(new Formula3TFStrategy(), QueryIDFTypes.TERM_IDF1, DocTFIDFTypes.DOC_TFIDF3);
+	private static final ITextSimilarity DEFAULT_SIMILARITY = new CosineSimilarity(new Formula3TFStrategy(), QueryIDFTypes.TERM_IDF1,
+			DocTFIDFTypes.DOC_TFIDF3);
 
 	/** Index storing all terms and document occurrence lists */
 	private Map<Term /* Term */, List<Document> /* Document occurrences */> index;
@@ -41,13 +42,13 @@ public class RAMTextOnlyIndex implements ITextIndex {
 	private ITextSimilarity currentSimilarity;
 
 	/** The used tokenizer to analyse the query */
-	private ITextTokenizer tokenizer;
+	private ITextInformationExtractor tokenizer;
 
-	public RAMTextOnlyIndex(TextIndexMetaData indexMetaData, ITextSimilarity currentSimilarity, ITextTokenizer tokenizer) {
+	public RAMTextOnlyIndex(TextIndexMetaData indexMetaData, ITextSimilarity currentSimilarity, ITextInformationExtractor tokenizer) {
 		this.index = new HashMap<>();
-		this.indexMetaData = indexMetaData; 
+		this.indexMetaData = indexMetaData;
 		this.currentSimilarity = (currentSimilarity == null ? DEFAULT_SIMILARITY : currentSimilarity);
-		this.tokenizer = (tokenizer == null ? new MockTextTokenizer() : tokenizer);
+		this.tokenizer = (tokenizer == null ? new MockTextInformationExtractor() : tokenizer);
 	}
 
 	@Override
@@ -85,11 +86,11 @@ public class RAMTextOnlyIndex implements ITextIndex {
 	@Override
 	public Ranking queryIndex(TextIndexQuery query) {
 		// Tokenize query, create terms and calculate term occurrences (fiq) in query
-		HashMap<Term, Integer> queryTermFreqs = tokenizer.transform(query.getTextQuery());
+		HashMap<Term, Integer> queryTermFreqs = tokenizer.fullTransformation(query.getTextQuery());
 		// Retrieve the relevant documents from the index (only those that contain one or more query term)
-		HashMap<Term, List<Document>> relevantDocuments = getAllRelevantDocs(queryTermFreqs.keySet()); 
+		HashMap<Term, List<Document>> relevantDocuments = getAllRelevantDocs(queryTermFreqs.keySet());
 		// Create the correct similarity
-		currentSimilarity = AbstractTextSimilarity.getSimilarity(query.getSimilarity());  
+		currentSimilarity = AbstractTextSimilarity.getSimilarity(query.getSimilarity());
 		// Calculate the similarity between the query and the documents and create a ranked list of documents
 		Ranking ranking = currentSimilarity.calculateSimilarity(query, queryTermFreqs, relevantDocuments, indexMetaData, query.isIntersected());
 
@@ -100,7 +101,7 @@ public class RAMTextOnlyIndex implements ITextIndex {
 		HashMap<Term, List<Document>> relevantDocuments = new HashMap<>();
 		for (Term term : terms) {
 			Term actualTerm = findActualTerm(term);
-			List<Document> docs = index.get(actualTerm); 
+			List<Document> docs = index.get(actualTerm);
 			if (docs != null) {
 				relevantDocuments.put(actualTerm, docs);
 			}
@@ -154,7 +155,7 @@ public class RAMTextOnlyIndex implements ITextIndex {
 		HashMap<Term, List<Document>> subset = new HashMap<Term, List<Document>>();
 		for (Term term : terms) {
 			List<Document> docs = index.get(term);
-			if (docs != null) { 
+			if (docs != null) {
 				Term actualTerm = findActualTerm(term);
 				subset.put(actualTerm, docs);
 			}

@@ -1,6 +1,6 @@
 package index.girindex;
 
-import index.spatialindex.ISpatialIndex;
+import index.spatialindex.implementations.ISpatialIndex;
 import index.textindex.implementations.ITextIndex;
 import index.utils.Ranking;
 import index.utils.query.SpatialIndexQuery;

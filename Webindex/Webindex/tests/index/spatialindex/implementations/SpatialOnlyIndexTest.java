@@ -1,7 +1,7 @@
 package index.spatialindex.implementations;
 
 import static org.junit.Assert.assertTrue;
-import index.textindex.utils.texttransformation.MockTextTokenizer;
+import index.girindex.utils.girtexttransformation.informationextractiontools.MockTextInformationExtractor;
 import index.utils.Ranking;
 import index.utils.Score;
 import index.utils.query.SpatialIndexQuery;
@@ -26,7 +26,7 @@ public class SpatialOnlyIndexTest {
 			"Many people died in World War II when Berlin was bombed by the allies"
 		};
 		dbManager = DBInitializer.getTestDBManager();
-		DBInitializer.initTestTextDB(new MockTextTokenizer(), dbManager, docs);
+		DBInitializer.initTestTextDB(new MockTextInformationExtractor(), dbManager, docs);
 		spatialOnlyIndex = DBInitializer.initSpatialTestDB(dbManager, docs);
 		
 	}

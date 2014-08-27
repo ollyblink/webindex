@@ -1,11 +1,11 @@
 package index.spatialindex.similarities;
 
-import index.spatialindex.utils.SpatialScoreTriple;
+import index.utils.SpatialScore;
 
 import java.util.List;
 
 import com.vividsolutions.jts.geom.Geometry;
 
 public interface ISpatialRelationship {
-	public List<SpatialScoreTriple> calculateSimilarity(final List<? extends Geometry> queryFootPrints, final List<SpatialScoreTriple> documentFootPrints);
+	public List<SpatialScore> calculateSimilarity(final List<? extends Geometry> queryFootPrints, final List<SpatialScore> documentFootPrints);
 }

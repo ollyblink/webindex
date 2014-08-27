@@ -26,12 +26,25 @@ public interface ITextIndex {
 	 * @param texts
 	 */
 	public void addDocuments(Map<Term, List<Document>> documents);
-       
 
+	/**
+	 * Query the text index with a textual input
+	 * 
+	 * @param query
+	 * @return
+	 */
 	public Ranking queryIndex(TextIndexQuery query);
 
+	/**
+	 * Sets the current similarity used to evaluate docs agains a query. See implementations of {@link ITextSimilarity} for further information
+	 * 
+	 * @param similarity
+	 */
 	public void setSimilarity(ITextSimilarity similarity);
 
+	/**
+	 * Empties the current index. no terms/docs in the index anymore
+	 */
 	public void clear();
 
 	/**
@@ -63,23 +76,25 @@ public interface ITextIndex {
 	 * @return
 	 */
 	public List<Document> getDocumentsFor(Term term);
+
 	/**
 	 * Retrieves a subset of the given index containing both term and documents that term occurs in
+	 * 
 	 * @param terms
 	 * @return
 	 */
 	public HashMap<Term, List<Document>> getSubsetFor(List<Term> terms);
-	
+
 	/**
 	 * Retrieve some meta data used for similarity calculations
+	 * 
 	 * @return
 	 */
 	public TextIndexMetaData getMetaData();
-	
-	
-	
+
 	/**
 	 * Retrieve some meta data used for similarity calculations for a subset of documents and terms
+	 * 
 	 * @return
 	 */
 	public TextIndexMetaData getMetaData(Map<Term, List<Document>> docTerms);

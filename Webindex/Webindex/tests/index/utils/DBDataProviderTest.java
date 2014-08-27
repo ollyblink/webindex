@@ -1,6 +1,6 @@
 package index.utils;
 
-import index.textindex.utils.texttransformation.MockTextTokenizer;
+import index.girindex.utils.girtexttransformation.informationextractiontools.MockTextInformationExtractor;
 
 import java.util.List;
 import java.util.Map;
@@ -30,7 +30,7 @@ public class DBDataProviderTest {
 
 	public static void initDB() {
 
-		MockTextTokenizer tokenizer = new MockTextTokenizer();
+		MockTextInformationExtractor tokenizer = new MockTextInformationExtractor();
 		String[] docs = { "To do is to be. To be is to do.", "To be or not to be. I am what I am.", "I think therefore I am. Do be do be do.", "Do do do, da da da. Let it be, let it be." };
 		 
 		dbManager = DBInitializer.getTestDBManager();

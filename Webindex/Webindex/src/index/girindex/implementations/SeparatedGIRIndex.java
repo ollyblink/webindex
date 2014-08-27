@@ -2,12 +2,12 @@ package index.girindex.implementations;
 
 import index.girindex.AbstractGIRIndex;
 import index.girindex.combinationstrategy.ICombinationStrategy;
-import index.spatialindex.ISpatialIndex;
-import index.spatialindex.utils.SpatialIndexDocumentMetaData;
+import index.girindex.utils.girtexttransformation.informationextractiontools.ITextInformationExtractor;
+import index.spatialindex.implementations.ISpatialIndex;
+import index.spatialindex.utils.SpatialDocument;
 import index.spatialindex.utils.SpatialIndexMetaData;
 import index.textindex.implementations.ITextIndex;
 import index.textindex.utils.TextIndexMetaData;
-import index.textindex.utils.texttransformation.ITextTokenizer;
 import index.utils.Ranking;
 import index.utils.query.SpatialIndexQuery;
 import index.utils.query.TextIndexQuery;
@@ -52,7 +52,7 @@ public class SeparatedGIRIndex extends AbstractGIRIndex {
 	}
 
 	@Override
-	public ITextTokenizer getTokenizer() {
+	public ITextInformationExtractor getTokenizer() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -70,7 +70,7 @@ public class SeparatedGIRIndex extends AbstractGIRIndex {
 	}
 
 	@Override
-	public void addLocations(SpatialIndexDocumentMetaData... documentFootPrints) {
+	public void addDocumentFootprint(SpatialDocument... documentFootPrints) {
 		// TODO Auto-generated method stub
 		
 	}

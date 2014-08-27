@@ -1,54 +1,78 @@
 package index.spatialindex.implementations;
 
-import index.spatialindex.AbstractSpatialIndex;
-import index.spatialindex.utils.SpatialIndexDocumentMetaData;
-import index.spatialindex.utils.SpatialIndexMetaData;
-import index.spatialindex.utils.SpatialIndexUtils;
-import index.spatialindex.utils.SpatialScoreTriple;
+import index.spatialindex.similarities.ISpatialRelationship;
+import index.spatialindex.similarities.SpatialRelationshipFactory;
+import index.spatialindex.utils.SpatialDocument;
+import index.spatialindex.utils.georeferencing.LocationProvider;
 import index.utils.Ranking;
+import index.utils.Score;
+import index.utils.SpatialScore;
 import index.utils.query.SpatialIndexQuery;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-
-import utils.dbcrud.DBDataManager;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.index.quadtree.Quadtree;
 
-public class SpatialOnlyIndex extends AbstractSpatialIndex {
+public class SpatialOnlyIndex implements ISpatialIndex {
 
-	public SpatialOnlyIndex(Quadtree quadTree, DBDataManager docProvider, Long... docids) {
-		super(quadTree, docProvider, docids);
-	}
+	private Quadtree index;
 
-	 
 	@Override
 	public Ranking queryIndex(SpatialIndexQuery query) {
+		// Define spatial relationship algorithm
+		ISpatialRelationship spatRelAlgorithm = SpatialRelationshipFactory.create(query.getSpatialRelationship());
 
-		return SpatialIndexUtils.performSpatialQuery(query, quadTree,docProvider);
+		// =======================================================================================
+		// Querying spatial index
+		// =======================================================================================
+		// Get spatial location geometry
+		ArrayList<Geometry> queryFootPrints = LocationProvider.INSTANCE.retrieveLocations(query.getLocation());
+		query.setQueryFootPrints(queryFootPrints);
+
+		// Filter stage
+		List<SpatialScore> documentFootPrints = new ArrayList<SpatialScore>();
+		for (Geometry qFP : queryFootPrints) {
+			@SuppressWarnings("unchecked")
+			List<SpatialScore> queryResult = index.query(qFP.getEnvelopeInternal());
+			documentFootPrints.addAll(queryResult);
+		}
+		// Algorithm stage: calculate score for each found geometry
+		List<SpatialScore> results = spatRelAlgorithm.calculateSimilarity(queryFootPrints, documentFootPrints);
+		// =======================================================================================
+		// End querying spatial index
+		// =======================================================================================
+
+		ArrayList<Score> scores = new ArrayList<Score>();
+		for (SpatialScore sST : results) {
+			scores.add(new Score(sST.getDocid(), sST.getScore()));
+		}
+		Collections.sort(scores);
+		// Create the spatial ranking
+		Ranking ranking = new Ranking(scores);
+
+		return ranking;
 	}
-
-
-	
-
-	
+ 
 
 	@Override
-	public SpatialIndexMetaData getSpatialMetaData() {
-		//TODO 
-		throw new NoSuchMethodError();
+	public void addDocument(SpatialDocument spatialDocument) {
+		if (spatialDocument == null || spatialDocument.getDocumentFootprint() == null) {
+			return;
+		}
+		index.insert(spatialDocument.getDocumentFootprint().getEnvelopeInternal(), spatialDocument);
 	}
 
 	@Override
-	protected void fillQuadtree(Long... docids) {
-		List<SpatialIndexDocumentMetaData> docLocs = docProvider.getDocumentLocations(docids);
-		for (SpatialIndexDocumentMetaData docLoc : docLocs) {
-			List<Geometry> geometries = docLoc.getGeometries();
-			for (Geometry geometry : geometries) {
-				quadTree.insert(geometry.getEnvelopeInternal(), new SpatialScoreTriple(docLoc.getDocid(), geometry, 0f));
-			}
+	public void addDocuments(List<SpatialDocument> spatialDocuments) {
+		if (spatialDocuments == null || spatialDocuments.size() == 0) {
+			return;
+		} 
+		for (SpatialDocument sD : spatialDocuments) {
+			addDocument(sD);
 		}
 	}
 
- 
 }

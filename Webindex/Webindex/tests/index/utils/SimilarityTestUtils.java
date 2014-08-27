@@ -1,8 +1,8 @@
 package index.utils;
 
+import index.girindex.utils.girtexttransformation.informationextractiontools.MockTextInformationExtractor;
 import index.textindex.implementations.ITextIndex;
 import index.textindex.utils.Term;
-import index.textindex.utils.texttransformation.MockTextTokenizer;
 import index.utils.indexmetadata.TextIndexMetaData;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ public class SimilarityTestUtils {
 		index = DBDataManager.getTestIndex();
 		
 		query = "to do";
-		queryTermFreqs = new MockTextTokenizer().transform(query);
+		queryTermFreqs = new MockTextInformationExtractor().fullTransformation(query);
 		terms = new ArrayList<>(queryTermFreqs.keySet());
 		docSubset = index.getSubsetFor(terms); 
 		metaData = index.getMetaData(docSubset);

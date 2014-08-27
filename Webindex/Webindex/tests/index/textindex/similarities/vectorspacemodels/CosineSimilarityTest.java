@@ -37,9 +37,9 @@ public class CosineSimilarityTest {
 		values.put(2l, 0.408f);
 		values.put(3l, 0.118f);
 		values.put(4l, 0.058f);
-		for (Score res : hits) {
-			System.out.println(res);
-		}
+//		for (Score res : hits) {
+//			System.out.println(res);
+//		}
 		for (Score res : hits) {
 			assertEquals(values.get(res.getDocid()), res.getScore(), 0.001f);
 		}

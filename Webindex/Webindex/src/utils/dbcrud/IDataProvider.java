@@ -1,6 +1,6 @@
 package utils.dbcrud;
 
-import index.spatialindex.utils.Location;
+import index.spatialindex.utils.SpatialDocument;
 import index.textindex.utils.Term;
 import index.textindex.utils.TermDocs;
 import index.utils.Document;
@@ -18,13 +18,24 @@ public interface IDataProvider {
 	 * @param pureText
 	 */
 	public void addDocumentDeferred(final String pureText); 
+	 
 	
 	//Querying tables
+	//Text index querying
 	public ArrayList<TermDocs> getTermDocs();
 	public ArrayList<Term> getTerms();
 	public ArrayList<Document> getDocuments();
-	public ArrayList<Location> getLocations();
+	public ArrayList<SpatialDocument> getLocations();
 	public OverallTextIndexMetaData getOverallTextIndexMetaData();
+	
+	//Spatial index querying
+	/**
+	 * Used by spatial indexes. this method returns all docs if the docids parameter is not specified or null. Else only returns the docs specified.
+	 * 
+	 * @param docids
+	 * @return
+	 */
+	public ArrayList<SpatialDocument> getSpatialDocuments(List<Long> docids);
 	
 	//Closing any opened connection
 	public void close();

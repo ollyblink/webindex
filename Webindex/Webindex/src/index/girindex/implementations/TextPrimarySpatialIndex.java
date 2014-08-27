@@ -2,13 +2,13 @@ package index.girindex.implementations;
 
 import index.girindex.AbstractGIRIndex;
 import index.girindex.combinationstrategy.ICombinationStrategy;
-import index.spatialindex.utils.SpatialIndexDocumentMetaData;
+import index.girindex.utils.girtexttransformation.informationextractiontools.ITextInformationExtractor;
+import index.spatialindex.utils.SpatialDocument;
 import index.spatialindex.utils.SpatialIndexMetaData;
 import index.spatialindex.utils.SpatialIndexUtils;
 import index.textindex.utils.Term;
 import index.textindex.utils.TextIndexMetaData;
 import index.textindex.utils.TextIndexUtils;
-import index.textindex.utils.texttransformation.ITextTokenizer;
 import index.utils.Ranking;
 import index.utils.Score;
 import index.utils.SimpleIndexDocument;
@@ -32,9 +32,9 @@ public class TextPrimarySpatialIndex extends AbstractGIRIndex {
 	 * The actual index of this implementation An in memory index represented by a Map<K,V>.
 	 */
 	private Map<String /* Term */, Quadtree /* Spatial footprints */> index;
-	protected ITextTokenizer tokenizer;
+	protected ITextInformationExtractor tokenizer;
 
-	public TextPrimarySpatialIndex(DBDataManager dbDataProvider, ITextTokenizer tokenizer, ICombinationStrategy combinationStrategy) {
+	public TextPrimarySpatialIndex(DBDataManager dbDataProvider, ITextInformationExtractor tokenizer, ICombinationStrategy combinationStrategy) {
 		super(dbDataProvider, combinationStrategy);
 		this.tokenizer = tokenizer;
 		fillInMemoryIndex();
@@ -78,7 +78,7 @@ public class TextPrimarySpatialIndex extends AbstractGIRIndex {
 	public Ranking queryIndex(boolean isIntersected, TextIndexQuery textQuery, SpatialIndexQuery spatialQuery) {
 
 		// Get all the terms in the query
-		HashMap<Term, Integer> termFreqs = tokenizer.transform(textQuery.getTextQuery());
+		HashMap<Term, Integer> termFreqs = tokenizer.fullTransformation(textQuery.getTextQuery());
 
 		// Get all the documents' spatial indexes for those terms
 		HashMap<Term, Quadtree> documentTrees = new HashMap<>();
@@ -147,7 +147,7 @@ public class TextPrimarySpatialIndex extends AbstractGIRIndex {
 	}
 
 	@Override
-	public ITextTokenizer getTokenizer() {
+	public ITextInformationExtractor getTokenizer() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -165,7 +165,7 @@ public class TextPrimarySpatialIndex extends AbstractGIRIndex {
 	}
 
 	@Override
-	public void addLocations(SpatialIndexDocumentMetaData... documentFootPrints) {
+	public void addDocumentFootprint(SpatialDocument... documentFootPrints) {
 		// TODO Auto-generated method stub
 		
 	}

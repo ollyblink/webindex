@@ -1,10 +1,10 @@
 package testutils;
 
+import index.girindex.utils.girtexttransformation.informationextractiontools.ITextInformationExtractor;
+import index.girindex.utils.girtexttransformation.informationextractiontools.MockTextInformationExtractor;
 import index.spatialindex.implementations.SpatialOnlyIndex;
-import index.spatialindex.utils.LocationProvider;
-import index.spatialindex.utils.SpatialIndexDocumentMetaData;
-import index.textindex.utils.texttransformation.ITextTokenizer;
-import index.textindex.utils.texttransformation.MockTextTokenizer;
+import index.spatialindex.utils.SpatialDocument;
+import index.spatialindex.utils.georeferencing.LocationProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,9 +17,9 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.index.quadtree.Quadtree;
 
 public class DBInitializer {
-	private static ITextTokenizer tokenizer;
+	private static ITextInformationExtractor tokenizer;
 
-	public static DBDataManager initTestTextDB(MockTextTokenizer tokenizer, DBTablesManager dbManager, String[] docs) {
+	public static DBDataManager initTestTextDB(MockTextInformationExtractor tokenizer, DBTablesManager dbManager, String[] docs) {
 		DBInitializer.tokenizer = tokenizer;
 
 		List<String> documents = new ArrayList<String>();
@@ -54,16 +54,16 @@ public class DBInitializer {
 	public static SpatialOnlyIndex initSpatialTestDB(DBTablesManager dbManager, String[] docs) {
 
 		SpatialOnlyIndex index = new SpatialOnlyIndex(new Quadtree(), new DBDataManager(dbManager, tokenizer, 5000));
-		SpatialIndexDocumentMetaData[] docLocs = new SpatialIndexDocumentMetaData[docs.length];
+		SpatialDocument[] docLocs = new SpatialDocument[docs.length];
 		for (int i = 0; i < docs.length; ++i) {
-			docLocs[i] = new SpatialIndexDocumentMetaData(i + 1);
+			docLocs[i] = new SpatialDocument(i + 1);
 			List<? extends Geometry> geometries = LocationProvider.INSTANCE.retrieveLocations(docs[i]);
 			for (Geometry g : geometries) {
 				docLocs[i].addGeometry(g);
 			}
 
 		}
-		index.addLocations(docLocs);
+		index.addDocumentFootprint(docLocs);
 		return index;
 	}
 }
