@@ -5,8 +5,8 @@ import index.textindex.utils.informationextractiontools.ITextInformationExtracto
 
 public class IndexAndOriginalTokenExtractionStage extends AbstractTextTransformationStage {
 
-	public IndexAndOriginalTokenExtractionStage(ITextInformationExtractor extractor) {
-		super(extractor);
+	public IndexAndOriginalTokenExtractionStage(boolean isShowTransformationEnabled, ITextInformationExtractor extractor) {
+		super(isShowTransformationEnabled,extractor);
 	}
 
 	@Override

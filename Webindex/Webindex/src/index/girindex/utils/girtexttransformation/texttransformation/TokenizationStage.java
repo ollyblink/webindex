@@ -9,9 +9,8 @@ public class TokenizationStage extends AbstractTextTransformationStage {
  
 
 
-	public TokenizationStage(ITextInformationExtractor extractor) {
-		super(extractor);
-		// TODO Auto-generated constructor stub
+	public TokenizationStage(boolean isShowTransformationEnabled, ITextInformationExtractor extractor) {
+		super(isShowTransformationEnabled,extractor);
 	}
 
 	@Override

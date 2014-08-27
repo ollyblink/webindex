@@ -7,8 +7,8 @@ public class StemmingStage extends AbstractTextTransformationStage {
 	 
 	
 	 
-	public StemmingStage(ITextInformationExtractor extractor) {
-		super(extractor); 
+	public StemmingStage(boolean isShowTransformationEnabled, ITextInformationExtractor extractor) {
+		super(isShowTransformationEnabled,extractor);
 	}
 
 	@Override

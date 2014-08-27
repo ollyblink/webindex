@@ -3,6 +3,7 @@ package index.girindex.utils.girtexttransformation.spatialtransformation;
 import index.girindex.utils.girtexttransformation.AbstractTransformationStage;
 import index.girindex.utils.girtexttransformation.ExtractionRequest;
 import index.spatialindex.utils.geolocating.georeferencing.LocationFinder;
+import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,13 +11,12 @@ import java.util.List;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class GeoReferencingStage extends AbstractTransformationStage {
-	private static final String YPM_XML = System.getProperty("user.dir") + "/files/ypm.xml";
-	private static final String USERNAME = "ollyblink";
+	
 
-	private LocationFinder locationFinder;
+	
 
-	public GeoReferencingStage() {
-		this.locationFinder = new LocationFinder(USERNAME, YPM_XML);
+	public GeoReferencingStage(boolean isShowTransformationEnabled ) {
+		super(isShowTransformationEnabled);
 	}
 
 	@Override
@@ -26,13 +26,11 @@ public class GeoReferencingStage extends AbstractTransformationStage {
 		@SuppressWarnings("unchecked")
 		List<String> locations = (List<String>) request.getTransformationStage(precursor.getClass().getSimpleName());
 		for (String location : locations) {
-			foundGeometries.addAll(locationFinder.findLocation(location));
+			foundGeometries.addAll(LocationFinder.INSTANCE.findLocation(location));
 		}
 		this.afterTransformation = foundGeometries;
-
-		for (Geometry location : foundGeometries) {
-			System.out.println(location);
-		}
+ 
+		request.addTransformationStage(getClass().getSimpleName(), foundGeometries);
 		super.handleRequest(request);
 	}
 
@@ -48,10 +46,10 @@ public class GeoReferencingStage extends AbstractTransformationStage {
 		locations.add("Kloten, Switzerland");
 		locations.add("New Jersey");
 		
-		GeoReferencingStage stage = new GeoReferencingStage();
-		stage.setPrecursor(new GeoTaggingStage());
+		GeoReferencingStage stage = new GeoReferencingStage(true);
+		stage.setPrecursor(new GeoTaggingStage(true));
 		ExtractionRequest request = new ExtractionRequest("");
-		request.addTransformationStage(new GeoTaggingStage().getClass().getSimpleName(), locations);
+		request.addTransformationStage(new GeoTaggingStage(true).getClass().getSimpleName(), locations);
 		stage.handleRequest(request);
 	}
 }

@@ -3,7 +3,7 @@ package index.spatialindex.implementations;
 import index.spatialindex.similarities.ISpatialRelationship;
 import index.spatialindex.similarities.SpatialRelationshipFactory;
 import index.spatialindex.utils.SpatialDocument;
-import index.spatialindex.utils.geolocating.georeferencing.LocationProvider;
+import index.spatialindex.utils.geolocating.georeferencing.LocationFinder;
 import index.utils.Ranking;
 import index.utils.Score;
 import index.utils.SpatialScore;
@@ -20,6 +20,9 @@ public class SpatialOnlyIndex implements ISpatialIndex {
 
 	private Quadtree index;
 
+	public SpatialOnlyIndex(){
+		this.index = new Quadtree();
+	}
 	@Override
 	public Ranking queryIndex(SpatialIndexQuery query) {
 		// Define spatial relationship algorithm
@@ -29,29 +32,29 @@ public class SpatialOnlyIndex implements ISpatialIndex {
 		// Querying spatial index
 		// =======================================================================================
 		// Get spatial location geometry
-		ArrayList<Geometry> queryFootPrints = LocationProvider.INSTANCE.retrieveLocations(query.getLocation());
+		ArrayList<Geometry> queryFootPrints = LocationFinder.INSTANCE.findMBR(query.getLocation());
 		query.setQueryFootPrints(queryFootPrints);
 
 		// Filter stage
-		List<SpatialScore> documentFootPrints = new ArrayList<SpatialScore>();
+		List<SpatialDocument> documentFootPrints = new ArrayList<SpatialDocument>();
 		for (Geometry qFP : queryFootPrints) {
 			@SuppressWarnings("unchecked")
-			List<SpatialScore> queryResult = index.query(qFP.getEnvelopeInternal());
+			List<SpatialDocument> queryResult = index.query(qFP.getEnvelopeInternal());
 			documentFootPrints.addAll(queryResult);
 		}
 		// Algorithm stage: calculate score for each found geometry
-		List<SpatialScore> results = spatRelAlgorithm.calculateSimilarity(queryFootPrints, documentFootPrints);
+		ArrayList<? extends Score> results = spatRelAlgorithm.calculateSimilarity(queryFootPrints, documentFootPrints);
 		// =======================================================================================
 		// End querying spatial index
 		// =======================================================================================
 
-		ArrayList<Score> scores = new ArrayList<Score>();
-		for (SpatialScore sST : results) {
-			scores.add(new Score(sST.getDocid(), sST.getScore()));
-		}
-		Collections.sort(scores);
+//		ArrayList<Score> scores = new ArrayList<Score>();
+//		for (SpatialScore sST : results) {
+//			scores.add(new Score(sST.getDocid(), sST.getScore()));
+//		}
+		Collections.sort(results);
 		// Create the spatial ranking
-		Ranking ranking = new Ranking(scores);
+		Ranking ranking = new Ranking(results);
 
 		return ranking;
 	}
@@ -73,6 +76,12 @@ public class SpatialOnlyIndex implements ISpatialIndex {
 		for (SpatialDocument sD : spatialDocuments) {
 			addDocument(sD);
 		}
+	}
+
+
+	@Override
+	public void clear() {
+		index = new Quadtree();
 	}
 
 }

@@ -5,8 +5,8 @@ import index.textindex.utils.informationextractiontools.ITextInformationExtracto
 
 public class StopwordRemovalStage extends AbstractTextTransformationStage {
 
-	public StopwordRemovalStage(ITextInformationExtractor extractor) {
-		super(extractor);
+	public StopwordRemovalStage(boolean isShowTransformationEnabled, ITextInformationExtractor extractor) {
+		super(isShowTransformationEnabled,extractor);
 	}
 
 	@Override

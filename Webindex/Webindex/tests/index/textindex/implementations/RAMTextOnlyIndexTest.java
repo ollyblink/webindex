@@ -15,6 +15,7 @@ import index.utils.query.TextIndexQuery;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -26,30 +27,30 @@ import utils.dbcrud.DBDataManager;
 public class RAMTextOnlyIndexTest {
 	private static RAMTextOnlyIndex index;
 	private static DBDataManager dbDataManager;
-	private static HashMap<Term, List<Document>> documents;
+	private static HashMap<Term, List<Document>> terms;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		dbDataManager = new DBDataManager(DBInitializer.getTestDBManager(), null, 1); 
-		documents = DBDataManager.createIndexableDocuments();
+		terms = DBDataManager.createIndexableDocuments();
 		ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs();
 		HashMap<TermDocsIdentifier, TermDocs> termDocsMeta = new HashMap<>();
 
 		for (TermDocs t : termDocs) { 
 			termDocsMeta.put(t.getId(), t);
 		}
-		index = new RAMTextOnlyIndex(new TextIndexMetaData(termDocsMeta, dbDataManager.getOverallTextIndexMetaData()), null, null);
+		index = new RAMTextOnlyIndex(new TextIndexMetaData(termDocsMeta, dbDataManager.getOverallTextIndexMetaData()), null);
 
-		index.addDocuments(documents);
+		index.addTerms(terms);
 	}
 
 	@Test
-	public void addDocumentTest() {
+	public void addTermTest() {
 
 		assertEquals(4, index.N());
 		for (Term term : index.getAllTerms()) {
 			List<Document> indexDocumentList = index.getDocumentsFor(term);
-			List<Document> exampleDocumentList = documents.get(term);
+			List<Document> exampleDocumentList = terms.get(term);
 			assertEquals(exampleDocumentList.size(), index.ni(term));
 			assertEquals(exampleDocumentList.size(), indexDocumentList.size());
 			for (Document document : exampleDocumentList) {
@@ -58,6 +59,54 @@ public class RAMTextOnlyIndexTest {
 		}
 	}
 
+	@Test
+	public void addDocumentTest() {  
+		 
+		Map<Document, List<Term>> documents = new HashMap<Document, List<Term>>();
+		for(Term term: terms.keySet()){
+			List<Document> docs = terms.get(term);
+			for(Document doc: docs){
+				List<Term> list = documents.get(doc);
+				if(list == null){
+					list = new ArrayList<>();
+					documents.put(doc, list);
+				}
+				list.add(term);
+			}
+		}
+		 
+		for(Document doc: documents.keySet()){
+			index.addDocument(doc, documents.get(doc));
+		}
+		
+		 
+		index.clear();
+		assertEquals(4, index.N());
+		for (Term term : index.getAllTerms()) {
+			List<Document> indexDocumentList = index.getDocumentsFor(term);
+			List<Document> exampleDocumentList = terms.get(term);
+			assertEquals(exampleDocumentList.size(), index.ni(term));
+			assertEquals(exampleDocumentList.size(), indexDocumentList.size());
+			for (Document document : exampleDocumentList) {
+				assertTrue(indexDocumentList.contains(document));
+			}
+		}
+		
+		index.addDocuments(documents);
+		 
+		index.clear();
+		assertEquals(4, index.N());
+		for (Term term : index.getAllTerms()) {
+			List<Document> indexDocumentList = index.getDocumentsFor(term);
+			List<Document> exampleDocumentList = terms.get(term);
+			assertEquals(exampleDocumentList.size(), index.ni(term));
+			assertEquals(exampleDocumentList.size(), indexDocumentList.size());
+			for (Document document : exampleDocumentList) {
+				assertTrue(indexDocumentList.contains(document));
+			}
+		}
+	}
+	
 	@Test
 	public void getSubsetForTest() {
 		List<Term> terms = new ArrayList<Term>();

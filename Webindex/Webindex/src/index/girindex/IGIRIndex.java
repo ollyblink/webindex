@@ -1,13 +1,16 @@
 package index.girindex;
 
-import index.spatialindex.implementations.ISpatialIndex;
-import index.textindex.implementations.ITextIndex;
+import index.girindex.utils.GIRDocument;
+import index.spatialindex.implementations.ISpatialIndexNoInsertion;
+import index.textindex.implementations.ITextIndexNoInsertion;
 import index.utils.Ranking;
-import index.utils.query.SpatialIndexQuery;
-import index.utils.query.TextIndexQuery;
+import index.utils.query.GIRQuery;
 
-public interface IGIRIndex extends ITextIndex, ISpatialIndex {
-	public Ranking queryIndex(boolean isIntersected, TextIndexQuery textQuery, SpatialIndexQuery spatialQuery);
-
+public interface IGIRIndex extends ITextIndexNoInsertion, ISpatialIndexNoInsertion{
+	
+	
+	public Ranking queryIndex(GIRQuery query);
+	
+	public void addDocument(GIRDocument document);
 	 
 }

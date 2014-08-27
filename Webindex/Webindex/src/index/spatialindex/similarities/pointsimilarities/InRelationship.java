@@ -1,6 +1,8 @@
 package index.spatialindex.similarities.pointsimilarities;
 
 import index.spatialindex.similarities.ISpatialRelationship;
+import index.spatialindex.utils.SpatialDocument;
+import index.utils.Score;
 import index.utils.SpatialScore;
 
 import java.util.ArrayList;
@@ -11,15 +13,14 @@ import com.vividsolutions.jts.geom.Geometry;
 public class InRelationship implements ISpatialRelationship {
 
 	@Override
-	public List<SpatialScore> calculateSimilarity(final List<? extends Geometry> queryFootPrints,
-			final List<SpatialScore> documentFootPrints) {
-		List<SpatialScore> results = new ArrayList<SpatialScore>();
+	public ArrayList<? extends Score> calculateSimilarity(final List<? extends Geometry> queryFootPrints, final List<SpatialDocument> documentFootPrints) {
+		ArrayList<SpatialScore> results = new ArrayList<SpatialScore>();
 		for (Geometry qFP : queryFootPrints) {
-			for (SpatialScore dFP : documentFootPrints) {
-				if (qFP.contains(dFP.getGeometry())) {
-					// DEBUG:: System.out.println(dFP.getDocid()+"::"+dFP.getGeometry() +" is inside " +qFP);
-					dFP.setScore(1f);
-					results.add(dFP);
+			for (SpatialDocument dFP : documentFootPrints) {
+				if (qFP.contains(dFP.getDocumentFootprint())) { 
+					results.add(new SpatialScore(dFP.getDocid().getDocId(), dFP.getDocumentFootprint(), 1f)); 
+				}else{
+					results.add(new SpatialScore(dFP.getDocid().getDocId(), dFP.getDocumentFootprint(), 0f));
 				}
 			}
 		}

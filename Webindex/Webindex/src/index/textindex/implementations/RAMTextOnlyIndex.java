@@ -2,10 +2,6 @@ package index.textindex.implementations;
 
 import index.textindex.similarities.AbstractTextSimilarity;
 import index.textindex.similarities.ITextSimilarity;
-import index.textindex.similarities.tfidfweighting.DocTFIDFTypes;
-import index.textindex.similarities.tfidfweighting.Formula3TFStrategy;
-import index.textindex.similarities.tfidfweighting.QueryIDFTypes;
-import index.textindex.similarities.vectorspacemodels.CosineSimilarity;
 import index.textindex.utils.Term;
 import index.textindex.utils.TermDocs;
 import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
@@ -29,34 +25,41 @@ import java.util.Map;
  */
 public class RAMTextOnlyIndex implements ITextIndex {
 
-	private static final ITextSimilarity DEFAULT_SIMILARITY = new CosineSimilarity(new Formula3TFStrategy(), QueryIDFTypes.TERM_IDF1,
-			DocTFIDFTypes.DOC_TFIDF3);
-
 	/** Index storing all terms and document occurrence lists */
 	private Map<Term /* Term */, List<Document> /* Document occurrences */> index;
 
 	/** This is used to speed up similarity calculations and contains important information about term-document combinations */
 	private TextIndexMetaData indexMetaData;
 
-	/** The currently used similarity */
-	private ITextSimilarity currentSimilarity;
-
 	/** The used tokenizer to analyse the query */
 	private ITextInformationExtractor tokenizer;
 
-	public RAMTextOnlyIndex(TextIndexMetaData indexMetaData, ITextSimilarity currentSimilarity, ITextInformationExtractor tokenizer) {
+	public RAMTextOnlyIndex(TextIndexMetaData indexMetaData, ITextInformationExtractor tokenizer) {
 		this.index = new HashMap<>();
 		this.indexMetaData = indexMetaData;
-		this.currentSimilarity = (currentSimilarity == null ? DEFAULT_SIMILARITY : currentSimilarity);
 		this.tokenizer = (tokenizer == null ? new MockTextInformationExtractor() : tokenizer);
 	}
 
 	@Override
-	public void addDocument(Term term, Document document) {
-		if (term == null || document == null) {
+	public void addDocument(Document document, List<Term> termInDocuments) {
+		for (Term term : termInDocuments) {
+			retrieveDocumentListFromIndex(term).add(document);
+		}
+	}
+
+	@Override
+	public void addDocuments(Map<Document, List<Term>> documents) {
+		for (Document doc : documents.keySet()) {
+			addDocument(doc, documents.get(doc));
+		}
+	}
+
+	@Override
+	public void addTerms(Term term, List<Document> documents) {
+		if (term == null || documents == null) {
 			return;
 		}
-		retrieveDocumentListFromIndex(term).add(document);
+		retrieveDocumentListFromIndex(term).addAll(documents);
 	}
 
 	private List<Document> retrieveDocumentListFromIndex(Term term) {
@@ -72,14 +75,12 @@ public class RAMTextOnlyIndex implements ITextIndex {
 	}
 
 	@Override
-	public void addDocuments(Map<Term, List<Document>> documents) {
+	public void addTerms(Map<Term, List<Document>> documents) {
 		if (documents == null) {
 			return;
 		}
 		for (Term term : documents.keySet()) {
-			for (Document doc : documents.get(term)) {
-				addDocument(term, doc);
-			}
+			addTerms(term, documents.get(term));
 		}
 	}
 
@@ -90,7 +91,7 @@ public class RAMTextOnlyIndex implements ITextIndex {
 		// Retrieve the relevant documents from the index (only those that contain one or more query term)
 		HashMap<Term, List<Document>> relevantDocuments = getAllRelevantDocs(queryTermFreqs.keySet());
 		// Create the correct similarity
-		currentSimilarity = AbstractTextSimilarity.getSimilarity(query.getSimilarity());
+		ITextSimilarity currentSimilarity = AbstractTextSimilarity.getSimilarity(query.getSimilarity());
 		// Calculate the similarity between the query and the documents and create a ranked list of documents
 		Ranking ranking = currentSimilarity.calculateSimilarity(query, queryTermFreqs, relevantDocuments, indexMetaData, query.isIntersected());
 
@@ -107,11 +108,6 @@ public class RAMTextOnlyIndex implements ITextIndex {
 			}
 		}
 		return relevantDocuments;
-	}
-
-	@Override
-	public void setSimilarity(ITextSimilarity similarity) {
-		this.currentSimilarity = similarity;
 	}
 
 	@Override

@@ -7,7 +7,8 @@ public class AbstractTextTransformationStage extends AbstractTransformationStage
 
 	protected ITextInformationExtractor extractor;
 
-	public AbstractTextTransformationStage(ITextInformationExtractor extractor) { 
+	public AbstractTextTransformationStage(boolean isShowTransformationEnabled,ITextInformationExtractor extractor) { 
+		super(isShowTransformationEnabled);
 		this.extractor = extractor;
 	}
 

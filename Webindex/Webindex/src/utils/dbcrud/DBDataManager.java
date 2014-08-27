@@ -1,15 +1,22 @@
 package utils.dbcrud;
 
+import index.girindex.utils.girtexttransformation.ExtractionRequest;
+import index.girindex.utils.girtexttransformation.spatialtransformation.GeoReferencingStage;
+import index.girindex.utils.girtexttransformation.spatialtransformation.GeoTaggingStage;
+import index.girindex.utils.girtexttransformation.texttransformation.IndexAndOriginalTokenExtractionStage;
+import index.girindex.utils.girtexttransformation.texttransformation.StemmingStage;
+import index.girindex.utils.girtexttransformation.texttransformation.StopwordRemovalStage;
+import index.girindex.utils.girtexttransformation.texttransformation.TermFrequencyExtractionStage;
+import index.girindex.utils.girtexttransformation.texttransformation.TokenizationStage;
 import index.spatialindex.utils.GeometryConverter;
 import index.spatialindex.utils.SpatialDocument;
-import index.textindex.implementations.ITextIndex;
+import index.textindex.implementations.ITextIndexNoInsertion;
 import index.textindex.implementations.RAMTextOnlyIndex;
 import index.textindex.utils.Term;
 import index.textindex.utils.TermDocs;
 import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
 import index.textindex.utils.informationextractiontools.MockTextInformationExtractor;
 import index.utils.Document;
-import index.utils.SimpleIndexDocument;
 import index.utils.SpatialScore;
 import index.utils.identifers.TermDocsIdentifier;
 import index.utils.indexmetadata.OverallTextIndexMetaData;
@@ -23,7 +30,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -37,8 +43,7 @@ import utils.dbconnection.AbstractDBConnector;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
- * Implements all the database indexing and access methods used by the text and spatial indexes. Does the whole logic of the database. Uses a
- * DBTablesManager to initialise and drop tables.
+ * Implements all the database indexing and access methods used by the text and spatial indexes. Does the whole logic of the database. Uses a DBTablesManager to initialise and drop tables.
  * 
  * @author rsp
  *
@@ -50,6 +55,7 @@ public class DBDataManager implements IDataProvider {
 	private DocumentConsumer consumer;
 	private boolean indexIsRunning;
 	private ITextInformationExtractor tokenizer;
+	private static final boolean IS_SHOW_TRANSFORMATION_ENABLED;
 
 	private final class DocumentConsumer implements Runnable {
 
@@ -59,7 +65,7 @@ public class DBDataManager implements IDataProvider {
 
 		public DocumentConsumer(DBDataManager dbDataProvider, BlockingQueue<String> documentQueue) {
 			this.dbDataProvider = dbDataProvider;
-			this.documentQueue = documentQueue;
+			this.documentQueue = documentQueue; 
 			this.isUpdated = true;
 		}
 
@@ -128,8 +134,7 @@ public class DBDataManager implements IDataProvider {
 			ResultSet r = statement.executeQuery();
 
 			while (r.next()) {
-				TermDocs td = new TermDocs(r.getString(1), r.getLong(2), r.getInt(3), r.getFloat(4), r.getFloat(5), r.getFloat(6), r.getFloat(7),
-						r.getFloat(8));
+				TermDocs td = new TermDocs(r.getString(1), r.getLong(2), r.getInt(3), r.getFloat(4), r.getFloat(5), r.getFloat(6), r.getFloat(7), r.getFloat(8));
 				termDocs.add(td);
 			}
 			statement.close();
@@ -172,8 +177,7 @@ public class DBDataManager implements IDataProvider {
 			PreparedStatement statement = dbTablesManager.getConnection().prepareStatement(sql);
 			ResultSet r = statement.executeQuery();
 			while (r.next()) {
-				Document d = new Document(r.getLong(1), r.getString(2), r.getInt(3), r.getInt(4), r.getInt(5), r.getFloat(6), r.getFloat(7),
-						r.getFloat(8));
+				Document d = new Document(r.getLong(1), r.getString(2), r.getInt(3), r.getInt(4), r.getInt(5), r.getFloat(6), r.getFloat(7), r.getFloat(8));
 				documents.add(d);
 			}
 			statement.close();
@@ -215,8 +219,7 @@ public class DBDataManager implements IDataProvider {
 			PreparedStatement statement = dbTablesManager.getConnection().prepareStatement(sql);
 			ResultSet r = statement.executeQuery();
 			while (r.next()) {
-				metaData = new OverallTextIndexMetaData(r.getFloat(2), r.getFloat(3), r.getFloat(4), r.getFloat(5), r.getFloat(6), r.getFloat(7),
-						r.getInt(8));
+				metaData = new OverallTextIndexMetaData(r.getFloat(2), r.getFloat(3), r.getFloat(4), r.getFloat(5), r.getFloat(6), r.getFloat(7), r.getInt(8));
 			}
 			statement.close();
 		} catch (SQLException e) {
@@ -255,21 +258,49 @@ public class DBDataManager implements IDataProvider {
 	}
 
 	private void addDocument(final String text) {
-		String transformedText = text.replace("´", "'");
+		
+		ExtractionRequest request = new ExtractionRequest(text);
+		// Terms
+		StopwordRemovalStage stopwordRemovalStage = new StopwordRemovalStage(IS_SHOW_TRANSFORMATION_ENABLED, tokenizer);
+		StemmingStage stemmingStage = new StemmingStage(IS_SHOW_TRANSFORMATION_ENABLED, tokenizer);
+		TokenizationStage tokenizationStage = new TokenizationStage(IS_SHOW_TRANSFORMATION_ENABLED, tokenizer);
+		IndexAndOriginalTokenExtractionStage indexAndOriginalTokenExtractionStage = new IndexAndOriginalTokenExtractionStage(IS_SHOW_TRANSFORMATION_ENABLED, tokenizer);
+		TermFrequencyExtractionStage termFrequencyExtractionStage = new TermFrequencyExtractionStage(IS_SHOW_TRANSFORMATION_ENABLED, tokenizer);
 
-		Map<Term, Integer> termFreqs = tokenizer.fullTransformation(transformedText);
+		// Spatial
+		GeoTaggingStage geoTaggingStage = new GeoTaggingStage(IS_SHOW_TRANSFORMATION_ENABLED);
+		GeoReferencingStage geoReferencingStage = new GeoReferencingStage(IS_SHOW_TRANSFORMATION_ENABLED);
+
+		// Chaining the stages together in an appropriate way
+
+		// First text extraction
+		stopwordRemovalStage.setSuccessor(stemmingStage);
+		stemmingStage.setPrecursor(stopwordRemovalStage);
+		stemmingStage.setSuccessor(tokenizationStage);
+		tokenizationStage.setPrecursor(stemmingStage);
+		tokenizationStage.setSuccessor(indexAndOriginalTokenExtractionStage);
+		indexAndOriginalTokenExtractionStage.setPrecursor(stopwordRemovalStage); // so that only the relevant terms are analysed
+		indexAndOriginalTokenExtractionStage.setSuccessor(termFrequencyExtractionStage);
+		termFrequencyExtractionStage.setPrecursor(indexAndOriginalTokenExtractionStage);
+		// Now spatial extraction
+		termFrequencyExtractionStage.setSuccessor(geoTaggingStage);
+		geoTaggingStage.setPrecursor(termFrequencyExtractionStage);
+		geoTaggingStage.setSuccessor(geoReferencingStage);
+		geoReferencingStage.setPrecursor(geoTaggingStage);
+ 
+		stopwordRemovalStage.handleRequest(request);
 		
 		
+
 		try {
 			PreparedStatement termInsertion = dbTablesManager.getConnection().prepareStatement("insert into terms(id) values(?);");
-			PreparedStatement originalTermInsertion = dbTablesManager.getConnection().prepareStatement(
-					"insert into original_terms(original_term, termid) values(?,?);");
-			PreparedStatement documentInsertion = dbTablesManager.getConnection().prepareStatement(
-					"insert into documents(fulltext,size_in_bytes,raw_nr_of_words,indexed_nr_of_terms) values(?,?,?,?);");
-			PreparedStatement termInDocInsertion = dbTablesManager.getConnection().prepareStatement(
-					"insert into term_docs(termid, docid, fij, doc_tf1, doc_tf2_3) values (?,?,?,?,?)");
+			PreparedStatement originalTermInsertion = dbTablesManager.getConnection().prepareStatement("insert into original_terms(original_term, termid) values(?,?);");
+			PreparedStatement documentInsertion = dbTablesManager.getConnection()
+					.prepareStatement("insert into documents(fulltext,size_in_bytes,raw_nr_of_words,indexed_nr_of_terms) values(?,?,?,?);");
+			PreparedStatement termInDocInsertion = dbTablesManager.getConnection().prepareStatement("insert into term_docs(termid, docid, fij, doc_tf1, doc_tf2_3) values (?,?,?,?,?)");
 
 			insertDocument(transformedText, new ArrayList<>(termFreqs.keySet()), documentInsertion);
+			insertLocation();
 
 			for (Term indexTerm : termFreqs.keySet()) {
 				insertTerm(termInsertion, indexTerm);
@@ -361,8 +392,7 @@ public class DBDataManager implements IDataProvider {
 		}
 	}
 
-	private void insertTermDocs(String transformedText, Map<Term, Integer> termFreqs, PreparedStatement termInDocInsertion, Term indexTerm)
-			throws SQLException {
+	private void insertTermDocs(String transformedText, Map<Term, Integer> termFreqs, PreparedStatement termInDocInsertion, Term indexTerm) throws SQLException {
 		Statement statement = dbTablesManager.getConnection().createStatement();
 		ResultSet lastDocId = statement.executeQuery("select id from documents where fulltext like '%" + transformedText + "%';");
 		long docId = 0;
@@ -372,8 +402,7 @@ public class DBDataManager implements IDataProvider {
 		statement.close();
 
 		int freq = termFreqs.get(indexTerm);
-		if (!alreadyIndexed("select count(*) from term_docs where termid = '" + indexTerm.getIndexedTerm().getTermId() + "' AND docid='" + docId
-				+ "';")) {
+		if (!alreadyIndexed("select count(*) from term_docs where termid = '" + indexTerm.getIndexedTerm().getTermId() + "' AND docid='" + docId + "';")) {
 			termInDocInsertion.setString(1, indexTerm.getIndexedTerm().getTermId());
 			termInDocInsertion.setLong(2, docId);
 			termInDocInsertion.setInt(3, freq);
@@ -449,15 +478,13 @@ public class DBDataManager implements IDataProvider {
 			String N = "(select count(id) from documents)";
 			if (!alreadyIndexed("select count(*) from metadata;")) {
 				metadataSql = dbTablesManager.getConnection().prepareStatement(
-						"insert into metadata(" + "avg_doc_length_size_in_bytes, " + "avg_doc_length_raw_nr_of_words,"
-								+ "avg_doc_length_indexed_nr_of_words," + "N" + ") values(" + avgDocLengthSizeInBytesSQL + ","
-								+ avgDocLengthRawNrOfWords + "," + avgDocLengthIndexedNrOfTerms + ", " + N + ");");
+						"insert into metadata(" + "avg_doc_length_size_in_bytes, " + "avg_doc_length_raw_nr_of_words," + "avg_doc_length_indexed_nr_of_words," + "N" + ") values("
+								+ avgDocLengthSizeInBytesSQL + "," + avgDocLengthRawNrOfWords + "," + avgDocLengthIndexedNrOfTerms + ", " + N + ");");
 
 			} else {
 				metadataSql = dbTablesManager.getConnection().prepareStatement(
-						"update metadata set " + "avg_doc_length_size_in_bytes = " + avgDocLengthSizeInBytesSQL + ", "
-								+ "avg_doc_length_raw_nr_of_words = " + avgDocLengthRawNrOfWords + "," + "avg_doc_length_indexed_nr_of_words = "
-								+ avgDocLengthIndexedNrOfTerms + "," + "N = " + N + " where id=1");
+						"update metadata set " + "avg_doc_length_size_in_bytes = " + avgDocLengthSizeInBytesSQL + ", " + "avg_doc_length_raw_nr_of_words = " + avgDocLengthRawNrOfWords + ","
+								+ "avg_doc_length_indexed_nr_of_words = " + avgDocLengthIndexedNrOfTerms + "," + "N = " + N + " where id=1");
 
 			}
 
@@ -475,8 +502,8 @@ public class DBDataManager implements IDataProvider {
 			String docVectorNorm3 = "(select avg(doc_vectornorm3) from documents)";
 
 			PreparedStatement metadataSql = dbTablesManager.getConnection().prepareStatement(
-					"update metadata set " + "avg_doc_length_vectornorm1 = " + docVectorNorm1 + "," + "avg_doc_length_vectornorm2 = "
-							+ docVectorNorm2 + "," + "avg_doc_length_vectornorm3 = " + docVectorNorm3);
+					"update metadata set " + "avg_doc_length_vectornorm1 = " + docVectorNorm1 + "," + "avg_doc_length_vectornorm2 = " + docVectorNorm2 + "," + "avg_doc_length_vectornorm3 = "
+							+ docVectorNorm3);
 			metadataSql.execute();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -633,8 +660,7 @@ public class DBDataManager implements IDataProvider {
 	}
 
 	public static HashMap<Term, List<Document>> createIndexableDocuments() {
-		String[] d = { "To do is to be. To be is to do.", "To be or not to be. I am what I am.", "I think therefore I am. Do be do be do.",
-				"Do do do, da da da. Let it be, let it be." };
+		String[] d = { "To do is to be. To be is to do.", "To be or not to be. I am what I am.", "I think therefore I am. Do be do be do.", "Do do do, da da da. Let it be, let it be." };
 
 		DBDataManager dbDataManager = DBInitializer.initTestTextDB(new MockTextInformationExtractor(), DBInitializer.getTestDBManager(), d);
 		ArrayList<Term> terms = dbDataManager.getTerms();
@@ -667,21 +693,18 @@ public class DBDataManager implements IDataProvider {
 		return converted;
 	}
 
-	public static ITextIndex getTestIndex() {
+	public static ITextIndexNoInsertion getTestIndex() {
 		DBDataManager dbDataManager = new DBDataManager(DBInitializer.getTestDBManager(), null, 1);
 
 		HashMap<Term, List<Document>> documents = DBDataManager.createIndexableDocuments();
-
 		ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs();
-
 		Map<TermDocsIdentifier, TermDocs> termDocsMeta = new HashMap<>();
 
 		for (TermDocs t : termDocs) {
 			termDocsMeta.put(t.getId(), t);
 		}
-		RAMTextOnlyIndex ramTextOnlyIndex = new RAMTextOnlyIndex(new TextIndexMetaData(termDocsMeta, dbDataManager.getOverallTextIndexMetaData()),
-				null, null);
-		ramTextOnlyIndex.addDocuments(documents);
+		RAMTextOnlyIndex ramTextOnlyIndex = new RAMTextOnlyIndex(new TextIndexMetaData(termDocsMeta, dbDataManager.getOverallTextIndexMetaData()), null);
+		ramTextOnlyIndex.addTerms(documents);
 		return ramTextOnlyIndex;
 	}
 

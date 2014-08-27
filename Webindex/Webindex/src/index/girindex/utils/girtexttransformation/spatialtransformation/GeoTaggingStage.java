@@ -20,13 +20,15 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.rpc.ServiceException;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
- * Geotagging uses calais, but also placemaker. For learning purposes, this stage only extracts possible place names or features, but does not save
- * any georeferencing information, although it would be easily possible to do so using placemaker.
+ * Geotagging uses calais, but also placemaker. For learning purposes, this stage only extracts possible place names or features, but does not save any georeferencing information, although it would be
+ * easily possible to do so using placemaker.
  * 
  * Why placemaker is used too is because test have shown that Calais does not know many small towns like "Kloten", whereas placemaker does.
  * 
@@ -38,17 +40,17 @@ public class GeoTaggingStage extends AbstractTransformationStage {
 	private static final String YPM_XML = System.getProperty("user.dir") + "/files/ypm.xml";
 	private static final String CALAIS_LICENSE_KEY = "d56tq64rbar8rk9waa38wnyy";
 	private static final String CALAIS_PARAMS_XML = "<c:params xmlns:c=\"http://s.opencalais.com/1/pred/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">"
-			+ "<c:processingDirectives c:contentType=\"TEXT/RAW\" c:enableMetadataType=\"GenericRelations\" c:outputFormat=\"Text/Simple\">"
-			+ "</c:processingDirectives>"
-			+ "<c:userDirectives c:allowDistribution=\"true\" c:allowSearch=\"true\" c:externalID=\"17cabs901\" c:submitter=\"ABC\">"
-			+ "</c:userDirectives>" + "<c:externalMetadata>" + "</c:externalMetadata>" + "</c:params>";
+			+ "<c:processingDirectives c:contentType=\"TEXT/RAW\" c:enableMetadataType=\"GenericRelations\" c:outputFormat=\"Text/Simple\">" + "</c:processingDirectives>"
+			+ "<c:userDirectives c:allowDistribution=\"true\" c:allowSearch=\"true\" c:externalID=\"17cabs901\" c:submitter=\"ABC\">" + "</c:userDirectives>" + "<c:externalMetadata>"
+			+ "</c:externalMetadata>" + "</c:params>";
 
 	private static final String[] CALAIS_ENTITIES = { "City", "Continent", "Country", "NaturalFeature", "ProvinceOrState", "Region" };
-	
+
 	private YPMPlaceExtractor ypmExtractor;
 	private CalaisLocator calaisLocator;
 
-	public GeoTaggingStage() {
+	public GeoTaggingStage(boolean isShowTransformationEnabled) {
+		super(isShowTransformationEnabled);
 		calaisLocator = new CalaisLocator();
 		ypmExtractor = new YPMPlaceExtractor(YPM_XML);
 
@@ -94,8 +96,18 @@ public class GeoTaggingStage extends AbstractTransformationStage {
 			for (String entity : CALAIS_ENTITIES) {
 				NodeList nodes = doc.getElementsByTagName(entity);
 				for (int i = 0; i < nodes.getLength(); i++) {
-					String item = nodes.item(i).getAttributes().getNamedItem("normalized").getNodeValue();
-					locations.add(item);
+					Node item = nodes.item(i);
+					if(item != null){
+						NamedNodeMap nodeMap = item.getAttributes();
+						if(nodeMap != null){
+							Node namedItem = nodeMap.getNamedItem("normalized");
+							if(namedItem != null){ 
+								locations.add(namedItem.getTextContent());
+							}
+						}
+						
+					}
+					
 				}
 			}
 		} catch (ServiceException | ParserConfigurationException | SAXException | IOException e) {
@@ -108,7 +120,7 @@ public class GeoTaggingStage extends AbstractTransformationStage {
 
 		String content = "Try to find Kloten, Switzerland that in London, or maybe you like the New Jersey, New York more.";
 
-		GeoTaggingStage t = new GeoTaggingStage();
+		GeoTaggingStage t = new GeoTaggingStage(true);
 		t.handleRequest(new ExtractionRequest(content));
 	}
 }

@@ -1,6 +1,6 @@
 package index.utils;
 
-import index.textindex.implementations.ITextIndex;
+import index.textindex.implementations.ITextIndexNoInsertion;
 import index.textindex.utils.Term;
 import index.textindex.utils.informationextractiontools.MockTextInformationExtractor;
 import index.utils.indexmetadata.TextIndexMetaData;
@@ -17,7 +17,7 @@ public class SimilarityTestUtils {
 	public ArrayList<Term> terms;
 	public HashMap<Term, List<Document>> docSubset;
 	public TextIndexMetaData metaData;
-	public ITextIndex index; 
+	public ITextIndexNoInsertion index; 
 
 	public SimilarityTestUtils() {
 		DBDataProviderTest.initDB();

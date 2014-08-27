@@ -8,8 +8,8 @@ import java.util.Map;
 
 public class TermFrequencyExtractionStage extends AbstractTextTransformationStage {
 
-	public TermFrequencyExtractionStage(ITextInformationExtractor tokenizer) {
-		super(tokenizer); 
+	public TermFrequencyExtractionStage(boolean isShowTransformationEnabled, ITextInformationExtractor extractor) {
+		super(isShowTransformationEnabled,extractor);
 	}
 
 	@SuppressWarnings("unchecked")
