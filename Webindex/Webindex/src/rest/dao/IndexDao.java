@@ -1,9 +1,9 @@
 package rest.dao;
 
-import index.girindex.utils.girtexttransformation.informationextractiontools.GermanTextInformationExtractor;
-import index.girindex.utils.girtexttransformation.informationextractiontools.ITextInformationExtractor;
-import index.girindex.utils.girtexttransformation.informationextractiontools.MockTextInformationExtractor;
 import index.textindex.implementations.ITextIndex;
+import index.textindex.utils.informationextractiontools.GermanTextInformationExtractor;
+import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
+import index.textindex.utils.informationextractiontools.MockTextInformationExtractor;
 import index.utils.Ranking;
 import index.utils.query.TextIndexQuery;
 import testutils.DBInitializer;

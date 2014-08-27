@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<contentlocation xmlns:yahoo="http://www.yahooapis.com/v1/base.rng" xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns="http://wherein.yahooapis.com/v1/schema" xml:lang="en">
+<processingTime>0.001474</processingTime>
+<version>2.0.11.0 build 140609</version>
+<documentLength>10</documentLength>
+<document>
+<administrativeScope>
+<woeId>2347589</woeId>
+<type>State</type>
+<name><![CDATA[New Jersey, US]]></name>
+<centroid>
+<latitude>40.1432</latitude>
+<longitude>-74.7267</longitude>
+</centroid>
+</administrativeScope>
+<geographicScope>
+<woeId>2347589</woeId>
+<type>State</type>
+<name><![CDATA[New Jersey, US]]></name>
+<centroid>
+<latitude>40.1432</latitude>
+<longitude>-74.7267</longitude>
+</centroid>
+</geographicScope>
+<localScopes>
+<localScope>
+<woeId>2347589</woeId>
+<type>State</type>
+<name><![CDATA[New Jersey, US (State)]]></name>
+<centroid>
+<latitude>40.1432</latitude>
+<longitude>-74.7267</longitude>
+</centroid>
+<southWest>
+<latitude>38.9289</latitude>
+<longitude>-75.5598</longitude>
+</southWest>
+<northEast>
+<latitude>41.3576</latitude>
+<longitude>-73.8937</longitude>
+</northEast>
+<ancestors>
+<ancestor>
+<woeId>23424977</woeId>
+<type>Country</type>
+<name><![CDATA[United States]]></name>
+</ancestor>
+</ancestors>
+</localScope>
+</localScopes>
+<extents>
+<center>
+<latitude>40.1432</latitude>
+<longitude>-74.7267</longitude>
+</center>
+<southWest>
+<latitude>38.9289</latitude>
+<longitude>-75.5598</longitude>
+</southWest>
+<northEast>
+<latitude>41.3576</latitude>
+<longitude>-73.8937</longitude>
+</northEast>
+</extents>
+<placeDetails>
+<placeId>1</placeId>
+<place>
+<woeId>2347589</woeId>
+<type>State</type>
+<name><![CDATA[New Jersey, US]]></name>
+<centroid>
+<latitude>40.1432</latitude>
+<longitude>-74.7267</longitude>
+</centroid>
+</place>
+<placeReferenceIds>1</placeReferenceIds>
+<matchType>0</matchType>
+<weight>1</weight>
+<confidence>9</confidence>
+</placeDetails>
+<referenceList>
+<reference>
+<woeIds>2347589</woeIds>
+<placeReferenceId>1</placeReferenceId>
+<placeIds>1</placeIds>
+<start>0</start>
+<end>10</end>
+<isPlaintextMarker>1</isPlaintextMarker>
+<text><![CDATA[New Jersey]]></text>
+<type>plaintext</type>
+<xpath><![CDATA[]]></xpath>
+</reference>
+</referenceList>
+</document>
+</contentlocation>

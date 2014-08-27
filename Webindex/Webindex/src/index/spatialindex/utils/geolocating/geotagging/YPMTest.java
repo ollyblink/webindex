@@ -1,8 +1,8 @@
-package index.spatialindex.utils.geotagging;
+package index.spatialindex.utils.geolocating.geotagging;
 
-import index.spatialindex.utils.georeferencing.IPlaceExtractor;
-import index.spatialindex.utils.georeferencing.PEFactory;
-import index.spatialindex.utils.georeferencing.PEFactory.PEType;
+import index.spatialindex.utils.geolocating.georeferencing.IPlaceExtractor;
+import index.spatialindex.utils.geolocating.georeferencing.PEFactory;
+import index.spatialindex.utils.geolocating.georeferencing.PEFactory.PEType;
 
 import java.io.BufferedReader;
 import java.io.File;

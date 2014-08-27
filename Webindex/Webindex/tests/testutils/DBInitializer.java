@@ -1,10 +1,10 @@
 package testutils;
 
-import index.girindex.utils.girtexttransformation.informationextractiontools.ITextInformationExtractor;
-import index.girindex.utils.girtexttransformation.informationextractiontools.MockTextInformationExtractor;
 import index.spatialindex.implementations.SpatialOnlyIndex;
 import index.spatialindex.utils.SpatialDocument;
-import index.spatialindex.utils.georeferencing.LocationProvider;
+import index.spatialindex.utils.geolocating.georeferencing.LocationProvider;
+import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
+import index.textindex.utils.informationextractiontools.MockTextInformationExtractor;
 
 import java.util.ArrayList;
 import java.util.List;

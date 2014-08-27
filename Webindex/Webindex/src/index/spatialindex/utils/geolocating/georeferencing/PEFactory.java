@@ -1,4 +1,4 @@
-package index.spatialindex.utils.georeferencing;
+package index.spatialindex.utils.geolocating.georeferencing;
 
 import java.util.List;
 

@@ -5,9 +5,9 @@
  * by the Apache Axis 1.4 Apr 22, 2006 (06:55:48 PDT) WSDL2Java emitter.
  */
 
-package index.spatialindex.utils.geotagging;
+package index.spatialindex.utils.geolocating.geotagging;
 
-public class CalaisSoapSoapBindingStub extends org.apache.axis.client.Stub implements index.spatialindex.utils.geotagging.CalaisSoap {
+public class CalaisSoapSoapBindingStub extends org.apache.axis.client.Stub implements index.spatialindex.utils.geolocating.geotagging.CalaisSoap {
     private java.util.Vector cachedSerClasses = new java.util.Vector();
     private java.util.Vector cachedSerQNames = new java.util.Vector();
     private java.util.Vector cachedSerFactories = new java.util.Vector();

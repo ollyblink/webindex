@@ -1,4 +1,8 @@
-package index.spatialindex.utils.georeferencing;
+package index.spatialindex.utils.geolocating.georeferencing;
+
+import index.spatialindex.utils.geolocating.georeferencing.ypmutils.YPMPlace;
+import index.spatialindex.utils.geolocating.georeferencing.ypmutils.YPMQuery;
+import index.spatialindex.utils.geolocating.georeferencing.ypmutils.YPMXMLParser;
 
 import java.util.ArrayList;
 import java.util.HashMap;

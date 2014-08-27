@@ -1,4 +1,4 @@
-package index.spatialindex.utils.georeferencing;
+package index.spatialindex.utils.geolocating.georeferencing;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,32 +81,30 @@ public class GNPlaceExtractor implements IPlaceExtractor {
 			if (!toponym.getName().toLowerCase().contains(placeNametext.toLowerCase())) {
 				continue;
 			}
-			try {
-				double lat = toponym.getLatitude();
-				double lon = toponym.getLongitude();
-				Integer pop = toponym.getPopulation();
-				if (pop == null)
-					continue;
+			// try {
+			double lat = toponym.getLatitude();
+			double lon = toponym.getLongitude();
+			/*
+			 * Below is some stuff I used in my master thesis to estimate the area from the population to get an MBR of the location... 
+			 */
+			// Integer pop = toponym.getPopulation();
+			// if (pop == null)
+			// continue;
+			//
+			// double area = getApproximatedAreaFromPopulation(pop);
+			// double dist = getApproximatedRadiusFromArea(area);
+			//
+			// double latNE = getApproximatedNorthEastLatitude(lat, dist);
+			// double lonNE = getApproximatedNorthEastLongitude(lon, lat, dist);
+			// double latSW = getApproximatedSouthWestLatitude(lat, dist);
+			// double lonSW = getApproximatedSouthWestLongitude(lon, lat, dist);
 
-				double area = getApproximatedAreaFromPopulation(pop);
-				double dist = getApproximatedRadiusFromArea(area);
-
-				double latNE = getApproximatedNorthEastLatitude(lat, dist);
-				double lonNE = getApproximatedNorthEastLongitude(lon, lat, dist);
-				double latSW = getApproximatedSouthWestLatitude(lat, dist);
-				double lonSW = getApproximatedSouthWestLongitude(lon, lat, dist);
-
-				Coordinate[] coords = new Coordinate[5];
-				coords[0] = new Coordinate(lonSW, latSW);
-				coords[1] = new Coordinate(lonNE, latSW);
-				coords[2] = new Coordinate(lonNE, latNE);
-				coords[3] = new Coordinate(lonSW, latNE);
-				coords[4] = new Coordinate(lonSW, latSW);
-				list.add(new GeometryFactory(new PrecisionModel(Type.DOUBLE), 4326).createPolygon(coords));
-
-			} catch (InsufficientStyleException e) {
-				e.printStackTrace();
-			}
+			Coordinate point = new Coordinate(lon, lat);
+			list.add(new GeometryFactory(new PrecisionModel(Type.DOUBLE), 4326).createPoint(point));
+			//
+			// } catch (InsufficientStyleException e) {
+			// e.printStackTrace();
+			// }
 		}
 
 		return list;

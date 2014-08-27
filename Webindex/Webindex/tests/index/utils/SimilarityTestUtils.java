@@ -1,8 +1,8 @@
 package index.utils;
 
-import index.girindex.utils.girtexttransformation.informationextractiontools.MockTextInformationExtractor;
 import index.textindex.implementations.ITextIndex;
 import index.textindex.utils.Term;
+import index.textindex.utils.informationextractiontools.MockTextInformationExtractor;
 import index.utils.indexmetadata.TextIndexMetaData;
 
 import java.util.ArrayList;

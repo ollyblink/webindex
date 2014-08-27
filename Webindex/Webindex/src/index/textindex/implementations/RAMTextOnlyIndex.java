@@ -1,7 +1,5 @@
 package index.textindex.implementations;
 
-import index.girindex.utils.girtexttransformation.informationextractiontools.ITextInformationExtractor;
-import index.girindex.utils.girtexttransformation.informationextractiontools.MockTextInformationExtractor;
 import index.textindex.similarities.AbstractTextSimilarity;
 import index.textindex.similarities.ITextSimilarity;
 import index.textindex.similarities.tfidfweighting.DocTFIDFTypes;
@@ -10,6 +8,8 @@ import index.textindex.similarities.tfidfweighting.QueryIDFTypes;
 import index.textindex.similarities.vectorspacemodels.CosineSimilarity;
 import index.textindex.utils.Term;
 import index.textindex.utils.TermDocs;
+import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
+import index.textindex.utils.informationextractiontools.MockTextInformationExtractor;
 import index.utils.Document;
 import index.utils.Ranking;
 import index.utils.identifers.TermDocsIdentifier;

@@ -1,4 +1,4 @@
-package index.spatialindex.utils.georeferencing;
+package index.spatialindex.utils.geolocating.georeferencing.ypmutils;
 
 import java.util.Collection;
 import java.util.Iterator;

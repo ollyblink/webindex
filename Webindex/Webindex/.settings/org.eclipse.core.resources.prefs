@@ -1,5 +1,5 @@
 eclipse.preferences.version=1
-encoding//src/index/spatialindex/utils/geotagging/Calais.java=UTF-8
-encoding//src/index/spatialindex/utils/geotagging/CalaisLocator.java=UTF-8
-encoding//src/index/spatialindex/utils/geotagging/CalaisSoap.java=UTF-8
-encoding//src/index/spatialindex/utils/geotagging/CalaisSoapSoapBindingStub.java=UTF-8
+encoding//src/index/spatialindex/utils/geolocating/geotagging/Calais.java=UTF-8
+encoding//src/index/spatialindex/utils/geolocating/geotagging/CalaisLocator.java=UTF-8
+encoding//src/index/spatialindex/utils/geolocating/geotagging/CalaisSoap.java=UTF-8
+encoding//src/index/spatialindex/utils/geolocating/geotagging/CalaisSoapSoapBindingStub.java=UTF-8

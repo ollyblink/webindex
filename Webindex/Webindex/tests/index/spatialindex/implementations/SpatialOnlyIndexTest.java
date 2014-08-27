@@ -1,7 +1,7 @@
 package index.spatialindex.implementations;
 
 import static org.junit.Assert.assertTrue;
-import index.girindex.utils.girtexttransformation.informationextractiontools.MockTextInformationExtractor;
+import index.textindex.utils.informationextractiontools.MockTextInformationExtractor;
 import index.utils.Ranking;
 import index.utils.Score;
 import index.utils.query.SpatialIndexQuery;

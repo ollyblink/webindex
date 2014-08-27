@@ -1,13 +1,13 @@
 package utils.dbcrud;
 
-import index.girindex.utils.girtexttransformation.informationextractiontools.ITextInformationExtractor;
-import index.girindex.utils.girtexttransformation.informationextractiontools.MockTextInformationExtractor;
 import index.spatialindex.utils.GeometryConverter;
 import index.spatialindex.utils.SpatialDocument;
 import index.textindex.implementations.ITextIndex;
 import index.textindex.implementations.RAMTextOnlyIndex;
 import index.textindex.utils.Term;
 import index.textindex.utils.TermDocs;
+import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
+import index.textindex.utils.informationextractiontools.MockTextInformationExtractor;
 import index.utils.Document;
 import index.utils.SimpleIndexDocument;
 import index.utils.SpatialScore;

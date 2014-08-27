@@ -1,4 +1,4 @@
-package index.spatialindex.utils.georeferencing;
+package index.spatialindex.utils.geolocating.georeferencing.ypmutils;
 
 /**
  * Helper class for XML extraction from YPM.

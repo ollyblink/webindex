@@ -3,7 +3,7 @@ package index.spatialindex.implementations;
 import index.spatialindex.similarities.ISpatialRelationship;
 import index.spatialindex.similarities.SpatialRelationshipFactory;
 import index.spatialindex.utils.SpatialDocument;
-import index.spatialindex.utils.georeferencing.LocationProvider;
+import index.spatialindex.utils.geolocating.georeferencing.LocationProvider;
 import index.utils.Ranking;
 import index.utils.Score;
 import index.utils.SpatialScore;

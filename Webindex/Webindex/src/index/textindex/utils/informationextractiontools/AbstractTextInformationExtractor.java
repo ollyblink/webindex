@@ -1,4 +1,4 @@
-package index.girindex.utils.girtexttransformation.informationextractiontools;
+package index.textindex.utils.informationextractiontools;
 
 import index.textindex.utils.Term;
 

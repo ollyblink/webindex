@@ -1,6 +1,6 @@
-package index.spatialindex.utils.georeferencing;
+package index.spatialindex.utils.geolocating.georeferencing;
 
-import index.spatialindex.utils.georeferencing.PEFactory.PEType;
+import index.spatialindex.utils.geolocating.georeferencing.PEFactory.PEType;
 
 import java.util.ArrayList;
 

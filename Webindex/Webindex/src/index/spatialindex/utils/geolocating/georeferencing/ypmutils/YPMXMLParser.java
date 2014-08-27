@@ -1,4 +1,4 @@
-package index.spatialindex.utils.georeferencing;
+package index.spatialindex.utils.geolocating.georeferencing.ypmutils;
 
 import java.io.FileInputStream;
 import java.io.IOException;

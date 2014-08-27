@@ -5,9 +5,9 @@
  * by the Apache Axis 1.4 Apr 22, 2006 (06:55:48 PDT) WSDL2Java emitter.
  */
 
-package index.spatialindex.utils.geotagging;
+package index.spatialindex.utils.geolocating.geotagging;
 
-public class CalaisLocator extends org.apache.axis.client.Service implements index.spatialindex.utils.geotagging.Calais {
+public class CalaisLocator extends org.apache.axis.client.Service implements index.spatialindex.utils.geolocating.geotagging.Calais {
 
     public CalaisLocator() {
     }
@@ -39,7 +39,7 @@ public class CalaisLocator extends org.apache.axis.client.Service implements ind
         calaisSoapWSDDServiceName = name;
     }
 
-    public index.spatialindex.utils.geotagging.CalaisSoap getcalaisSoap() throws javax.xml.rpc.ServiceException {
+    public index.spatialindex.utils.geolocating.geotagging.CalaisSoap getcalaisSoap() throws javax.xml.rpc.ServiceException {
        java.net.URL endpoint;
         try {
             endpoint = new java.net.URL(calaisSoap_address);
@@ -50,9 +50,9 @@ public class CalaisLocator extends org.apache.axis.client.Service implements ind
         return getcalaisSoap(endpoint);
     }
 
-    public index.spatialindex.utils.geotagging.CalaisSoap getcalaisSoap(java.net.URL portAddress) throws javax.xml.rpc.ServiceException {
+    public index.spatialindex.utils.geolocating.geotagging.CalaisSoap getcalaisSoap(java.net.URL portAddress) throws javax.xml.rpc.ServiceException {
         try {
-            index.spatialindex.utils.geotagging.CalaisSoapSoapBindingStub _stub = new index.spatialindex.utils.geotagging.CalaisSoapSoapBindingStub(portAddress, this);
+            index.spatialindex.utils.geolocating.geotagging.CalaisSoapSoapBindingStub _stub = new index.spatialindex.utils.geolocating.geotagging.CalaisSoapSoapBindingStub(portAddress, this);
             _stub.setPortName(getcalaisSoapWSDDServiceName());
             return _stub;
         }
@@ -72,8 +72,8 @@ public class CalaisLocator extends org.apache.axis.client.Service implements ind
      */
     public java.rmi.Remote getPort(Class serviceEndpointInterface) throws javax.xml.rpc.ServiceException {
         try {
-            if (index.spatialindex.utils.geotagging.CalaisSoap.class.isAssignableFrom(serviceEndpointInterface)) {
-                index.spatialindex.utils.geotagging.CalaisSoapSoapBindingStub _stub = new index.spatialindex.utils.geotagging.CalaisSoapSoapBindingStub(new java.net.URL(calaisSoap_address), this);
+            if (index.spatialindex.utils.geolocating.geotagging.CalaisSoap.class.isAssignableFrom(serviceEndpointInterface)) {
+                index.spatialindex.utils.geolocating.geotagging.CalaisSoapSoapBindingStub _stub = new index.spatialindex.utils.geolocating.geotagging.CalaisSoapSoapBindingStub(new java.net.URL(calaisSoap_address), this);
                 _stub.setPortName(getcalaisSoapWSDDServiceName());
                 return _stub;
             }

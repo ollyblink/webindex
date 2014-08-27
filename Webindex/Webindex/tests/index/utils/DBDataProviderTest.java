@@ -1,6 +1,6 @@
 package index.utils;
 
-import index.girindex.utils.girtexttransformation.informationextractiontools.MockTextInformationExtractor;
+import index.textindex.utils.informationextractiontools.MockTextInformationExtractor;
 
 import java.util.List;
 import java.util.Map;

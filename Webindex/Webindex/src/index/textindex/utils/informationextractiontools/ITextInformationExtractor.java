@@ -1,4 +1,4 @@
-package index.girindex.utils.girtexttransformation.informationextractiontools;
+package index.textindex.utils.informationextractiontools;
 
 import index.textindex.utils.Term;
 
@@ -45,5 +45,10 @@ public interface ITextInformationExtractor {
 	 */
 	public HashMap<String/*index terms*/, ArrayList<String>/*Original terms*/> extractIndexAndOriginalTerms(String text);
 	
+	/**
+	 * Calculates the term frequency for a given term set.
+	 * @param indexAndOriginalTerms
+	 * @return
+	 */
 	public HashMap<Term, Integer> getTermFrequencies(Map<String/*Index terms*/, ArrayList<String>/*OriginalTerms*/> indexAndOriginalTerms);
 }

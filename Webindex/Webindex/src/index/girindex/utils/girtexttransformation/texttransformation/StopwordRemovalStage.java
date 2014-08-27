@@ -1,7 +1,7 @@
 package index.girindex.utils.girtexttransformation.texttransformation;
 
 import index.girindex.utils.girtexttransformation.ExtractionRequest;
-import index.girindex.utils.girtexttransformation.informationextractiontools.ITextInformationExtractor;
+import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
 
 public class StopwordRemovalStage extends AbstractTextTransformationStage {
 

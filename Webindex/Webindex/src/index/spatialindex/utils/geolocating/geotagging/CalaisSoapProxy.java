@@ -1,8 +1,8 @@
-package index.spatialindex.utils.geotagging;
+package index.spatialindex.utils.geolocating.geotagging;
 
-public class CalaisSoapProxy implements index.spatialindex.utils.geotagging.CalaisSoap {
+public class CalaisSoapProxy implements index.spatialindex.utils.geolocating.geotagging.CalaisSoap {
   private String _endpoint = null;
-  private index.spatialindex.utils.geotagging.CalaisSoap calaisSoap = null;
+  private index.spatialindex.utils.geolocating.geotagging.CalaisSoap calaisSoap = null;
   
   public CalaisSoapProxy() {
     _initCalaisSoapProxy();
@@ -15,7 +15,7 @@ public class CalaisSoapProxy implements index.spatialindex.utils.geotagging.Cala
   
   private void _initCalaisSoapProxy() {
     try {
-      calaisSoap = (new index.spatialindex.utils.geotagging.CalaisLocator()).getcalaisSoap();
+      calaisSoap = (new index.spatialindex.utils.geolocating.geotagging.CalaisLocator()).getcalaisSoap();
       if (calaisSoap != null) {
         if (_endpoint != null)
           ((javax.xml.rpc.Stub)calaisSoap)._setProperty("javax.xml.rpc.service.endpoint.address", _endpoint);
@@ -38,7 +38,7 @@ public class CalaisSoapProxy implements index.spatialindex.utils.geotagging.Cala
     
   }
   
-  public index.spatialindex.utils.geotagging.CalaisSoap getCalaisSoap() {
+  public index.spatialindex.utils.geolocating.geotagging.CalaisSoap getCalaisSoap() {
     if (calaisSoap == null)
       _initCalaisSoapProxy();
     return calaisSoap;

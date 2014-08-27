@@ -1,7 +1,7 @@
 package index.girindex.utils.girtexttransformation.texttransformation;
 
 import index.girindex.utils.girtexttransformation.ExtractionRequest;
-import index.girindex.utils.girtexttransformation.informationextractiontools.ITextInformationExtractor;
+import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
 
 public class IndexAndOriginalTokenExtractionStage extends AbstractTextTransformationStage {
 
@@ -11,7 +11,7 @@ public class IndexAndOriginalTokenExtractionStage extends AbstractTextTransforma
 
 	@Override
 	public void handleRequest(ExtractionRequest request) {
-		this.beforeTransformation = request.getInputText();
+		this.beforeTransformation = request.getTransformationStage(precursor.getClass().getSimpleName());
 		this.afterTransformation = extractor.extractIndexAndOriginalTerms((String) beforeTransformation);
 		request.addTransformationStage(this.getClass().getSimpleName(), afterTransformation);
 

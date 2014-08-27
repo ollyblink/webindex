@@ -2,13 +2,13 @@ package index.girindex.implementations;
 
 import index.girindex.AbstractGIRIndex;
 import index.girindex.combinationstrategy.ICombinationStrategy;
-import index.girindex.utils.girtexttransformation.informationextractiontools.ITextInformationExtractor;
 import index.spatialindex.utils.SpatialDocument;
 import index.spatialindex.utils.SpatialIndexMetaData;
 import index.spatialindex.utils.SpatialIndexUtils;
 import index.textindex.utils.Term;
 import index.textindex.utils.TextIndexMetaData;
 import index.textindex.utils.TextIndexUtils;
+import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
 import index.utils.Ranking;
 import index.utils.Score;
 import index.utils.SimpleIndexDocument;

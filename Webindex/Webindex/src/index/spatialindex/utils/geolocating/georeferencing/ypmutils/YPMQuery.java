@@ -7,7 +7,7 @@
  * 
  */
 
-package index.spatialindex.utils.georeferencing;
+package index.spatialindex.utils.geolocating.georeferencing.ypmutils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

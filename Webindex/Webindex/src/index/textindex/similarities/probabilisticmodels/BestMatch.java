@@ -1,10 +1,10 @@
 package index.textindex.similarities.probabilisticmodels;
 
-import index.girindex.utils.girtexttransformation.informationextractiontools.AbstractTextInformationExtractor;
 import index.textindex.similarities.AbstractTextSimilarity;
 import index.textindex.similarities.ITextSimilarity;
 import index.textindex.utils.Term;
 import index.textindex.utils.TermDocs;
+import index.textindex.utils.informationextractiontools.AbstractTextInformationExtractor;
 import index.utils.Document;
 import index.utils.Ranking;
 import index.utils.Score;

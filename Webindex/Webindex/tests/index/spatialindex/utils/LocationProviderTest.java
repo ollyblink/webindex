@@ -2,7 +2,7 @@ package index.spatialindex.utils;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import index.spatialindex.utils.georeferencing.LocationProvider;
+import index.spatialindex.utils.geolocating.georeferencing.LocationProvider;
 
 import java.util.ArrayList;
 import java.util.List;
