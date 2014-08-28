@@ -25,37 +25,16 @@ public class SpatialOnlyIndexTest {
 	@BeforeClass
 	public static void init() {
 
-		String[] docs = new String[] { "This text is about Zürich, Schweiz", "The mayor of London was not amused",
-				"Many people died in World War II when Berlin was bombed by the allies" };
+		String[] docs = new String[] { "This text is about Zürich, Schweiz", "The mayor of London was not amused", "Many people died in World War II when Berlin was bombed by the allies" };
 
-		// Terms
-				// ITextInformationExtractor extractor = new MockTextInformationExtractor();
-				// StopwordRemovalStage stopwordRemovalStage = new StopwordRemovalStage(extractor);
-				// StemmingStage stemmingStage = new StemmingStage(extractor);
-				// TokenizationStage tokenizationStage = new TokenizationStage(extractor);
-				// IndexAndOriginalTokenExtractionStage indexAndOriginalTokenExtractionStage = new IndexAndOriginalTokenExtractionStage(extractor);
-				// TermFrequencyExtractionStage termFrequencyExtractionStage = new TermFrequencyExtractionStage(extractor);
+		// Spatial
+		GeoTaggingStage geoTaggingStage = new GeoTaggingStage(IS_SHOW_TRANSFORMATION_ENABLED);
+		GeoReferencingStage geoReferencingStage = new GeoReferencingStage(IS_SHOW_TRANSFORMATION_ENABLED);
 
-				// Spatial
-				GeoTaggingStage geoTaggingStage = new GeoTaggingStage(IS_SHOW_TRANSFORMATION_ENABLED);
-				GeoReferencingStage geoReferencingStage = new GeoReferencingStage(IS_SHOW_TRANSFORMATION_ENABLED);
+		// Chaining the stages together in an appropriate way
 
-				// Chaining the stages together in an appropriate way
-
-				// First text extraction
-				// stopwordRemovalStage.setSuccessor(stemmingStage);
-				// stemmingStage.setPrecursor(stopwordRemovalStage);
-				// stemmingStage.setSuccessor(tokenizationStage);
-				// tokenizationStage.setPrecursor(stemmingStage);
-				// tokenizationStage.setSuccessor(indexAndOriginalTokenExtractionStage);
-				// indexAndOriginalTokenExtractionStage.setPrecursor(stopwordRemovalStage); // so that only the relevant terms are analysed
-				// indexAndOriginalTokenExtractionStage.setSuccessor(termFrequencyExtractionStage);
-				// termFrequencyExtractionStage.setPrecursor(indexAndOriginalTokenExtractionStage);
-				// // Now spatial extraction
-				// termFrequencyExtractionStage.setSuccessor(geoTaggingStage);
-				// geoTaggingStage.setPrecursor(termFrequencyExtractionStage);
-				geoTaggingStage.setSuccessor(geoReferencingStage);
-				geoReferencingStage.setPrecursor(geoTaggingStage);
+		geoTaggingStage.setSuccessor(geoReferencingStage);
+		geoReferencingStage.setPrecursor(geoTaggingStage);
 
 		spatialOnlyIndex = new SpatialOnlyIndex();
 		long docCounter = 1;
@@ -80,13 +59,11 @@ public class SpatialOnlyIndexTest {
 	@Test
 	public void queryTest() {
 		Ranking ranking = spatialOnlyIndex.queryIndex(new SpatialIndexQuery("point_in", "Switzerland"));
-//		for (Score d : ranking.getResults()) {
-//			System.out.println(d.getDocid() + ": "+ d.getScore());
-//		}
+
 		for (Score d : ranking.getResults()) {
 			if (d.getDocid() == 1) {
 				assertEquals(1f, d.getScore(), 0.01f);
-			} else { 
+			} else {
 				assertEquals(0f, d.getScore(), 0.01f);
 			}
 		}

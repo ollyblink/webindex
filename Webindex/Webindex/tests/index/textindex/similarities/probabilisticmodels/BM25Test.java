@@ -1,10 +1,9 @@
 package index.textindex.similarities.probabilisticmodels;
 
 import static org.junit.Assert.assertEquals;
-import index.utils.DBDataProviderTest;
+import index.utils.DBDataManagerTest;
 import index.utils.Ranking;
 import index.utils.Score;
-import index.utils.SimilarityTestUtils;
 import index.utils.query.TextIndexQuery;
 
 import java.util.HashMap;
@@ -12,6 +11,8 @@ import java.util.HashMap;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import testutils.SimilarityTestUtils;
 
 public class BM25Test {
 
@@ -46,8 +47,8 @@ public class BM25Test {
 
 	@AfterClass
 	public static void tearDown() {
-		DBDataProviderTest.dbManager.dropTables();
-		DBDataProviderTest.index.close();
+		DBDataManagerTest.dbTablesManager.dropTables();
+		DBDataManagerTest.dbDataManager.close();
 
 	}
 }

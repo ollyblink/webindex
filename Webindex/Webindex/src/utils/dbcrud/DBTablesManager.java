@@ -55,7 +55,9 @@ public final class DBTablesManager {
 			"create table locations(docid bigserial not null references documents(id)); Select ADDGEOMETRYCOLUMN('locations','geometry',4326,'GEOMETRY',2); Create Index locations_spatial_index on locations using GIST(geometry); Alter table locations add primary key(docid, geometry)" };
 
 	public static final String dropTables = "drop table if exists terms, documents, term_docs, metadata, original_terms, locations cascade;";
-
+	
+	
+	
 	private AbstractDBConnector db;
 
 	public DBTablesManager(AbstractDBConnector db) {
@@ -83,7 +85,7 @@ public final class DBTablesManager {
 				return false;
 			}
 		} else {
-			// System.err.println("tables have already been initialised.");
+			 System.err.println("tables have already been initialised.");
 			return false;
 		}
 	}
@@ -99,7 +101,7 @@ public final class DBTablesManager {
 			}
 		}
 	}
-
+ 
 	public Connection getConnection() {
 		return db.getConnection();
 	}

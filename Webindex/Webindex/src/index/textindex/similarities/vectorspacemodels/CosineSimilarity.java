@@ -40,15 +40,14 @@ public final class CosineSimilarity extends AbstractTextSimilarity {
 		return new Ranking(scores);
 	}
 
-	private ArrayList<Score> calculateCosineSimilarity(HashMap<Term, Integer> queryTermFreqs, int maxFreq, HashMap<Term, List<Document>> relevantDocuments, TextIndexMetaData metaData,
-			boolean isIntersected) {
-
+	private ArrayList<Score> calculateCosineSimilarity(HashMap<Term, Integer> queryTermFreqs, int maxFreq, HashMap<Term, List<Document>> relevantDocuments, TextIndexMetaData metaData, boolean isIntersected) {
+	 
 		Map<Long, Float> vectorNormsPerDoc = new HashMap<Long, Float>();
 
 		for (Term queryTerm : queryTermFreqs.keySet()) {
 			Term actualTerm = findTerm(relevantDocuments, queryTerm);
-
-			for (Document document : relevantDocuments.get(queryTerm)) {
+//			System.out.println(queryTerm + ", " +actualTerm);
+			for (Document document : relevantDocuments.get(actualTerm)) {
 
 				TermDocsIdentifier id = new TermDocsIdentifier(queryTerm.getIndexedTerm().getTermId(), document.getId().getId());
 
@@ -83,7 +82,7 @@ public final class CosineSimilarity extends AbstractTextSimilarity {
 	}
 
 	private Term findTerm(HashMap<Term, List<Document>> relevantDocuments, Term queryTerm) {
-		for (Term term : relevantDocuments.keySet()) {
+		for (Term term : relevantDocuments.keySet()) { 
 			if (term.equals(queryTerm)) {
 				return term;
 			}

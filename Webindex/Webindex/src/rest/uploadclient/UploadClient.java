@@ -26,7 +26,7 @@ public class UploadClient {
 
 //		String start = "C:/Users/rsp/Desktop/politics";
 //		String start = "C:/Users/rsp/Desktop/inputdocuments";
-		String start = "C:/Users/rsp/Desktop/hikrtexts";
+		String start = "C:/Users/rsp/Desktop/hikr_inputdata/hikrtextsfull";
 		Client client = Client.create(new DefaultClientConfig());
 		WebResource service = client.resource(getBaseURI());
 		List<String> filePaths = new ArrayList<>();
@@ -37,6 +37,7 @@ public class UploadClient {
 			if(counter == 200){
 				return;
 			}
+//			System.out.println(file);
 			try {
 				BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
 				String text="", line=null;
@@ -45,7 +46,7 @@ public class UploadClient {
 				}
 				reader.close();
 				FormDataMultiPart part = new FormDataMultiPart().field("file", text);
-				if(counter%999== 0){
+				if(counter%10== 0){
 					System.out.println("indexing document "+  (counter+1));
 				}
 				String response = service.path("docupload").type(MediaType.MULTIPART_FORM_DATA_TYPE).post(String.class, part);

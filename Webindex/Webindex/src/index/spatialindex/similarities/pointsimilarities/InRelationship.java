@@ -19,9 +19,7 @@ public class InRelationship implements ISpatialRelationship {
 			for (SpatialDocument dFP : documentFootPrints) {
 				if (qFP.contains(dFP.getDocumentFootprint())) { 
 					results.add(new SpatialScore(dFP.getDocid().getDocId(), dFP.getDocumentFootprint(), 1f)); 
-				}else{
-					results.add(new SpatialScore(dFP.getDocid().getDocId(), dFP.getDocumentFootprint(), 0f));
-				}
+				} 
 			}
 		}
 

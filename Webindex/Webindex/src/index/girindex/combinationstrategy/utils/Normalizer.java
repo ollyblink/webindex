@@ -6,6 +6,9 @@ import java.util.ArrayList;
 
 public class Normalizer {
 	public static ArrayList<Score> normalizeMinMax(final ArrayList<Score> scores) { 
+		if(scores.size()==1){
+			return scores;
+		}
 		ArrayList<Score> normalizedValues = new ArrayList<>();
 
 		Float min = getMin(scores);

@@ -34,11 +34,11 @@ import utils.dbcrud.DBTablesManager;
 public enum IndexDao {
 	INSTANCE;
 
+	private final ITextInformationExtractor DEFAULT_TEXT_EXTRACTOR = new GermanTextInformationExtractor();
 	private final GIRIndexType CURRENT_GIR_TYPE = GIRIndexType.SEPARATED;
 	private final ICombinationStrategy DEFAULT_COMBINATION_STRATEGY = new CombMNZ();
 	private IGIRIndex index;
 	private DBDataManager dbDataManager;
-	private ITextInformationExtractor tokenizer;
 	private static final int QUEUE_SIZE = 5002;
 
 	private IndexDao() {
@@ -50,11 +50,9 @@ public enum IndexDao {
 
 		AbstractDBConnector db = new PGDBConnector(host, port, database, user, password);
 		DBTablesManager dbManager = new DBTablesManager(db);
-		this.tokenizer = new GermanTextInformationExtractor();
-		this.dbDataManager = new DBDataManager(dbManager, tokenizer, QUEUE_SIZE);
+		this.dbDataManager = new DBDataManager(dbManager, DEFAULT_TEXT_EXTRACTOR, QUEUE_SIZE, true);
 		dbDataManager.initializeDBTables();
 
-		this.index = getGIRIndex(CURRENT_GIR_TYPE);
 	}
 
 	private IGIRIndex getGIRIndex(GIRIndexType type) {
@@ -66,18 +64,18 @@ public enum IndexDao {
 			ICombinationStrategy combinationStrategy = DEFAULT_COMBINATION_STRATEGY;
 
 			IGIRIndex girIndex = new SeparatedGIRIndex(textIndex, spatialIndex, combinationStrategy);
-			return null;
+			return girIndex;
 		}
 	}
 
 	private ISpatialIndex initializeSpatialIndex() {
 		ISpatialIndex spatialIndex = new SpatialOnlyIndex();
 
-		ArrayList<SpatialDocument> locations = dbDataManager.getLocations();
-		for(SpatialDocument doc: locations){
+		ArrayList<SpatialDocument> locations = dbDataManager.getLocations(null);
+		for (SpatialDocument doc : locations) {
 			spatialIndex.addDocument(doc);
 		}
-		
+
 		return spatialIndex;
 	}
 
@@ -100,7 +98,7 @@ public enum IndexDao {
 						}
 					}
 				}
-			} 
+			}
 			docAndTerms.put(document, docTerms);
 		}
 
@@ -110,10 +108,14 @@ public enum IndexDao {
 			termDocsMeta.put(t.getId(), t);
 		}
 
-		ITextIndex textIndex = new RAMTextOnlyIndex(new TextIndexMetaData(termDocsMeta, overallTextIndexMetaData), null);
+		ITextIndex textIndex = new RAMTextOnlyIndex(new TextIndexMetaData(termDocsMeta, overallTextIndexMetaData), DEFAULT_TEXT_EXTRACTOR);
 		textIndex.addDocuments(docAndTerms);
 
 		return textIndex;
+	}
+
+	public void populateIndex() {
+		this.index = getGIRIndex(CURRENT_GIR_TYPE);
 	}
 
 	public void addDocument(String pureText) {
@@ -121,22 +123,26 @@ public enum IndexDao {
 	}
 
 	public Ranking submitQuery(String type, String query, String intersected) {
-		if (query == null || query.equals("undefined") || query.trim().length() == 0) {
+		if (index == null) {
+			if (query == null || query.equals("undefined") || query.trim().length() == 0) {
+				return new Ranking();
+			}
+
+			boolean isIntersected = false;
+			switch (intersected) {
+			case "intersection":
+				isIntersected = true;
+				break;
+			case "union":
+			default:
+				isIntersected = false;
+				break;
+			}
+
+			return index.queryIndex(new TextIndexQuery(query, type, isIntersected));
+		} else {
 			return new Ranking();
 		}
-
-		boolean isIntersected = false;
-		switch (intersected) {
-		case "intersection":
-			isIntersected = true;
-			break;
-		case "union":
-		default:
-			isIntersected = false;
-			break;
-		}
-
-		return index.queryIndex(new TextIndexQuery(query, type, isIntersected));
 	}
 
 	public static void main(String[] args) {
@@ -146,6 +152,11 @@ public enum IndexDao {
 		// DBDataManager dbManager = DBInitializer.initTestTextDB(tokenizer, DBInitializer.getTestDBManager(), docs);
 		// DBInitializer.tearDownTestDB(dbManager);
 
+	}
+
+	public void dropAndInitializeTables() {
+		dbDataManager.dropTables();
+		dbDataManager.initializeDBTables();
 	}
 
 }

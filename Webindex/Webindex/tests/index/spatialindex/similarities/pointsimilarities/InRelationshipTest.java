@@ -35,23 +35,20 @@ public class InRelationshipTest {
 		queryFootPrints.add(swissMBR);
 
 		documentFootPrints.add(new SpatialDocument(1l, fctry.createPoint(new Coordinate(8.47, 47.38))));
-		documentFootPrints.add(new SpatialDocument(1l, fctry.createPolygon(new Coordinate[] { new Coordinate(8.47 - .1, 47.38 - .1), new Coordinate(8.47 - .1, 47.38 + .1),
-				new Coordinate(8.47 + .1, 47.38 + .1), new Coordinate(8.47 + .1, 47.38 - .1), new Coordinate(8.47 - .1, 47.38 - .1) })));
+		documentFootPrints.add(new SpatialDocument(1l, fctry.createPolygon(new Coordinate[] { new Coordinate(8.47 - .1, 47.38 - .1), new Coordinate(8.47 - .1, 47.38 + .1), new Coordinate(8.47 + .1, 47.38 + .1), new Coordinate(8.47 + .1, 47.38 - .1), new Coordinate(8.47 - .1, 47.38 - .1) })));
 
 		double iLat = 48;
 		double iLon = 12;
 		documentFootPrints.add(new SpatialDocument(2l, fctry.createPoint(new Coordinate(iLon, iLat))));
-		documentFootPrints.add(new SpatialDocument(2l, fctry.createPolygon(new Coordinate[] { new Coordinate(iLon - .1, iLat - .1), new Coordinate(iLon - .1, iLat + .1),
-				new Coordinate(iLon + .1, iLat + .1), new Coordinate(iLon + .1, iLat - .1), new Coordinate(iLon - .1, iLat - .1) })));
+		documentFootPrints.add(new SpatialDocument(2l, fctry.createPolygon(new Coordinate[] { new Coordinate(iLon - .1, iLat - .1), new Coordinate(iLon - .1, iLat + .1), new Coordinate(iLon + .1, iLat + .1), new Coordinate(iLon + .1, iLat - .1), new Coordinate(iLon - .1, iLat - .1) })));
 
 	}
 
 	@Test
 	public void testPointInRelationship() {
 		ArrayList<? extends Score> datas = inRel.calculateSimilarity(queryFootPrints, documentFootPrints);
-		
 
-		for (int i = 0; i< datas.size();++i) {
+		for (int i = 0; i < datas.size(); ++i) {
 			SpatialScore data = (SpatialScore) datas.get(i);
 			String className = data.getGeometry().getClass().getSimpleName();
 
@@ -62,8 +59,7 @@ public class InRelationshipTest {
 					assertTrue(data.getGeometry().toString().contains("8.47") && data.getGeometry().toString().contains("47.38"));
 					assertTrue(data.getScore() == 1f);
 				} else if (className.equals("Polygon")) {
-					assertTrue(data.getGeometry().toString().contains("8.37") && data.getGeometry().toString().contains("8.57") && data.getGeometry().toString().contains("47.28")
-							&& data.getGeometry().toString().contains("47.48"));
+					assertTrue(data.getGeometry().toString().contains("8.37") && data.getGeometry().toString().contains("8.57") && data.getGeometry().toString().contains("47.28") && data.getGeometry().toString().contains("47.48"));
 					assertTrue(data.getScore() == 1f);
 				} else {
 					fail();
@@ -71,11 +67,10 @@ public class InRelationshipTest {
 			} else if (data.getDocid() == 2l) {
 				if (className.equals("Point")) {
 					assertTrue(!data.getGeometry().toString().contains("8.47") && !data.getGeometry().toString().contains("47.38"));
-					assertTrue(data.getScore() == 0f);
+					assertTrue(data.getScore() == null);
 				} else if (className.equals("Polygon")) {
-					assertTrue(!data.getGeometry().toString().contains("8.37") && !data.getGeometry().toString().contains("8.57") && !data.getGeometry().toString().contains("47.28")
-							&& !data.getGeometry().toString().contains("47.48"));
-					assertTrue(data.getScore() == 0f);
+					assertTrue(!data.getGeometry().toString().contains("8.37") && !data.getGeometry().toString().contains("8.57") && !data.getGeometry().toString().contains("47.28") && !data.getGeometry().toString().contains("47.48"));
+					assertTrue(data.getScore() == null);
 				} else {
 					fail();
 				}

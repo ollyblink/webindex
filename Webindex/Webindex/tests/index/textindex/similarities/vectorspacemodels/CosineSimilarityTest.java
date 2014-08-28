@@ -4,10 +4,9 @@ import static org.junit.Assert.assertEquals;
 import index.textindex.similarities.tfidfweighting.DocTFIDFTypes;
 import index.textindex.similarities.tfidfweighting.Formula3TFStrategy;
 import index.textindex.similarities.tfidfweighting.QueryIDFTypes;
-import index.utils.DBDataProviderTest;
+import index.utils.DBDataManagerTest;
 import index.utils.Ranking;
 import index.utils.Score;
-import index.utils.SimilarityTestUtils;
 import index.utils.query.TextIndexQuery;
 
 import java.util.HashMap;
@@ -15,6 +14,8 @@ import java.util.HashMap;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import testutils.SimilarityTestUtils;
 
 public class CosineSimilarityTest {
 
@@ -48,7 +49,7 @@ public class CosineSimilarityTest {
 	@AfterClass
 	public static void tearDown() {
 		// DBDataProviderTest.index.dropTables();
-		DBDataProviderTest.index.close();
+		DBDataManagerTest.dbDataManager.close();
 
 	}
 }

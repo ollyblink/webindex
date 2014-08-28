@@ -100,9 +100,10 @@ public class RAMTextOnlyIndex implements ITextIndex {
 
 	private HashMap<Term, List<Document>> getAllRelevantDocs(Iterable<Term> terms) {
 		HashMap<Term, List<Document>> relevantDocuments = new HashMap<>();
-		for (Term term : terms) {
+		
+		for (Term term : terms) { 
 			Term actualTerm = findActualTerm(term);
-			List<Document> docs = index.get(actualTerm);
+			List<Document> docs = index.get(actualTerm); 
 			if (docs != null) {
 				relevantDocuments.put(actualTerm, docs);
 			}
@@ -160,8 +161,8 @@ public class RAMTextOnlyIndex implements ITextIndex {
 		return subset;
 	}
 
-	private Term findActualTerm(Term term) {
-		for (Term t : index.keySet()) {
+	private Term findActualTerm(Term term) { 
+		for (Term t : index.keySet()) { 
 			if (t.equals(term)) {
 				return t;
 			}

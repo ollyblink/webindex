@@ -1,6 +1,5 @@
 package index.textindex.implementations;
 
-import index.textindex.similarities.ITextSimilarity;
 import index.textindex.utils.Term;
 import index.utils.Document;
 import index.utils.Ranking;

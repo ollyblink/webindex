@@ -1,6 +1,5 @@
 package testutils;
 
-import index.spatialindex.implementations.SpatialOnlyIndex;
 import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
 import index.textindex.utils.informationextractiontools.MockTextInformationExtractor;
 
@@ -22,12 +21,12 @@ public class DBInitializer {
 		for (String d : docs) {
 			documents.add(d);
 		}
-		DBDataManager dbDataProvider = new DBDataManager(dbManager, tokenizer, 5000);
+		DBDataManager dbDataProvider = new DBDataManager(dbManager, tokenizer, 5000,false);
 		dbDataProvider.addDocuments(documents);
 		return dbDataProvider;
 	}
 
-	public static DBTablesManager getTestDBManager() {
+	public static DBTablesManager initDB() {
 		String host = "localhost";
 		String port = "5432";
 		String database = "girindex_test";
@@ -41,25 +40,10 @@ public class DBInitializer {
 		return dbManager;
 	}
 
-	public static void tearDownTestDB(DBDataManager dbManager) {
+	public static void tearDownTestDB(DBTablesManager dbManager) {
 		dbManager.dropTables();
-		dbManager.closeConnection();
+		// dbManager.closeConnection();
 	}
 
-	public static SpatialOnlyIndex initSpatialTestDB(DBTablesManager dbManager, String[] docs) {
-
-		SpatialOnlyIndex index = null;
-//		new SpatialOnlyIndex(new Quadtree(), new DBDataManager(dbManager, tokenizer, 5000));
-//		SpatialDocument[] docLocs = new SpatialDocument[docs.length];
-//		for (int i = 0; i < docs.length; ++i) {
-//			docLocs[i] = new SpatialDocument(i + 1);
-//			List<? extends Geometry> geometries = LocationProvider.INSTANCE.retrieveLocations(docs[i]);
-//			for (Geometry g : geometries) {
-//				docLocs[i].addGeometry(g);
-//			}
-//
-//		}
-//		index.addDocumentFootprint(docLocs);
-		return index;
-	}
+	 
 }

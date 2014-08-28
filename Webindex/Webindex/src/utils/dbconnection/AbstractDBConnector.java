@@ -86,8 +86,8 @@ public abstract class AbstractDBConnector {
 			DatabaseMetaData meta = this.connection.getMetaData();
 			ResultSet res = meta.getTables(null, null, null, new String[] { "TABLE" });
 
-			while (res.next()) {
-				if (res.getString("TABLE_NAME").equalsIgnoreCase(indexTableName)) {
+			while (res.next()) { 
+ 				if (res.getString("TABLE_NAME").equalsIgnoreCase(indexTableName)) {
 					return true; // This table exists
 				}
 			}

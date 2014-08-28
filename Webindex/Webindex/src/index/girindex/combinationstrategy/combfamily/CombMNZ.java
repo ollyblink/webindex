@@ -1,6 +1,5 @@
 package index.girindex.combinationstrategy.combfamily;
 
-import index.utils.Ranking;
 import index.utils.Score;
 
 import java.util.ArrayList;

@@ -3,15 +3,14 @@
 	xmlns="http://xmlns.jcp.org/xml/ns/javaee"
 	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
 	id="WebApp_ID" version="3.1">
-	<display-name>Webindex</display-name>
-
+	<display-name>Webindex</display-name> 
 	<servlet>
 		<servlet-name>Jersey REST Service</servlet-name>
 		<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
 		<init-param> 
 	<!-- ALWAYS USE JACKSON INSTEAD OF THE NORMAL JERSEY JSON CONVERTER -->
 			<param-name>com.sun.jersey.config.property.packages</param-name>
-			<param-value>resources;org.codehaus.jackson.jaxrs</param-value>
+			<param-value>rest/indexresource;org.codehaus.jackson.jaxrs</param-value>
 		</init-param>
 		<init-param>
 			<param-name>com.sun.jersey.spi.container.ContainerResponseFilters</param-name>

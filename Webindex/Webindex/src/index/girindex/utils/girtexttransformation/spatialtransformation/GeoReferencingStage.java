@@ -15,7 +15,7 @@ public class GeoReferencingStage extends AbstractTransformationStage {
 
 	
 
-	public GeoReferencingStage(boolean isShowTransformationEnabled ) {
+	public GeoReferencingStage(boolean isShowTransformationEnabled) {
 		super(isShowTransformationEnabled);
 	}
 

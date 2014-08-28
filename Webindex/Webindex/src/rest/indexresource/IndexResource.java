@@ -3,6 +3,7 @@ package rest.indexresource;
 import index.utils.Ranking;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -83,6 +84,21 @@ public class IndexResource {
 		Ranking ranking =IndexDao.INSTANCE.submitQuery(textSimilarityType, query, intersected);
 //		System.out.println(ranking);
 		return ranking;
+	}
+	
+	@GET
+	@Path("/testrest")
+	@Produces(MediaType.TEXT_PLAIN)
+	public String testRest(){
+		return "works";
+	}
+	
+	@GET
+	@Path("/cleardb")
+	@Produces(MediaType.TEXT_PLAIN)
+	public String cleardb(){ 
+		IndexDao.INSTANCE.dropAndInitializeTables();
+		return "cleared db";
 	}
 
 }

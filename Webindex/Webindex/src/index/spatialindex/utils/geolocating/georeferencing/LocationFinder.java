@@ -1,11 +1,10 @@
 package index.spatialindex.utils.geolocating.georeferencing;
 
-import index.spatialindex.utils.geolocating.georeferencing.PEFactory.PEType;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vividsolutions.jts.awt.PointShapeFactory.X;
+import utils.dbconnection.PGDBConnector;
+
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
@@ -19,13 +18,16 @@ public enum LocationFinder {
 	INSTANCE;
 	
 
-	/** First extractor to query */
-	private IPlaceExtractor placeMaker;
-	/** Second extractor to query */
-	private IPlaceExtractor geoNames;
+	 
+	List<IPlaceExtractor> extractors = new ArrayList<IPlaceExtractor>();
 	
-	private final String YPM_XML = System.getProperty("user.dir") + "/files/ypm.xml";
+	private final String YPM_XML = "ypm.xml";
 	private final String USERNAME = "ollyblink";
+	private final String host = "localhost";
+	private final String port = "5432";
+	private final String database = "girindex";
+	private final String user = "postgres";
+	private final String password = "32qjivkd";
 	/**
 	 * Constructor
 	 * 
@@ -36,8 +38,9 @@ public enum LocationFinder {
 	 * @param boundsRules
 	 */
 	private LocationFinder() {
-		this.placeMaker = PEFactory.createPlaceExtractor(PEType.YPM, USERNAME, YPM_XML);
-		this.geoNames = PEFactory.createPlaceExtractor(PEType.GN, USERNAME, YPM_XML);
+		 extractors.add(new YPMPlaceExtractor(YPM_XML));
+		 extractors.add(new GNPlaceExtractor(USERNAME));
+		 extractors.add(new HikrGazetteerPlaceExtractor(new PGDBConnector(host, port, database, user, password)));
 	}
 
 	/**
@@ -48,9 +51,11 @@ public enum LocationFinder {
 	 * @return MBRs of locations found
 	 */
 	public ArrayList<Geometry> findLocation(String query) {
+		
 		ArrayList<Geometry> locations = new ArrayList<>();
-		locations.addAll(placeMaker.extract(query));
-		locations.addAll(geoNames.extract(query));
+		for(IPlaceExtractor p: extractors){
+			locations.addAll(p.extract(query)); 
+		} 
 		return locations;
 	}
 //
@@ -63,7 +68,7 @@ public enum LocationFinder {
 	 */
 	public ArrayList<Geometry> findMBR(String query) {
 		ArrayList<Geometry> locations = new ArrayList<>();
-		locations.addAll(placeMaker.extract(query)); 
+		locations.addAll(extractors.get(0).extract(query)); 
 		return locations;
 	}
 }

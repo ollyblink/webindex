@@ -50,7 +50,8 @@ public abstract class AbstractComb implements ICombinationStrategy {
 	protected void normalize(Ranking... rankings) {
 		// Score normalization
 		for (Ranking ranking : rankings) {
-			ranking.setResults(Normalizer.normalizeMinMax(ranking.getResults()));
+			ArrayList<Score> normalizeMinMax = Normalizer.normalizeMinMax(ranking.getResults());
+			ranking.setResults(normalizeMinMax);
 		}
 	}
 
