@@ -146,7 +146,7 @@ public enum IndexDao {
 				Ranking ranking = index.queryIndex(girQuery);
 				addCoordinates(ranking);
 				restRanking = convertToRESTRanking(ranking);
-			} else if (textQuery == null && spatialQuery != null) {// Spatial only
+			} else if (textQuery == null && spatialQuery != null) {// Spatial only 
 				Ranking ranking = index.queryIndex(spatialQuery);
 				restRanking = convertToRESTRanking(ranking);
 			} else if (textQuery != null && spatialQuery == null) {// Text only
@@ -209,8 +209,11 @@ public enum IndexDao {
 		RESTRanking restRanking = new RESTRanking();
 		ArrayList<RESTScore> restScores = new ArrayList<>();
 		ArrayList<Score> results = ranking.getResults();
-		for (Score s : results) {
-			restScores.add(new RESTScore(s.getDocument(), s.getScore(), GeometryConverter.convertJTStoRESTGeometry(s.getGeometry())));
+		for (Score s : results) { 
+			
+			RESTScore restScore = new RESTScore(s.getDocument(), s.getScore(), GeometryConverter.convertJTStoRESTGeometry(s.getGeometry()));
+			restScores.add(restScore); 
+			
 		}
 		restRanking.setResults(restScores);
 

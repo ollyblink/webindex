@@ -17,4 +17,9 @@ public class InRelationship extends AbstractSpatialRelationship {
 		}
 	}
 
+	@Override
+	public ArrayList<Geometry> preCalculateQueryFootprint(ArrayList<Geometry> queryFootPrints) {
+		return queryFootPrints; //Nothing to do here.
+	}
+
 }

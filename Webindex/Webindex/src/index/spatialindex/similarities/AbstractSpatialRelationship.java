@@ -10,6 +10,18 @@ import com.vividsolutions.jts.geom.Geometry;
 
 public abstract class AbstractSpatialRelationship implements ISpatialRelationship {
 
+	@Override
+	public ArrayList<Score> calculateSimilarity(final List<? extends Geometry> queryFootPrints, final List<SpatialDocument> documentFootPrints) {
+		ArrayList<Score> results = new ArrayList<Score>();
+		for (Geometry qFP : queryFootPrints) {
+			for (SpatialDocument dFP : documentFootPrints) {
+				calculateSimilarity(results, qFP, dFP);
+			}
+		}
+
+		return results;
+	}
+
 	/**
 	 * This method is used to only add the geometry with the maximal score to the ranking. There can always be only one geometry for a document that contributes to the score
 	 * 
@@ -28,24 +40,13 @@ public abstract class AbstractSpatialRelationship implements ISpatialRelationshi
 				break;
 			}
 		}
-		if(!found) {
+		if (!found) {
 			results.add(score);
 		}
 
 	}
-	
-	@Override
-	public ArrayList<Score> calculateSimilarity(final List<? extends Geometry> queryFootPrints, final List<SpatialDocument> documentFootPrints) {
-		ArrayList<Score> results = new ArrayList<Score>();
-		for (Geometry qFP : queryFootPrints) {
-			for (SpatialDocument dFP : documentFootPrints) {
-				calculateSimilarity(results, qFP, dFP); 
-			}
-		}
 
-		return results;
-	}
- 
 	protected abstract void calculateSimilarity(ArrayList<Score> results, Geometry qFP, SpatialDocument dFP);
 
+	
 }

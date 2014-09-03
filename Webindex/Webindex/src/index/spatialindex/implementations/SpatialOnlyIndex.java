@@ -34,7 +34,7 @@ public class SpatialOnlyIndex implements ISpatialIndex {
 		// =======================================================================================
 		// Get spatial location geometry
 		ArrayList<Geometry> queryFootPrints = LocationFinder.INSTANCE.findMBR(query.getLocation());
-		query.setQueryFootPrints(queryFootPrints);
+		query.setQueryFootPrints(spatRelAlgorithm.preCalculateQueryFootprint(queryFootPrints));
 
 		// Filter stage
 		List<SpatialDocument> documentFootPrints = new ArrayList<SpatialDocument>();
@@ -46,6 +46,7 @@ public class SpatialOnlyIndex implements ISpatialIndex {
 		query.setQueryFootPrints(queryFootPrints);
 		// Algorithm stage: calculate score for each found geometry
 		ArrayList<Score> results = spatRelAlgorithm.calculateSimilarity(queryFootPrints, documentFootPrints);
+
 		// =======================================================================================
 		// End querying spatial index
 		// =======================================================================================
@@ -65,6 +66,7 @@ public class SpatialOnlyIndex implements ISpatialIndex {
 		return ranking;
 	}
 
+	 
 	@Override
 	public void addDocument(SpatialDocument spatialDocument) {
 		if (spatialDocument == null || spatialDocument.getDocumentFootprint() == null) {

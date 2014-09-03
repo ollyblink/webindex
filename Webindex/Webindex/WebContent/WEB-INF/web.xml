@@ -21,8 +21,7 @@
 	<servlet-mapping>
 		<servlet-name>Jersey REST Service</servlet-name>
 		<url-pattern>/webindex/*</url-pattern>
-	</servlet-mapping>
-
+	</servlet-mapping> 
 	<filter>
 		<filter-name>CORS</filter-name>
 		<filter-class>com.thetransactioncompany.cors.CORSFilter</filter-class>

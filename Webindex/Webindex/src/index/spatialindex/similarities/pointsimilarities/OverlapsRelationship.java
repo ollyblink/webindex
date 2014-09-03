@@ -19,5 +19,10 @@ public class OverlapsRelationship extends AbstractSpatialRelationship {
 			float scoreValue = (float) (qFP.intersection(dFP.getDocumentFootprint()).getArea()/qFP.getArea());
 			checkLargestScore(results, dFP, scoreValue);
 		} 
+	}
+
+	@Override
+	public ArrayList<Geometry> preCalculateQueryFootprint(ArrayList<Geometry> queryFootPrints) {
+		return queryFootPrints;
 	} 
 }
