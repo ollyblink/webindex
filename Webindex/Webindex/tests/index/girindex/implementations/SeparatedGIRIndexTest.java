@@ -14,7 +14,6 @@ import index.utils.query.SpatialIndexQuery;
 import index.utils.query.TextIndexQuery;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -37,15 +36,15 @@ public class SeparatedGIRIndexTest {
 		dbTablesManager = DBInitializer.initDB();
 		dbDataManager = DBInitializer.initTestTextDB(new MockTextInformationExtractor(), dbTablesManager, docs);
 
-		Map<TermDocsIdentifier, TermDocs> termDocsMap = new HashMap<TermDocsIdentifier, TermDocs>();
+		HashMap<TermDocsIdentifier, TermDocs> termDocsMap = new HashMap<TermDocsIdentifier, TermDocs>();
 		for (TermDocs td : dbDataManager.getTermDocs()) {
-			termDocsMap.put(td.getId(), td); 
+			termDocsMap.put(td.getId(), td);
 		}
 		RAMTextOnlyIndex textIndex = new RAMTextOnlyIndex(new TextIndexMetaData(termDocsMap, dbDataManager.getOverallTextIndexMetaData()), new MockTextInformationExtractor());
 		textIndex.addDocuments(dbDataManager.getDocsAndTerms());
 		SpatialOnlyIndex spatialIndex = new SpatialOnlyIndex();
 		spatialIndex.addDocuments(dbDataManager.getLocations(null));
-		
+
 		girIndex = new SeparatedGIRIndex(textIndex, spatialIndex, new CombMNZ());
 	}
 
@@ -55,14 +54,28 @@ public class SeparatedGIRIndexTest {
 	}
 
 	@Test
-	public void test() {
+	public void testTextAndInRelation() {
 		TextIndexQuery textQuery = new TextIndexQuery("text", "cosine3", false);
-		SpatialIndexQuery spatialQuery = new SpatialIndexQuery("point_in", "Zürich");
+		SpatialIndexQuery spatialQuery = new SpatialIndexQuery("point_in", "Switzerland");
 		GIRQuery girQuery = new GIRQuery(true, textQuery, spatialQuery);
 		Ranking hits = girIndex.queryIndex(girQuery);
-		for(Score s: hits){
-			System.out.println(s.getDocid() + ": "+s.getScore());
+		System.out.println(hits.getResults().size());
+		System.out.println(hits.getRankingMetaData());
+		for (Score s : hits) {
+			System.out.println(s.getDocument().getId().getId() + ": " + s.getScore());
 		}
 	}
 
+	@Test
+	public void testTextAndOverlapsRelation() {
+		TextIndexQuery textQuery = new TextIndexQuery("text", "cosine3", false);
+		SpatialIndexQuery spatialQuery = new SpatialIndexQuery("overlaps", "Canton of Zurich");
+		GIRQuery girQuery = new GIRQuery(true, textQuery, spatialQuery);
+		Ranking hits = girIndex.queryIndex(girQuery);
+		System.out.println(hits.getResults().size());
+		System.out.println(hits.getRankingMetaData());
+		for (Score s : hits) {
+			System.out.println(s.getDocument().getId().getId() + ": " + s.getScore());
+		}
+	}
 }

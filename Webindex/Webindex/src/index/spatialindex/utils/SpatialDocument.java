@@ -1,26 +1,34 @@
 package index.spatialindex.utils;
 
-import index.utils.identifers.LocationIdentifier;
+import javax.xml.bind.annotation.XmlRootElement;
+
+import index.utils.Document;
 
 import com.vividsolutions.jts.geom.Geometry;
-
+@XmlRootElement
 public class SpatialDocument {
 
-	private LocationIdentifier docid;
+	private Document document;
 	private Geometry documentFootprint;
 
-	public SpatialDocument(Long docid, Geometry documentFootprint) {
-		this.docid = new LocationIdentifier(docid);
+	public SpatialDocument(Document document, Geometry documentFootprint) {
+		this.document = document;
 		this.documentFootprint = documentFootprint;
 	}
 
-	public LocationIdentifier getDocid() {
-		return docid;
+	 
+
+	public Document getDocument() {
+		return document;
 	}
 
-	public void setDocid(LocationIdentifier docid) {
-		this.docid = docid;
+
+
+	public void setDocument(Document document) {
+		this.document = document;
 	}
+
+
 
 	public Geometry getDocumentFootprint() {
 		return documentFootprint;

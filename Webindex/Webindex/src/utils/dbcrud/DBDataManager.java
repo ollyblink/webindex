@@ -1,13 +1,5 @@
 package utils.dbcrud;
 
-import index.girindex.utils.girtexttransformation.ExtractionRequest;
-import index.girindex.utils.girtexttransformation.spatialtransformation.GeoReferencingStage;
-import index.girindex.utils.girtexttransformation.spatialtransformation.GeoTaggingStage;
-import index.girindex.utils.girtexttransformation.texttransformation.IndexAndOriginalTokenExtractionStage;
-import index.girindex.utils.girtexttransformation.texttransformation.StemmingStage;
-import index.girindex.utils.girtexttransformation.texttransformation.StopwordRemovalStage;
-import index.girindex.utils.girtexttransformation.texttransformation.TermFrequencyExtractionStage;
-import index.girindex.utils.girtexttransformation.texttransformation.TokenizationStage;
 import index.spatialindex.utils.GeometryConverter;
 import index.spatialindex.utils.SpatialDocument;
 import index.textindex.implementations.ITextIndexNoInsertion;
@@ -17,7 +9,14 @@ import index.textindex.utils.TermDocs;
 import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
 import index.textindex.utils.informationextractiontools.MockTextInformationExtractor;
 import index.utils.Document;
-import index.utils.SpatialScore;
+import index.utils.documenttransformation.ExtractionRequest;
+import index.utils.documenttransformation.spatialtransformation.GeoReferencingStage;
+import index.utils.documenttransformation.spatialtransformation.GeoTaggingStage;
+import index.utils.documenttransformation.texttransformation.IndexAndOriginalTokenExtractionStage;
+import index.utils.documenttransformation.texttransformation.StemmingStage;
+import index.utils.documenttransformation.texttransformation.StopwordRemovalStage;
+import index.utils.documenttransformation.texttransformation.TermFrequencyExtractionStage;
+import index.utils.documenttransformation.texttransformation.TokenizationStage;
 import index.utils.identifers.TermDocsIdentifier;
 import index.utils.indexmetadata.OverallTextIndexMetaData;
 import index.utils.indexmetadata.TextIndexMetaData;
@@ -32,7 +31,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import org.postgis.PGgeometry;
@@ -50,81 +48,41 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class DBDataManager implements IDataManager {
 
-	private static final int NUMBER_OF_INDEXED_DOCS = 100;
 	private DBTablesManager dbTablesManager;
 	private BlockingQueue<String> documentQueue;
-	private DocumentConsumer consumer;
-	private boolean indexIsRunning;
 	private ITextInformationExtractor tokenizer;
 	private boolean showTransformations;
+	private boolean isRunning;
 
-	private final class DocumentConsumer implements Runnable {
-
-		boolean isUpdated;
-		private BlockingQueue<String> documentQueue;
-		private DBDataManager dbDataProvider;
-
-		public DocumentConsumer(DBDataManager dbDataProvider, BlockingQueue<String> documentQueue) {
-			this.dbDataProvider = dbDataProvider;
-			this.documentQueue = documentQueue;
-			this.isUpdated = true;
-		}
-
-		@Override
-		public void run() {
-			while (indexIsRunning) {
-				if (!documentQueue.isEmpty()) {
-					try {
-						String documentToIndex = documentQueue.take();
-						if (documentQueue.size() % NUMBER_OF_INDEXED_DOCS == 0) {
-							System.out.println("indexing document. " + documentQueue.size() + " documents left to index.");
-						}
-						dbDataProvider.addDocument(documentToIndex);
-						isUpdated = false;
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				} else if (!isUpdated) {
-					updateIndex();
-				}
-			}
-		}
-
-		private void updateIndex() {
-			System.out.println("Updating index.");
-			System.out.println("Updating first part of meta data.");
-			dbDataProvider.updateMetadataA();
-			System.out.println("Finished first part of meta data.");
-			System.out.println("Updating term idfs.");
-			dbDataProvider.updateTermIdfs();
-			System.out.println("Finished term idfs.");
-			System.out.println("Updating term_doc tfidfs.");
-			dbDataProvider.updateTermOccursInDocumentTFIDFs();
-			System.out.println("Finished term_doc tfidfs.");
-			System.out.println("Updating document vector norms.");
-			dbDataProvider.updateDocumentVectorNorms();
-			System.out.println("Finished document vector norms.");
-			System.out.println("Updating last part of meta data.");
-			dbDataProvider.updateMetadataB();
-			System.out.println("Finished last part of meta data.");
-			isUpdated = true;
-			System.out.println("finished updating index.");
-		}
-
-		public boolean isUpdated() {
-			return isUpdated;
-		}
-
-	}
-
-	public DBDataManager(DBTablesManager dbManager, ITextInformationExtractor tokenizer, int queueSize, boolean showTransformations) {
+	public DBDataManager(DBTablesManager dbManager, ITextInformationExtractor tokenizer, boolean showTransformations) {
 		this.dbTablesManager = dbManager;
 		this.tokenizer = tokenizer;
-		this.indexIsRunning = true;
 		this.showTransformations = showTransformations;
-		this.documentQueue = new ArrayBlockingQueue<String>(queueSize);
-		this.consumer = new DocumentConsumer(this, documentQueue);
-		new Thread(consumer).start();
+		this.isRunning = true;
+	}
+
+	@Override
+	public void addDocuments(final List<String> texts) {
+
+		for (String text : texts) {
+			addDocument(text);
+		}
+		updateTermNi();
+		updateMetadataA();
+		updateTermIdfs();
+		updateTermOccursInDocumentTFIDFs();
+		updateDocumentVectorNorms();
+		updateMetadataB();
+	}
+
+	@Override
+	public void addDocumentDeferred(String pureText) {
+		try {
+			documentQueue.put(pureText);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	/*
@@ -176,9 +134,13 @@ public class DBDataManager implements IDataManager {
 	}
 
 	@Override
-	public ArrayList<Document> getDocuments() {
+	public ArrayList<Document> getDocuments(List<Long> docids) {
+
 		ArrayList<Document> documents = new ArrayList<>();
-		String sql = "select * from documents";
+		String sql = "select * from documents d ";
+		if (docids != null && docids.size() > 0) {
+			sql += getWhereClause("d", "id", docids);
+		}
 		try {
 			PreparedStatement statement = dbTablesManager.getConnection().prepareStatement(sql);
 			ResultSet r = statement.executeQuery();
@@ -212,36 +174,8 @@ public class DBDataManager implements IDataManager {
 
 	@Override
 	public void close() {
-		this.indexIsRunning = false;
+		isRunning = false;
 		dbTablesManager.closeConnection();
-	}
-
-	@Override
-	public void addDocuments(final List<String> texts) {
-
-		for (String text : texts) {
-			addDocument(text);
-		}
-		updateTermNi();
-		updateMetadataA();
-		updateTermIdfs();
-		updateTermOccursInDocumentTFIDFs();
-		updateDocumentVectorNorms();
-		updateMetadataB();
-	}
-
-	@Override
-	public void addDocumentDeferred(String pureText) {
-		try {
-			documentQueue.put(pureText);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Override
-	public boolean isUpdated() {
-		return consumer.isUpdated();
 	}
 
 	@Override
@@ -250,8 +184,8 @@ public class DBDataManager implements IDataManager {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void addDocument(final String text) {
-		String transformedText = text.replace("´", "'");
+	protected void addDocument(final String text) {
+		String transformedText = text.replace("´", "''").replace("`", "''").replace("'", "''");
 		ExtractionRequest request = new ExtractionRequest(text);
 		// Terms
 		StopwordRemovalStage stopwordRemovalStage = new StopwordRemovalStage(showTransformations, tokenizer);
@@ -266,19 +200,19 @@ public class DBDataManager implements IDataManager {
 
 		// Chaining the stages together in an appropriate way
 
-		// spatial extraction 
+		// spatial extraction
 		geoTaggingStage.setSuccessor(geoReferencingStage);
-		geoReferencingStage.setPrecursor(geoTaggingStage);  
+		geoReferencingStage.setPrecursor(geoTaggingStage);
 		geoTaggingStage.handleRequest(request);
-		
-		//Check if there were any locations found.
-		//If not: skip this document...
-		List<Geometry> possibleLocations = (List<Geometry>) request.getTransformationStage(termFrequencyExtractionStage.getClass().getSimpleName());
-		if(possibleLocations.size() == 0){
-			System.out.println("No locations found. Document \""+transformedText+"\" could not be georeferenced. Discarded.");
-			return;
+
+		// Check if there were any locations found.
+		// If not: skip this document...
+		List<Geometry> possibleLocations = (List<Geometry>) request.getTransformationStage(geoReferencingStage.getClass().getSimpleName());
+		if (possibleLocations == null || possibleLocations.size() == 0) {
+			System.out.println("No locations found. Document \"" + transformedText + "\" could not be georeferenced. Discarded.");
+			// return;
 		}
-		// text extraction 
+		// text extraction
 		stopwordRemovalStage.setSuccessor(stemmingStage);
 		stemmingStage.setPrecursor(stopwordRemovalStage);
 		stemmingStage.setSuccessor(tokenizationStage);
@@ -288,7 +222,6 @@ public class DBDataManager implements IDataManager {
 		indexAndOriginalTokenExtractionStage.setSuccessor(termFrequencyExtractionStage);
 		termFrequencyExtractionStage.setPrecursor(indexAndOriginalTokenExtractionStage);
 		stopwordRemovalStage.handleRequest(request);
-		
 
 		HashMap<Term, Integer> termFreqs = (HashMap<Term, Integer>) request.getTransformationStage(termFrequencyExtractionStage.getClass().getSimpleName());
 		List<Geometry> geometries = (List<Geometry>) request.getTransformationStage(geoReferencingStage.getClass().getSimpleName());
@@ -310,13 +243,17 @@ public class DBDataManager implements IDataManager {
 			}
 
 			// Last but not least, insert all the document's spatial footprints.
-			List<SpatialDocument> dFPs = new ArrayList<>(geometries.size());
-			for (Geometry geometry : geometries) {
-				Long docid = getDocumentId(transformedText);
-				dFPs.add(new SpatialDocument(docid, geometry));
-			}
+			if (geometries != null) {
+				List<SpatialDocument> dFPs = new ArrayList<>(geometries.size());
+				for (Geometry geometry : geometries) {
+					Long docid = getDocumentId(transformedText);
+					List<Long> docids = new ArrayList<>();
+					docids.add(docid);
+					dFPs.add(new SpatialDocument(getDocuments(docids).get(0), geometry));
+				}
 
-			insertLocation(dFPs);
+				insertLocation(dFPs);
+			}
 
 			// Done, the document is now completely indexed in the database.
 
@@ -326,7 +263,7 @@ public class DBDataManager implements IDataManager {
 	}
 
 	private Long getDocumentId(String text) {
-		String sql = "select id from documents where fulltext like '%" + text + "%';";
+		String sql = "select id from documents where fulltext like '%" + text.replace("''", "%") + "%';";
 		long id = -1l;
 		try {
 			Statement s = getConnection().createStatement();
@@ -348,7 +285,7 @@ public class DBDataManager implements IDataManager {
 	 * @throws SQLException
 	 * @throws NoSuchObjectException
 	 */
-	private void insertLocation(List<SpatialDocument> dFPs) throws SQLException, NoSuchObjectException {
+	protected void insertLocation(List<SpatialDocument> dFPs) throws SQLException, NoSuchObjectException {
 		if (dFPs == null) {
 			return;
 		} else {
@@ -356,8 +293,8 @@ public class DBDataManager implements IDataManager {
 				String sql = "Insert into locations(docid, geometry) values (?,?);";
 				PreparedStatement statement = dbTablesManager.getConnection().prepareStatement(sql);
 				for (SpatialDocument dFP : dFPs) {
-					if (!alreadyIndexed("select count(*) from locations where docid=" + dFP.getDocid() + " AND geometry=ST_GEOMETRYFROMTEXT('" + GeometryConverter.convertJTStoPostGis(dFP.getDocumentFootprint()) + "');")) {
-						statement.setLong(1, dFP.getDocid().getDocId());
+					if (!alreadyIndexed("select count(*) from locations where docid=" + dFP.getDocument().getId().getId() + " AND geometry=ST_GEOMETRYFROMTEXT('" + GeometryConverter.convertJTStoPostGis(dFP.getDocumentFootprint()) + "');")) {
+						statement.setLong(1, dFP.getDocument().getId().getId());
 						statement.setObject(2, GeometryConverter.convertJTStoPostGis(dFP.getDocumentFootprint()));
 						statement.executeUpdate();
 					}
@@ -368,7 +305,7 @@ public class DBDataManager implements IDataManager {
 		}
 	}
 
-	private void updateDocumentVectorNorms() {
+	protected void updateDocumentVectorNorms() {
 		String sql = "Update documents d set  doc_vectornorm1 = (select sqrt(sum(power(doc_term_tfidf1,2))) from term_docs where d.id=docid )," + "doc_vectornorm2 = (select sqrt(sum(power(doc_term_tfidf2,2))) from term_docs where d.id=docid )," + "doc_vectornorm3 = (select sqrt(sum(power(doc_term_tfidf3,2))) from term_docs where d.id=docid )"
 
 		+ ";";
@@ -376,7 +313,7 @@ public class DBDataManager implements IDataManager {
 		executeSimpleUpdate(sql);
 	}
 
-	private void updateTermOccursInDocumentTFIDFs() {
+	protected void updateTermOccursInDocumentTFIDFs() {
 		String sql = "update term_docs td set doc_term_tfidf1 =  t.term_idf1*doc_tf1, doc_term_tfidf2 = doc_tf2_3, doc_term_tfidf3 = doc_tf2_3*(t.term_idf1) from terms t where td.termid = t.id;";
 		executeSimpleUpdate(sql);
 	}
@@ -405,7 +342,7 @@ public class DBDataManager implements IDataManager {
 		return N;
 	}
 
-	private void updateTermIdfs() {
+	protected void updateTermIdfs() {
 		try {
 			Double N = new Double(getN());
 			Statement s = dbTablesManager.getConnection().createStatement();
@@ -417,9 +354,10 @@ public class DBDataManager implements IDataManager {
 		}
 	}
 
-	private void insertTermDocs(String transformedText, Map<Term, Integer> termFreqs, PreparedStatement termInDocInsertion, Term indexTerm) throws SQLException {
+	protected void insertTermDocs(String transformedText, Map<Term, Integer> termFreqs, PreparedStatement termInDocInsertion, Term indexTerm) throws SQLException {
 		Statement statement = dbTablesManager.getConnection().createStatement();
-		ResultSet lastDocId = statement.executeQuery("select id from documents where fulltext like '%" + transformedText + "%';");
+		ResultSet lastDocId = statement.executeQuery("select id from documents where fulltext like '%" + transformedText.replace("''", "%") + "%';");
+		// System.out.println("select id from documents where fulltext like '%" + transformedText.replace("''","%") + "%';");
 		long docId = 0;
 		while (lastDocId.next()) {
 			docId = lastDocId.getLong(1);
@@ -437,7 +375,7 @@ public class DBDataManager implements IDataManager {
 		}
 	}
 
-	private void insertOriginalTerms(PreparedStatement originalTermInsertion, Term indexTerm) throws SQLException {
+	protected void insertOriginalTerms(PreparedStatement originalTermInsertion, Term indexTerm) throws SQLException {
 		ArrayList<String> originalTerms = indexTerm.getOriginalTerms();
 		for (String originalTerm : originalTerms) {
 			if (!alreadyIndexed("select count(original_term) from original_terms where original_term='" + originalTerm + "';")) {
@@ -448,7 +386,7 @@ public class DBDataManager implements IDataManager {
 		}
 	}
 
-	private void insertTerm(PreparedStatement termInsertion, Term indexTerm) throws SQLException {
+	protected void insertTerm(PreparedStatement termInsertion, Term indexTerm) throws SQLException {
 		if (!alreadyIndexed("select count(id) from terms where id = '" + indexTerm.getIndexedTerm() + "';")) {
 			termInsertion.setString(1, indexTerm.getIndexedTerm().getTermId());
 			termInsertion.execute();
@@ -456,6 +394,7 @@ public class DBDataManager implements IDataManager {
 	}
 
 	private void insertDocument(final String text, ArrayList<Term> indexTerms, PreparedStatement documentInsertion) throws SQLException {
+		// System.out.println("select count(id) from documents where fulltext like '%" + text + "%';");
 		if (!alreadyIndexed("select count(id) from documents where fulltext like '%" + text + "%';")) {
 			documentInsertion.setString(1, text);
 			documentInsertion.setInt(2, getSizeInBytes(text));
@@ -479,7 +418,7 @@ public class DBDataManager implements IDataManager {
 	 * @param indexTerm
 	 * @throws SQLException
 	 */
-	private void updateTermNi() {
+	protected void updateTermNi() {
 		try {
 			Statement statement;
 			statement = dbTablesManager.getConnection().createStatement();
@@ -516,7 +455,7 @@ public class DBDataManager implements IDataManager {
 		}
 	}
 
-	private void updateMetadataB() {
+	protected void updateMetadataB() {
 		try {
 			String docVectorNorm1 = "(select avg(doc_vectornorm1) from documents)";
 			String docVectorNorm2 = "(select avg(doc_vectornorm2) from documents)";
@@ -580,24 +519,24 @@ public class DBDataManager implements IDataManager {
 	 * Spatial only
 	 */
 
-	private String getWhereClause(List<SpatialScore> dFPs) {
+	// private String getWhereClause(List<Score> dFPs) {
+	//
+	// if (dFPs == null || dFPs.size() == 0) {
+	// return ";";
+	// }
+	// int counter = 0;
+	// String whereClause = "where ";
+	// for (Score dFP : dFPs) {
+	// if (++counter == dFPs.size()) {
+	// whereClause += "d.id=" + dFP.getDocument().getId().getId() + ";";
+	// } else {
+	// whereClause += "d.id=" + dFP.getDocument().getId().getId() + " OR ";
+	// }
+	// }
+	// return whereClause;
+	// }
 
-		if (dFPs == null || dFPs.size() == 0) {
-			return ";";
-		}
-		int counter = 0;
-		String whereClause = "where ";
-		for (SpatialScore dFP : dFPs) {
-			if (++counter == dFPs.size()) {
-				whereClause += "d.id=" + dFP.getDocid() + ";";
-			} else {
-				whereClause += "d.id=" + dFP.getDocid() + " OR ";
-			}
-		}
-		return whereClause;
-	}
-
-	private String getWhereClause(String tableName, List<Long> ids) {
+	private String getWhereClause(String tableName, String colName, List<Long> ids) {
 		if (ids == null || ids.size() == 0) {
 			return ";";
 		}
@@ -605,9 +544,9 @@ public class DBDataManager implements IDataManager {
 		String whereClause = " where ";
 		for (Long id : ids) {
 			if (++counter == ids.size()) {
-				whereClause += tableName + ".id=" + id + ";";
+				whereClause += tableName + "." + colName + "= " + id + ";";
 			} else {
-				whereClause += tableName + ".id=" + id + " OR ";
+				whereClause += tableName + "." + colName + "=" + id + " OR ";
 			}
 		}
 		return whereClause;
@@ -618,7 +557,7 @@ public class DBDataManager implements IDataManager {
 		if (dbTablesManager.getConnector().tableExists("locations")) {
 
 			try {
-				String sql = "Select l.docid, l.geometry from locations l " + getWhereClause("l", docids);
+				String sql = "Select l.docid, l.geometry from locations l " + getWhereClause("l", "docid",docids);
 				// System.out.println(sql);
 				return retrieveDocuments(sql);
 			} catch (SQLException | NoSuchObjectException e) {
@@ -638,8 +577,10 @@ public class DBDataManager implements IDataManager {
 		ResultSet set = statement.executeQuery(sql);
 		while (set.next()) {
 			Long id = set.getLong(1);
+			List<Long> ids = new ArrayList<>();
+			ids.add(id);
 			Geometry documentFootprint = GeometryConverter.convertPostGisToJTS((PGgeometry) set.getObject(2));
-			SpatialDocument spatialDocument = new SpatialDocument(id, documentFootprint);
+			SpatialDocument spatialDocument = new SpatialDocument(getDocuments(ids).get(0), documentFootprint);
 			spatialDocuments.add(spatialDocument);
 		}
 		statement.close();
@@ -681,7 +622,7 @@ public class DBDataManager implements IDataManager {
 
 		DBDataManager dbDataManager = DBInitializer.initTestTextDB(new MockTextInformationExtractor(), DBInitializer.initDB(), d);
 		ArrayList<Term> terms = dbDataManager.getTerms();
-		ArrayList<Document> documents = dbDataManager.getDocuments();
+		ArrayList<Document> documents = dbDataManager.getDocuments(null);
 		ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs();
 
 		HashMap<Term, List<Document>> converted = new HashMap<>();
@@ -711,11 +652,11 @@ public class DBDataManager implements IDataManager {
 	}
 
 	public static ITextIndexNoInsertion getTestIndex() {
-		DBDataManager dbDataManager = new DBDataManager(DBInitializer.initDB(), null, 1, false);
+		DBDataManager dbDataManager = new DBDataManager(DBInitializer.initDB(), null, false);
 
 		HashMap<Term, List<Document>> documents = DBDataManager.createIndexableDocuments();
 		ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs();
-		Map<TermDocsIdentifier, TermDocs> termDocsMeta = new HashMap<>();
+		HashMap<TermDocsIdentifier, TermDocs> termDocsMeta = new HashMap<>();
 
 		for (TermDocs t : termDocs) {
 			termDocsMeta.put(t.getId(), t);
@@ -747,7 +688,7 @@ public class DBDataManager implements IDataManager {
 	@Override
 	public Map<Term, List<Document>> getTermAndDocOccurrences() {
 		ArrayList<Term> terms = getTerms();
-		ArrayList<Document> documents = getDocuments();
+		ArrayList<Document> documents = getDocuments(null);
 		ArrayList<TermDocs> termDocs = getTermDocs();
 
 		HashMap<Term, List<Document>> converted = new HashMap<>();
@@ -774,6 +715,19 @@ public class DBDataManager implements IDataManager {
 
 		}
 		return converted;
+	}
+
+	public boolean isRunning() {
+		return this.isRunning;
+	}
+
+	public void setDocumentQueue(BlockingQueue<String> documentQueue2) {
+		this.documentQueue = documentQueue2;
+	}
+
+	@Override
+	public DBTablesManager getDBTablesManager() {
+		return dbTablesManager;
 	}
 
 }

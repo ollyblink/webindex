@@ -21,7 +21,7 @@ public class DBInitializer {
 		for (String d : docs) {
 			documents.add(d);
 		}
-		DBDataManager dbDataProvider = new DBDataManager(dbManager, tokenizer, 5000,false);
+		DBDataManager dbDataProvider = new DBDataManager(dbManager, tokenizer, false);
 		dbDataProvider.addDocuments(documents);
 		return dbDataProvider;
 	}

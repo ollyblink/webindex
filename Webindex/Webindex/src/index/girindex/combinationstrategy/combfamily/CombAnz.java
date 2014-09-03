@@ -1,24 +1,32 @@
 package index.girindex.combinationstrategy.combfamily;
 
+import index.utils.Document;
 import index.utils.Score;
 
 import java.util.ArrayList;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 public class CombAnz extends AbstractComb {
 
 	@Override
 	protected Score calculateCombinedScore(ArrayList<Score> scoresOfDoc) {
 		float sum = 0f;
-		Long docid = null;
+		Document document = null;
+		Geometry docGeom = null;
+		
 		for (Score score : scoresOfDoc) {
 			sum += score.getScore();
-			if (docid == null) {
-				docid = score.getDocid();
+			if (document == null) {
+				document = score.getDocument();
+			}
+			if(docGeom == null){
+				docGeom = score.getGeometry();
 			}
 		}
 
 		float finalScore = sum /= scoresOfDoc.size();
-		return new Score(docid, finalScore);
+		return new Score(document, finalScore,docGeom);
 	}
 
 }

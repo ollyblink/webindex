@@ -8,6 +8,7 @@ import index.textindex.utils.informationextractiontools.ITextInformationExtracto
 import index.textindex.utils.informationextractiontools.MockTextInformationExtractor;
 import index.utils.Document;
 import index.utils.Ranking;
+import index.utils.RankingMetaData;
 import index.utils.identifers.TermDocsIdentifier;
 import index.utils.indexmetadata.TextIndexMetaData;
 import index.utils.query.TextIndexQuery;
@@ -94,7 +95,9 @@ public class RAMTextOnlyIndex implements ITextIndex {
 		ITextSimilarity currentSimilarity = AbstractTextSimilarity.getSimilarity(query.getSimilarity());
 		// Calculate the similarity between the query and the documents and create a ranked list of documents
 		Ranking ranking = currentSimilarity.calculateSimilarity(query, queryTermFreqs, relevantDocuments, indexMetaData, query.isIntersected());
-
+		RankingMetaData meta = new RankingMetaData();
+		meta.setTextIndexQuery(query);
+		ranking.setRankingMetaData(meta);
 		return ranking;
 	}
 
@@ -172,7 +175,7 @@ public class RAMTextOnlyIndex implements ITextIndex {
 
 	@Override
 	public TextIndexMetaData getMetaData(Map<Term, List<Document>> docTerms) {
-		Map<TermDocsIdentifier, TermDocs> subSet = new HashMap<TermDocsIdentifier, TermDocs>();
+		HashMap<TermDocsIdentifier, TermDocs> subSet = new HashMap<TermDocsIdentifier, TermDocs>();
 
 		for (Term term : docTerms.keySet()) {
 			for (Document document : docTerms.get(term)) {

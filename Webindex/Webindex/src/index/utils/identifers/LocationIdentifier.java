@@ -1,6 +1,9 @@
 package index.utils.identifers;
 
+import javax.xml.bind.annotation.XmlRootElement;
 
+
+@XmlRootElement
 public final class LocationIdentifier {
 	private Long docId;
 

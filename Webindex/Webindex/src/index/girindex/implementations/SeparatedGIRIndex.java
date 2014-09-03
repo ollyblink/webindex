@@ -8,6 +8,7 @@ import index.textindex.implementations.ITextIndexNoInsertion;
 import index.textindex.utils.Term;
 import index.utils.Document;
 import index.utils.Ranking;
+import index.utils.RankingMetaData;
 import index.utils.indexmetadata.TextIndexMetaData;
 import index.utils.query.GIRQuery;
 import index.utils.query.SpatialIndexQuery;
@@ -26,13 +27,21 @@ public class SeparatedGIRIndex implements IGIRIndex {
 		this.textIndex = textIndex;
 		this.spatialIndex = spatialIndex;
 		this.combinationStrategy = combinationStrategy;
+		
 	}
 
 	@Override
 	public Ranking queryIndex(GIRQuery query) {
+		System.out.println(query);
 		Ranking textRanking = textIndex.queryIndex(query.getTextQuery());
 		Ranking spatialRanking = spatialIndex.queryIndex(query.getSpatialQuery());
 		Ranking combination = combinationStrategy.combineScores(query.isIntersected(), textRanking, spatialRanking);
+		RankingMetaData meta = combination.getRankingMetaData();
+		if(meta == null){
+			meta = new RankingMetaData();
+			combination.setRankingMetaData(meta);
+		} 
+		meta.setGIRQuery(query); 
 		return combination;
 	}
 

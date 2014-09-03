@@ -52,6 +52,7 @@ public class YPMPlaceExtractor implements IPlaceExtractor {
 	 *            the bounds within a location has to be
 	 */
 	public YPMPlaceExtractor(String xmlPath) {
+//		this.xmlPath = this.getClass().getResource(xmlPath).getPath(); 
 		this.xmlPath = xmlPath;
 		// Setting up the parameters for placemaker
 		placeMakerParameters = new HashMap<String, String>();

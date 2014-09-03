@@ -40,7 +40,7 @@ public class BM11Test {
 		values.put(3l, -1.222f);
 		values.put(4l, -1.222f);
 		for (Score res : hits) {
-			assertEquals(values.get(res.getDocid()), res.getScore(), 0.001f);
+			assertEquals(values.get(res.getDocument().getId().getId()), res.getScore(), 0.001f);
 		}
 	}
 

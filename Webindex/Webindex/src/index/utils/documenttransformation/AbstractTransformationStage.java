@@ -1,4 +1,4 @@
-package index.girindex.utils.girtexttransformation;
+package index.utils.documenttransformation;
 
 public abstract class AbstractTransformationStage implements ITransformationStage {
 	/** The stage before this transformation stage, or null if it's the first */

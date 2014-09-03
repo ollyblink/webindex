@@ -1,10 +1,10 @@
-package index.girindex.utils.girtexttransformation.spatialtransformation;
+package index.utils.documenttransformation.spatialtransformation;
 
-import index.girindex.utils.girtexttransformation.AbstractTransformationStage;
-import index.girindex.utils.girtexttransformation.ExtractionRequest;
 import index.spatialindex.utils.geolocating.georeferencing.YPMPlaceExtractor;
 import index.spatialindex.utils.geolocating.geotagging.CalaisLocator;
 import index.spatialindex.utils.geolocating.geotagging.HikrGazetteerLocator;
+import index.utils.documenttransformation.AbstractTransformationStage;
+import index.utils.documenttransformation.ExtractionRequest;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.ServletContextAttributeEvent;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -50,7 +51,7 @@ public class GeoTaggingStage extends AbstractTransformationStage {
 	private static final String database = "girindex";
 	private static final String user = "postgres";
 	private static final String password = "32qjivkd";
-	private static final String dictionaryLocation =  "de-pos-maxent.bin";
+	private static final String dictionaryLocation = "de-pos-maxent.bin";
 	private static final String tokenLocation = "de-token.bin";
 
 	private YPMPlaceExtractor ypmExtractor;
@@ -60,6 +61,7 @@ public class GeoTaggingStage extends AbstractTransformationStage {
 	public GeoTaggingStage(boolean isShowTransformationEnabled) {
 
 		super(isShowTransformationEnabled);
+ 
 
 		calaisLocator = new CalaisLocator();
 		ypmExtractor = new YPMPlaceExtractor(YPM_XML);
@@ -136,10 +138,9 @@ public class GeoTaggingStage extends AbstractTransformationStage {
 	}
 
 	public static void main(String[] args) {
-
-		String content = "Try to find Kloten, Switzerland that in London, or maybe you like the New Jersey, New York more.";
-
-		GeoTaggingStage t = new GeoTaggingStage(true);
-		t.handleRequest(new ExtractionRequest(content));
+		// String content = "Try to find Kloten, Switzerland that in London, or maybe you like the New Jersey, New York more.";
+		//
+		// GeoTaggingStage t = new GeoTaggingStage(true);
+		// t.handleRequest(new ExtractionRequest(content));
 	}
 }

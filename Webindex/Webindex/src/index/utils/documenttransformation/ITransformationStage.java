@@ -1,4 +1,4 @@
-package index.girindex.utils.girtexttransformation;
+package index.utils.documenttransformation;
 
 public interface ITransformationStage {
 	/**

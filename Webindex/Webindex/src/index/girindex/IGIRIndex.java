@@ -1,5 +1,6 @@
 package index.girindex;
 
+import index.girindex.combinationstrategy.ICombinationStrategy;
 import index.girindex.utils.GIRDocument;
 import index.spatialindex.implementations.ISpatialIndexNoInsertion;
 import index.textindex.implementations.ITextIndexNoInsertion;
@@ -12,5 +13,7 @@ public interface IGIRIndex extends ITextIndexNoInsertion, ISpatialIndexNoInserti
 	public Ranking queryIndex(GIRQuery query);
 	
 	public void addDocument(GIRDocument document);
+
+	public void setCombinationStrategy(ICombinationStrategy create);
 	 
 }

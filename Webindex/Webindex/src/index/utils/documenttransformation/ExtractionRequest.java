@@ -1,7 +1,10 @@
-package index.girindex.utils.girtexttransformation;
+package index.utils.documenttransformation;
 
 import java.util.TreeMap;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
 public class ExtractionRequest {
 	private String inputText;
 	

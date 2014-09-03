@@ -1,15 +1,20 @@
 package index.utils.indexmetadata;
 
+
 import index.textindex.utils.TermDocs;
 import index.utils.identifers.TermDocsIdentifier;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
 public class TextIndexMetaData { 
-	private Map<TermDocsIdentifier, TermDocs> termDocRelationship;
+	private HashMap<TermDocsIdentifier, TermDocs> termDocRelationship;
 	private OverallTextIndexMetaData overallIndexMetaData;
 	
-	public TextIndexMetaData(Map<TermDocsIdentifier, TermDocs> termDocRelationship, OverallTextIndexMetaData overallIndexMetaData) {
+	public TextIndexMetaData(HashMap<TermDocsIdentifier, TermDocs> termDocRelationship, OverallTextIndexMetaData overallIndexMetaData) {
 		this.termDocRelationship = termDocRelationship;
 		this.overallIndexMetaData = overallIndexMetaData;
 	}
@@ -18,7 +23,7 @@ public class TextIndexMetaData {
 		return termDocRelationship;
 	}
 
-	public void setTermDocRelationship(Map<TermDocsIdentifier, TermDocs> termDocRelationship) {
+	public void setTermDocRelationship(HashMap<TermDocsIdentifier, TermDocs> termDocRelationship) {
 		this.termDocRelationship = termDocRelationship;
 	}
 

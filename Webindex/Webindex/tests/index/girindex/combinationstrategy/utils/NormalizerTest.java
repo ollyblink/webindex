@@ -1,7 +1,7 @@
 package index.girindex.combinationstrategy.utils;
 
 import static org.junit.Assert.assertTrue;
-import index.girindex.combinationstrategy.utils.Normalizer;
+import index.utils.Document;
 import index.utils.Score;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ public class NormalizerTest {
 
 		N = 100;
 		for(int i = 0; i < N;++i){
-			values.add(new Score(new Long(i), new Float(Math.pow(2, i))));
+			values.add(new Score(new Document(new Long(i)), new Float(Math.pow(2, i)),null));
 		}
 
 		minMax = (float)((Math.pow(2, N-1))-1)-min;
@@ -32,12 +32,12 @@ public class NormalizerTest {
 	}
 
 	@Test
-	public void test() {
-		List<Score> normalizedValues = Normalizer.normalizeMinMax(values);
+	public void test() { 
+		List<Score> normalizedValues = new ArrayList<>(Normalizer.normalizeMinMax(values));
 		assertTrue(normalizedValues != null);
 		assertTrue(normalizedValues != values);
 		assertTrue(normalizedValues.size() == values.size()); 
-		for (int i = 0; i < normalizedValues.size(); ++i) {  
+		for (int i = 0; i < normalizedValues.size(); ++i) {   
 			assertTrue(normalizedValues.get(i).getScore() == ((values.get(i).getScore() - min) / minMax));
 		}
 	}

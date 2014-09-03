@@ -1,5 +1,8 @@
 package index.spatialindex.utils;
 
+import index.utils.CoordinateWrapper;
+import index.utils.GeometryWrapper;
+
 import java.rmi.NoSuchObjectException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +34,7 @@ public class GeometryConverter {
 			return factory.createPoint(coordinates.get(0));
 		case org.postgis.Geometry.POLYGON:
 			Coordinate[] coords = new Coordinate[coordinates.size()];
-			for(int i = 0; i < coordinates.size();++i){
+			for (int i = 0; i < coordinates.size(); ++i) {
 				coords[i] = coordinates.get(i);
 			}
 			return factory.createPolygon(coords);
@@ -61,6 +64,22 @@ public class GeometryConverter {
 			return new PGgeometry(geom);
 		default:
 			throw new NoSuchObjectException("Was not a point nor a polygon.");
+		}
+	}
+
+	public static GeometryWrapper convertJTStoRESTGeometry(Geometry geometry) {
+		if (geometry != null) {
+			GeometryWrapper wrapper = new GeometryWrapper();
+			wrapper.setSrid(geometry.getSRID());
+			Coordinate[] coords = geometry.getCoordinates();
+			ArrayList<CoordinateWrapper> coordsWrapper = new ArrayList<CoordinateWrapper>();
+			for (Coordinate c : coords) {
+				coordsWrapper.add(new CoordinateWrapper(c.x, c.y));
+			}
+			wrapper.setCoordinates(coordsWrapper);
+			return wrapper;
+		} else {
+			return null;
 		}
 	}
 

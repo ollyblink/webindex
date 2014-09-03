@@ -1,9 +1,9 @@
-package index.girindex.utils.girtexttransformation.spatialtransformation;
+package index.utils.documenttransformation.spatialtransformation;
 
-import index.girindex.utils.girtexttransformation.AbstractTransformationStage;
-import index.girindex.utils.girtexttransformation.ExtractionRequest;
 import index.spatialindex.utils.geolocating.georeferencing.LocationFinder;
 import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
+import index.utils.documenttransformation.AbstractTransformationStage;
+import index.utils.documenttransformation.ExtractionRequest;
 
 import java.util.ArrayList;
 import java.util.List;

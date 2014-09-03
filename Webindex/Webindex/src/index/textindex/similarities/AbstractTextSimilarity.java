@@ -11,11 +11,16 @@ import index.textindex.similarities.tfidfweighting.Formula2TFStrategy;
 import index.textindex.similarities.tfidfweighting.Formula3TFStrategy;
 import index.textindex.similarities.tfidfweighting.QueryIDFTypes;
 import index.textindex.similarities.vectorspacemodels.CosineSimilarity;
+import index.textindex.utils.Term;
 import index.utils.Document;
 import index.utils.Score;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class AbstractTextSimilarity implements ITextSimilarity {
 	protected Map<Long, Score> scoreMap = new HashMap<Long, Score>();
@@ -23,13 +28,28 @@ public abstract class AbstractTextSimilarity implements ITextSimilarity {
 	protected void updateScore(Document document, float weight) {
 		Score score = scoreMap.get(document.getId().getId());
 		if (score == null) {
-			score = new Score(document.getId().getId(), 0f);
+			score = new Score(document, 0f, null);
 			scoreMap.put(document.getId().getId(), score);
 		}
 		float newWeight = score.getScore() + weight;
 		score.setScore(newWeight);
 	}
-
+//	public HashMap<Score, Document> getFinalScoreMap(HashMap<Term, List<Document>> relevantDocuments, ArrayList<Score> scoreList) {
+//		Set<Document> docSet = new HashSet<>();
+//		for(List<Document> docs:relevantDocuments.values()){
+//			docSet.addAll(docs);
+//		}
+//		
+//		HashMap<Score, Document> finalScore = new HashMap<Score, Document>();
+//		for(Score score: scoreList){
+//			for(Document doc: docSet){
+//				if(doc.getId().getId().equals(score.getDocument())){
+//					finalScore.put(score, doc);
+//				}
+//			}
+//		}
+//		return finalScore;
+//	}
 	public static ITextSimilarity getSimilarity(String similarity) {
 		switch (similarity) {
 		case "bm1":

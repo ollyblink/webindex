@@ -9,15 +9,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Ranking implements Iterable<Score> {
 
 	private ArrayList<Score> results;
-
-	public Ranking(ArrayList<? extends Score> results) {
-		this.results = new ArrayList<Score>();
-		this.results.addAll(results);
-
-	}
+	private RankingMetaData rankingMetaData;
 
 	public Ranking() {
+	}
 
+	public Ranking(ArrayList<Score> results, RankingMetaData rankingMetaData) {
+		this.results = results;
+		this.rankingMetaData = rankingMetaData;
 	}
 
 	public ArrayList<Score> getResults() {
@@ -28,9 +27,28 @@ public class Ranking implements Iterable<Score> {
 		this.results = results;
 	}
 
+	public RankingMetaData getRankingMetaData() {
+		return rankingMetaData;
+	}
+
+	public void setRankingMetaData(RankingMetaData rankingMetaData) {
+		this.rankingMetaData = rankingMetaData;
+	}
+
+	@Override
+	public String toString() {
+		String ranks = "";
+		for (Score s : results) {
+			ranks += s + " ";
+		}
+		return ranks;
+	}
+
 	@Override
 	public Iterator<Score> iterator() {
 		return results.iterator();
 	}
+
+	 
 
 }

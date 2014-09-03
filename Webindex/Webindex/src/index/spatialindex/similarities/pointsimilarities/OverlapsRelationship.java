@@ -8,13 +8,16 @@ import java.util.ArrayList;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-public class InRelationship extends AbstractSpatialRelationship {
+public class OverlapsRelationship extends AbstractSpatialRelationship {
 
 	@Override
 	protected void calculateSimilarity(ArrayList<Score> results, Geometry qFP, SpatialDocument dFP) {
-		if (qFP.contains(dFP.getDocumentFootprint())) {
-			checkLargestScore(results, dFP, 1f);
+		if(dFP.getDocumentFootprint().getClass().getSimpleName().equals("Point")){
+			return;
 		}
-	}
-
+		if(qFP.intersects(dFP.getDocumentFootprint())){
+			float scoreValue = (float) (qFP.intersection(dFP.getDocumentFootprint()).getArea()/qFP.getArea());
+			checkLargestScore(results, dFP, scoreValue);
+		} 
+	} 
 }

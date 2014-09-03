@@ -5,8 +5,8 @@ import index.spatialindex.similarities.SpatialRelationshipFactory;
 import index.spatialindex.utils.SpatialDocument;
 import index.spatialindex.utils.geolocating.georeferencing.LocationFinder;
 import index.utils.Ranking;
+import index.utils.RankingMetaData;
 import index.utils.Score;
-import index.utils.SpatialScore;
 import index.utils.query.SpatialIndexQuery;
 
 import java.util.ArrayList;
@@ -20,9 +20,10 @@ public class SpatialOnlyIndex implements ISpatialIndex {
 
 	private Quadtree index;
 
-	public SpatialOnlyIndex(){
+	public SpatialOnlyIndex() {
 		this.index = new Quadtree();
 	}
+
 	@Override
 	public Ranking queryIndex(SpatialIndexQuery query) {
 		// Define spatial relationship algorithm
@@ -42,23 +43,27 @@ public class SpatialOnlyIndex implements ISpatialIndex {
 			List<SpatialDocument> queryResult = index.query(qFP.getEnvelopeInternal());
 			documentFootPrints.addAll(queryResult);
 		}
+		query.setQueryFootPrints(queryFootPrints);
 		// Algorithm stage: calculate score for each found geometry
-		ArrayList<? extends Score> results = spatRelAlgorithm.calculateSimilarity(queryFootPrints, documentFootPrints);
+		ArrayList<Score> results = spatRelAlgorithm.calculateSimilarity(queryFootPrints, documentFootPrints);
 		// =======================================================================================
 		// End querying spatial index
 		// =======================================================================================
 
-//		ArrayList<Score> scores = new ArrayList<Score>();
-//		for (SpatialScore sST : results) {
-//			scores.add(new Score(sST.getDocid(), sST.getScore()));
-//		}
+		// ArrayList<Score> scores = new ArrayList<Score>();
+		// for (SpatialScore sST : results) {
+		// scores.add(new Score(sST.getDocid(), sST.getScore()));
+		// }
 		Collections.sort(results);
 		// Create the spatial ranking
-		Ranking ranking = new Ranking(results);
+		RankingMetaData meta = new RankingMetaData();
+		meta.setSpatialIndexQuery(query);
+		Ranking ranking = new Ranking(results,meta);
+		
+		
 
 		return ranking;
 	}
- 
 
 	@Override
 	public void addDocument(SpatialDocument spatialDocument) {
@@ -72,12 +77,11 @@ public class SpatialOnlyIndex implements ISpatialIndex {
 	public void addDocuments(List<SpatialDocument> spatialDocuments) {
 		if (spatialDocuments == null || spatialDocuments.size() == 0) {
 			return;
-		} 
+		}
 		for (SpatialDocument sD : spatialDocuments) {
 			addDocument(sD);
 		}
 	}
-
 
 	@Override
 	public void clear() {

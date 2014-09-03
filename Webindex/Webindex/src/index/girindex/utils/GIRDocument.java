@@ -19,7 +19,7 @@ public class GIRDocument {
 	private SpatialDocument spatialDocument;
 
 	public GIRDocument(Document textDocument, List<Term> termsInTextDocument, SpatialDocument spatialDocument) {
-		if(textDocument.getId().getId() != spatialDocument.getDocid().getDocId()){
+		if(textDocument.getId().getId() != spatialDocument.getDocument().getId().getId()){
 			throw new IllegalArgumentException("text and spatial document need to have the same docid");
 		}else if(textDocument == null || termsInTextDocument == null || spatialDocument == null){
 			throw new NullPointerException("GIRDocument arguments must not be null!");
@@ -27,6 +27,10 @@ public class GIRDocument {
 		this.textDocument = textDocument;
 		this.termsInTextDocument = termsInTextDocument;
 		this.spatialDocument = spatialDocument;
+	}
+	
+	public GIRDocument(){
+		
 	}
 
 	public Document getTextDocument() {
@@ -51,6 +55,14 @@ public class GIRDocument {
 
 	public void setSpatialDocument(SpatialDocument spatialDocument) {
 		this.spatialDocument = spatialDocument;
+	}
+
+	public List<TermDocs> getTermDocsRelationship() {
+		return termDocsRelationship;
+	}
+
+	public void setTermDocsRelationship(List<TermDocs> termDocsRelationship) {
+		this.termDocsRelationship = termDocsRelationship;
 	}
 
 }

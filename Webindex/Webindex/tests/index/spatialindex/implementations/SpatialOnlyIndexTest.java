@@ -1,12 +1,13 @@
 package index.spatialindex.implementations;
 
-import static org.junit.Assert.*;
-import index.girindex.utils.girtexttransformation.ExtractionRequest;
-import index.girindex.utils.girtexttransformation.spatialtransformation.GeoReferencingStage;
-import index.girindex.utils.girtexttransformation.spatialtransformation.GeoTaggingStage;
+import static org.junit.Assert.assertEquals;
 import index.spatialindex.utils.SpatialDocument;
+import index.utils.Document;
 import index.utils.Ranking;
 import index.utils.Score;
+import index.utils.documenttransformation.ExtractionRequest;
+import index.utils.documenttransformation.spatialtransformation.GeoReferencingStage;
+import index.utils.documenttransformation.spatialtransformation.GeoTaggingStage;
 import index.utils.query.SpatialIndexQuery;
 
 import java.util.ArrayList;
@@ -48,7 +49,7 @@ public class SpatialOnlyIndexTest {
 			List<SpatialDocument> spatialDocuments = new ArrayList<SpatialDocument>();
 			// System.out.println(documentFootprints);
 			for (Geometry geom : documentFootprints) {
-				spatialDocuments.add(new SpatialDocument(id, geom));
+				spatialDocuments.add(new SpatialDocument(new Document(id), geom));
 			}
 
 			spatialOnlyIndex.addDocuments(spatialDocuments);
@@ -61,7 +62,7 @@ public class SpatialOnlyIndexTest {
 		Ranking ranking = spatialOnlyIndex.queryIndex(new SpatialIndexQuery("point_in", "Switzerland"));
 
 		for (Score d : ranking.getResults()) {
-			if (d.getDocid() == 1) {
+			if (d.getDocument().getId().getId() == 1) {
 				assertEquals(1f, d.getScore(), 0.01f);
 			} else {
 				assertEquals(0f, d.getScore(), 0.01f);

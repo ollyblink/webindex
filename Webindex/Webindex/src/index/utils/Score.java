@@ -1,20 +1,39 @@
 package index.utils;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+import com.vividsolutions.jts.geom.Geometry;
+
+/**
+ * @author rsp
+ *
+ */
+@XmlRootElement
 public class Score implements Comparable<Score> {
-	private Long docid;
+	private Document document;
 	private Float score;
+	private Geometry geometry;
 
-	public Score(Long docid, Float score) {
-		this.docid = docid;
+	public Score() {
+	}
+
+	public Score(Document document, Float score, Geometry geometry) {
+		this.document = document;
 		this.score = score;
+		this.geometry = geometry;
 	}
 
-	public Long getDocid() {
-		return docid;
+	@Override
+	public int compareTo(Score o) {
+		return -score.compareTo(o.score);
 	}
 
-	public void setDocid(Long docid) {
-		this.docid = docid;
+	public Document getDocument() {
+		return document;
+	}
+
+	public void setDocument(Document document) {
+		this.document = document;
 	}
 
 	public Float getScore() {
@@ -25,16 +44,20 @@ public class Score implements Comparable<Score> {
 		this.score = score;
 	}
 
-	@Override
-	public int compareTo(Score o) {
-		return -score.compareTo(o.score);
+	public Geometry getGeometry() {
+		return geometry;
+	}
+
+	public void setGeometry(Geometry geometry) {
+		this.geometry = geometry;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((docid == null) ? 0 : docid.hashCode());
+		result = prime * result + ((document == null) ? 0 : document.hashCode());
+		result = prime * result + ((geometry == null) ? 0 : geometry.hashCode());
 		return result;
 	}
 
@@ -47,20 +70,22 @@ public class Score implements Comparable<Score> {
 		if (getClass() != obj.getClass())
 			return false;
 		Score other = (Score) obj;
-		if (docid == null) {
-			if (other.docid != null)
+		if (document == null) {
+			if (other.document != null)
 				return false;
-		} else if (!docid.equals(other.docid))
+		} else if (!document.equals(other.document))
+			return false;
+		if (geometry == null) {
+			if (other.geometry != null)
+				return false;
+		} else if (!geometry.equals(other.geometry))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "<" + docid + ", " + score + ">";
+		return "<" + document.getId() + ",  " + score + ", " + geometry + ">";
 	}
-	
-	
-	
 
 }

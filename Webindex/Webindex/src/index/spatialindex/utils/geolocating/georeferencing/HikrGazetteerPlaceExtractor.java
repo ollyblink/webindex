@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.postgis.PGgeometry;
 
@@ -23,29 +24,36 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class HikrGazetteerPlaceExtractor implements IPlaceExtractor {
 
-	private AbstractDBConnector db;
+	private HashMap<String, Geometry> hikrGazetteer;
 
 	public HikrGazetteerPlaceExtractor(AbstractDBConnector db) {
-		this.db = db;
-	}
-
-	@Override
-	public ArrayList<Geometry> extract(String text) {
-		String sql = "SELECT GEOMETRY FROM HIKRGAZETTEER WHERE lower(NAME) LIKE lower('%" + text.replace(" ", "%") + "%')";
-
-		ArrayList<Geometry> geometries = new ArrayList<Geometry>();
+		hikrGazetteer = new HashMap<String, Geometry>();
 		try {
 			Statement statement = db.getConnection().createStatement();
-			ResultSet set = statement.executeQuery(sql);
-			while(set.next()){ 
-				Geometry footprint = GeometryConverter.convertPostGisToJTS((PGgeometry) set.getObject(1));
-				geometries.add(footprint);
+			ResultSet set = statement.executeQuery("Select name, geometry from hikrgazetteer");
+			while (set.next()) {
+				hikrGazetteer.put(alterText(set.getString(1)), GeometryConverter.convertPostGisToJTS((PGgeometry) set.getObject(2)));
 			}
 			statement.close();
 		} catch (SQLException | NoSuchObjectException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public ArrayList<Geometry> extract(String text) {
+		String[] tokens = alterText(text).split(" ");
+		ArrayList<Geometry> geometries = new ArrayList<Geometry>();
+		for(String token:tokens){
+			if(hikrGazetteer.containsKey(token)){
+				geometries.add(hikrGazetteer.get(token));
+			}
+		}
 		return geometries;
+	}
+
+	public static String alterText(String text) {
+		return text.replaceAll("[^öÖäÄüÜa-zA-Z0-9\\s]", " ");
 	}
 
 	public static void main(String[] args) {
@@ -57,7 +65,7 @@ public class HikrGazetteerPlaceExtractor implements IPlaceExtractor {
 		String password = "32qjivkd";
 		HikrGazetteerPlaceExtractor gazetter = new HikrGazetteerPlaceExtractor(new PGDBConnector(host, port, database, user, password));
 		ArrayList<Geometry> geoms = gazetter.extract("sseren");
-		for(Geometry geom:geoms){
+		for (Geometry geom : geoms) {
 			System.out.println(geom);
 		}
 	}

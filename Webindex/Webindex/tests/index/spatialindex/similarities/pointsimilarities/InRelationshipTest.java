@@ -3,8 +3,9 @@ package index.spatialindex.similarities.pointsimilarities;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import index.spatialindex.utils.SpatialDocument;
+import index.utils.Document;
 import index.utils.Score;
-import index.utils.SpatialScore;
+import index.utils.Score;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,13 +35,13 @@ public class InRelationshipTest {
 		Polygon swissMBR = SwissProvider.getSwitzerlandMBR();
 		queryFootPrints.add(swissMBR);
 
-		documentFootPrints.add(new SpatialDocument(1l, fctry.createPoint(new Coordinate(8.47, 47.38))));
-		documentFootPrints.add(new SpatialDocument(1l, fctry.createPolygon(new Coordinate[] { new Coordinate(8.47 - .1, 47.38 - .1), new Coordinate(8.47 - .1, 47.38 + .1), new Coordinate(8.47 + .1, 47.38 + .1), new Coordinate(8.47 + .1, 47.38 - .1), new Coordinate(8.47 - .1, 47.38 - .1) })));
+		documentFootPrints.add(new SpatialDocument(new Document(1l), fctry.createPoint(new Coordinate(8.47, 47.38))));
+		documentFootPrints.add(new SpatialDocument(new Document(1l), fctry.createPolygon(new Coordinate[] { new Coordinate(8.47 - .1, 47.38 - .1), new Coordinate(8.47 - .1, 47.38 + .1), new Coordinate(8.47 + .1, 47.38 + .1), new Coordinate(8.47 + .1, 47.38 - .1), new Coordinate(8.47 - .1, 47.38 - .1) })));
 
 		double iLat = 48;
 		double iLon = 12;
-		documentFootPrints.add(new SpatialDocument(2l, fctry.createPoint(new Coordinate(iLon, iLat))));
-		documentFootPrints.add(new SpatialDocument(2l, fctry.createPolygon(new Coordinate[] { new Coordinate(iLon - .1, iLat - .1), new Coordinate(iLon - .1, iLat + .1), new Coordinate(iLon + .1, iLat + .1), new Coordinate(iLon + .1, iLat - .1), new Coordinate(iLon - .1, iLat - .1) })));
+		documentFootPrints.add(new SpatialDocument(new Document(2l), fctry.createPoint(new Coordinate(iLon, iLat))));
+		documentFootPrints.add(new SpatialDocument(new Document(2l), fctry.createPolygon(new Coordinate[] { new Coordinate(iLon - .1, iLat - .1), new Coordinate(iLon - .1, iLat + .1), new Coordinate(iLon + .1, iLat + .1), new Coordinate(iLon + .1, iLat - .1), new Coordinate(iLon - .1, iLat - .1) })));
 
 	}
 
@@ -49,12 +50,12 @@ public class InRelationshipTest {
 		ArrayList<? extends Score> datas = inRel.calculateSimilarity(queryFootPrints, documentFootPrints);
 
 		for (int i = 0; i < datas.size(); ++i) {
-			SpatialScore data = (SpatialScore) datas.get(i);
+			Score data = (Score) datas.get(i);
 			String className = data.getGeometry().getClass().getSimpleName();
 
 			assertTrue(className.equals("Point") || className.equals("Polygon"));
 
-			if (data.getDocid() == 1l) {
+			if (data.getDocument().getId().getId() == 1l) {
 				if (className.equals("Point")) {
 					assertTrue(data.getGeometry().toString().contains("8.47") && data.getGeometry().toString().contains("47.38"));
 					assertTrue(data.getScore() == 1f);
@@ -64,7 +65,7 @@ public class InRelationshipTest {
 				} else {
 					fail();
 				}
-			} else if (data.getDocid() == 2l) {
+			} else if (data.getDocument().getId().getId() == 2l) {
 				if (className.equals("Point")) {
 					assertTrue(!data.getGeometry().toString().contains("8.47") && !data.getGeometry().toString().contains("47.38"));
 					assertTrue(data.getScore() == null);

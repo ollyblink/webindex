@@ -1,14 +1,16 @@
 package index.girindex.combinationstrategy.combfamily;
 
+import index.girindex.combinationstrategy.ICombinationStrategy;
+import index.girindex.combinationstrategy.utils.Normalizer;
+import index.utils.Document;
+import index.utils.Ranking;
+import index.utils.RankingMetaData;
+import index.utils.Score;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import index.girindex.combinationstrategy.ICombinationStrategy;
-import index.girindex.combinationstrategy.utils.Normalizer;
-import index.utils.Ranking;
-import index.utils.Score;
 
 public abstract class AbstractComb implements ICombinationStrategy {
 
@@ -17,25 +19,32 @@ public abstract class AbstractComb implements ICombinationStrategy {
 		if (rankings == null || rankings.length == 0) {
 			return new Ranking();
 		} else {
-			normalize(rankings);
-			Map<Long, ArrayList<Score>> scoresPerDoc = getScoresPerDoc(rankings);
 
-			// Finally, the actual score calculation
-			ArrayList<Score> finalRanking = new ArrayList<Score>();
-			for (Long docid : scoresPerDoc.keySet()) {
-				ArrayList<Score> scoresOfDoc = scoresPerDoc.get(docid);
+			ArrayList<Ranking> rankingList = new ArrayList<>();
+			for(Ranking ranking: rankings){
+				rankingList.add(ranking);
+			}
+			RankingMetaData meta = new RankingMetaData(getClass().getSimpleName(), rankingList);
+			
+			normalize(rankings);
+			 
+			Map<Document, ArrayList<Score>> scoresPerDoc = getScoresPerDoc(rankings);
+			ArrayList<Score> finalRanking = new ArrayList<>();
+			for (Document doc : scoresPerDoc.keySet()) {
+				ArrayList<Score> scoresOfDoc = scoresPerDoc.get(doc);
+				System.out.println("Is intersected? "+isIntersected);
 				if (isIntersected) {
 					if (scoresOfDoc.size() != rankings.length) {
 						continue; // Bouncer.. continue if intersected and not enough scores
 					}
 				}
-				finalRanking.add(calculateCombinedScore(scoresOfDoc));
-			}
-
-			// Sort descending
+				Score combinedScore = calculateCombinedScore(scoresOfDoc);
+				
+				finalRanking.add(combinedScore);
+			} 
+			 
 			Collections.sort(finalRanking);
-
-			return new Ranking(finalRanking);
+			return new Ranking(finalRanking,meta);
 		}
 	}
 
@@ -50,23 +59,25 @@ public abstract class AbstractComb implements ICombinationStrategy {
 	protected void normalize(Ranking... rankings) {
 		// Score normalization
 		for (Ranking ranking : rankings) {
-			ArrayList<Score> normalizeMinMax = Normalizer.normalizeMinMax(ranking.getResults());
+			ArrayList<Score> normalizeMinMax = Normalizer.normalizeMinMax(ranking.getResults());  
 			ranking.setResults(normalizeMinMax);
 		}
 	}
 
-	protected Map<Long, ArrayList<Score>> getScoresPerDoc(Ranking... rankings) {
-		Map<Long/* docid */, ArrayList<Score> /* All scores of a doc */> scoresPerDoc = new HashMap<Long, ArrayList<Score>>();
+	protected Map<Document, ArrayList<Score>> getScoresPerDoc(Ranking... rankings) {
+		Map<Document, ArrayList<Score> /* All scores of a doc */> scoresPerDoc = new HashMap<>();
 		for (Ranking ranking : rankings) {
-			ArrayList<Score> ranks = ranking.getResults();
-			for (Score score : ranks) { 
-				ArrayList<Score> scores = scoresPerDoc.get(score.getDocid());
+
+			ArrayList<Score> ranks = ranking.getResults() ;
+
+			for (Score score : ranks) {
+				Document doc = score.getDocument();
+				ArrayList<Score> scores = scoresPerDoc.get(doc);
 				if (scores == null) {
 					scores = new ArrayList<>();
-					scoresPerDoc.put(score.getDocid(), scores);
-				} 
+					scoresPerDoc.put(doc, scores);
+				}
 				scores.add(score);
- 
 			}
 		}
 		return scoresPerDoc;

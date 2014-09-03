@@ -42,7 +42,7 @@ public class CosineSimilarityTest {
 //			System.out.println(res);
 //		}
 		for (Score res : hits) {
-			assertEquals(values.get(res.getDocid()), res.getScore(), 0.001f);
+			assertEquals(values.get(res.getDocument().getId().getId()), res.getScore(), 0.001f);
 		}
 	}
 

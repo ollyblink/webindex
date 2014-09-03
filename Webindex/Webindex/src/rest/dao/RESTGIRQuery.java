@@ -1,14 +1,16 @@
-package index.utils.query;
+package rest.dao;
+
+import index.utils.query.TextIndexQuery;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-public class GIRQuery {
+public class RESTGIRQuery {
 	private boolean isIntersected;
 	private TextIndexQuery textQuery;
-	private SpatialIndexQuery spatialQuery;
+	private RESTSpatialIndexQuery spatialQuery;
 
-	public GIRQuery(boolean isIntersected, TextIndexQuery textQuery, SpatialIndexQuery spatialQuery) {
+	public RESTGIRQuery(boolean isIntersected, TextIndexQuery textQuery, RESTSpatialIndexQuery spatialQuery) {
 		this.isIntersected = isIntersected;
 		this.textQuery = textQuery;
 		this.spatialQuery = spatialQuery;
@@ -30,19 +32,14 @@ public class GIRQuery {
 		this.textQuery = textQuery;
 	}
 
-	public SpatialIndexQuery getSpatialQuery() {
+	public RESTSpatialIndexQuery getSpatialQuery() {
 		return spatialQuery;
 	}
 
-	public void setSpatialQuery(SpatialIndexQuery spatialQuery) {
+	public void setSpatialQuery(RESTSpatialIndexQuery spatialQuery) {
 		this.spatialQuery = spatialQuery;
 	}
 
-	@Override
-	public String toString() {
-		return "GIRQuery [isIntersected=" + isIntersected + ", textQuery=" + textQuery + ", spatialQuery=" + spatialQuery + "]";
-	}
+	 
 	
-	
-
 }

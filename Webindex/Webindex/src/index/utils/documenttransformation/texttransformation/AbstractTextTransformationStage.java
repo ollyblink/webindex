@@ -1,7 +1,7 @@
-package index.girindex.utils.girtexttransformation.texttransformation;
+package index.utils.documenttransformation.texttransformation;
 
-import index.girindex.utils.girtexttransformation.AbstractTransformationStage;
 import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
+import index.utils.documenttransformation.AbstractTransformationStage;
 
 public class AbstractTextTransformationStage extends AbstractTransformationStage {
 

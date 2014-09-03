@@ -1,5 +1,8 @@
 package index.utils.indexmetadata;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement
 public class OverallTextIndexMetaData {
 	private float avgDocLengthSizeInBytes;
 	private float avgDocLengthRawNrOfWords;

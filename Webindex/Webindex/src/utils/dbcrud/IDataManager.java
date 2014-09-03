@@ -25,7 +25,7 @@ public interface IDataManager {
 	//Text index querying
 	public ArrayList<TermDocs> getTermDocs();
 	public ArrayList<Term> getTerms();
-	public ArrayList<Document> getDocuments(); 
+	public ArrayList<Document> getDocuments(List<Long> docids); 
 	public OverallTextIndexMetaData getOverallTextIndexMetaData();
 	
 	//Two convenience methods, not very efficient
@@ -44,9 +44,10 @@ public interface IDataManager {
 	//Closing any opened connection
 	public void close(); 
 	//Check if the db is up to date. May be not if not all docs have been put into the db
-	public boolean isUpdated(); 
+//	public boolean isUpdated(); 
 	//Check if the queue holding the documents to insert is empty already
 	public boolean isDocumentQueueEmptyEmpty();
+	public DBTablesManager getDBTablesManager();
 	 
 	
 }

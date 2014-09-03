@@ -1,8 +1,11 @@
 package index.utils.identifers;
 
+import javax.xml.bind.annotation.XmlRootElement;
 
-public final class TermIdentifier{
-	private String termId; 
+@XmlRootElement
+public final class TermIdentifier {
+	private String termId;
+
 	public TermIdentifier(String termId) {
 		this.termId = termId;
 	}
@@ -45,7 +48,4 @@ public final class TermIdentifier{
 		return termId;
 	}
 
-	 
-
-	  
 }

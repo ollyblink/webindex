@@ -31,7 +31,7 @@ public class RAMTextOnlyIndexTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		dbDataManager = new DBDataManager(DBInitializer.initDB(), null, 1,true); 
+		dbDataManager = new DBDataManager(DBInitializer.initDB(), null,  true); 
 		terms = DBDataManager.createIndexableDocuments();
 		ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs();
 		HashMap<TermDocsIdentifier, TermDocs> termDocsMeta = new HashMap<>();
@@ -140,14 +140,13 @@ public class RAMTextOnlyIndexTest {
 		Ranking ranking = index.queryIndex(query);
  
 		for (Score score : ranking) { 
-			assertEquals(trialScores.get(score.getDocid()),score.getScore(),0.01);
+			assertEquals(trialScores.get(score.getDocument().getId().getId()),score.getScore(),0.01);
 		}
 	}
 
 	@AfterClass
 	public static void clear() {
-		index.clear();
-		// DBInitializer.tearDownTestDB(dbDataManager);
+		index.clear(); 
 	}
 
 }
