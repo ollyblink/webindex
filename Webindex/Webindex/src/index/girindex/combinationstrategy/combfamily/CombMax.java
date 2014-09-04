@@ -1,20 +1,20 @@
 package index.girindex.combinationstrategy.combfamily;
 
 import index.utils.Document;
-import index.utils.Score;
+import index.utils.GeometryWrapper;
 
 import java.util.ArrayList;
 
-import com.vividsolutions.jts.geom.Geometry;
+import rest.dao.RESTScore;
 
 public class CombMax extends AbstractComb {
 
 	@Override
-	protected Score calculateCombinedScore(ArrayList<Score> scoresOfDoc) {
+	protected RESTScore calculateCombinedScore(ArrayList<RESTScore> scoresOfDoc) {
 		float max = Float.MIN_VALUE;
 		Document document = null;
-		Geometry docGeom = null;
-		for (Score score : scoresOfDoc) {
+		GeometryWrapper docGeom = null;
+		for (RESTScore score : scoresOfDoc) {
 			if (max < score.getScore()) {
 				max = score.getScore();
 			}
@@ -26,7 +26,7 @@ public class CombMax extends AbstractComb {
 			}
 		}
 
-		return new Score(document, max, docGeom);
+		return new RESTScore(document, max, docGeom);
 	}
 
 }

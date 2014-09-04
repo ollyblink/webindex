@@ -1,4 +1,4 @@
-package index.spatialindex.similarities.pointsimilarities;
+package index.spatialindex.similarities.pointsimilarities.in;
 
 import index.spatialindex.similarities.AbstractSpatialRelationship;
 import index.spatialindex.utils.SpatialDocument;

@@ -4,7 +4,6 @@ import index.textindex.similarities.AbstractTextSimilarity;
 import index.textindex.utils.Term;
 import index.textindex.utils.TermDocs;
 import index.utils.Document;
-import index.utils.Ranking;
 import index.utils.Score;
 import index.utils.identifers.TermDocsIdentifier;
 import index.utils.indexmetadata.TextIndexMetaData;
@@ -13,9 +12,9 @@ import index.utils.query.TextIndexQuery;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
+import rest.dao.Ranking;
 
 /**
  * Calculates similarity values accordings to BM formulas. See Modern Information Retrieval Ed. 2, page 106. The implementation needs one of the IBMStrategies (BM1, BM15, BM11, or BM25) as an input strategy.
@@ -32,7 +31,7 @@ public class BestMatch extends AbstractTextSimilarity {
 	}
 
 	@Override
-	public Ranking calculateSimilarity(TextIndexQuery query, HashMap<Term, Integer> queryTermFreqs, HashMap<Term, List<Document>> relevantDocuments, TextIndexMetaData metaData, boolean isIntersected) {
+	public ArrayList<Score> calculateSimilarity(TextIndexQuery query, HashMap<Term, Integer> queryTermFreqs, HashMap<Term, List<Document>> relevantDocuments, TextIndexMetaData metaData) {
 
 		int N = metaData.getOverallIndexMetaData().getN();
 
@@ -53,12 +52,9 @@ public class BestMatch extends AbstractTextSimilarity {
 			}
 		}
 
-		ArrayList<Score> scoreList = new ArrayList<Score>(scoreMap.values());
-		Collections.sort(scoreList);
+		ArrayList<Score> scoreList = new ArrayList<Score>(scoreMap.values());  
 
-		// HashMap<Score, Document> finalScore = getFinalScoreMap(relevantDocuments, scoreList);
-
-		return new Ranking(scoreList, null);
+		return scoreList;
 
 	}
 

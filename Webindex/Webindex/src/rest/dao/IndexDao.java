@@ -1,10 +1,10 @@
 package rest.dao;
 
 import index.girindex.IGIRIndex;
+import index.girindex.combinationstrategy.CombinationStrategyFactory;
 import index.girindex.combinationstrategy.ICombinationStrategy;
 import index.girindex.combinationstrategy.combfamily.CombMNZ;
-import index.girindex.combinationstrategy.utils.CombinationStrategyFactory;
-import index.girindex.implementations.SeparatedGIRIndex;
+import index.girindex.implementations.GIRSeparatedIndexes;
 import index.girindex.utils.GIRIndexType;
 import index.spatialindex.implementations.ISpatialIndex;
 import index.spatialindex.implementations.SpatialOnlyIndex;
@@ -18,8 +18,6 @@ import index.textindex.utils.informationextractiontools.GermanTextInformationExt
 import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
 import index.utils.Document;
 import index.utils.GeometryWrapper;
-import index.utils.Ranking;
-import index.utils.RankingMetaData;
 import index.utils.Score;
 import index.utils.identifers.TermDocsIdentifier;
 import index.utils.indexmetadata.OverallTextIndexMetaData;
@@ -69,7 +67,7 @@ public enum IndexDao {
 			ITextIndex textIndex = initializeTextIndex();
 			ISpatialIndex spatialIndex = initializeSpatialIndex();
 			ICombinationStrategy combinationStrategy = DEFAULT_COMBINATION_STRATEGY;
-			IGIRIndex girIndex = new SeparatedGIRIndex(textIndex, spatialIndex, combinationStrategy);
+			IGIRIndex girIndex = new GIRSeparatedIndexes(textIndex, spatialIndex, combinationStrategy);
 			return girIndex;
 		}
 	}
@@ -124,8 +122,8 @@ public enum IndexDao {
 		this.index = getGIRIndex(CURRENT_GIR_TYPE);
 	}
 
-	public RESTRanking submitQuery(String textsimilaritytype, String spatialrelationship, String locationquery, String textquery, String textintersected, String textspatialintersected, String combinationstrategy) {
-		RESTRanking restRanking = new RESTRanking();
+	public Ranking submitQuery(String textsimilaritytype, String spatialrelationship, String locationquery, String textquery, String textintersected, String textspatialintersected, String combinationstrategy) {
+		Ranking restRanking = new Ranking();
 		if (index != null) {
 			boolean isTextIntersected = getIsIntersected(textintersected);
 			boolean isTextSpatialIntersected = getIsIntersected(textspatialintersected);
@@ -137,46 +135,22 @@ public enum IndexDao {
 			SpatialIndexQuery spatialQuery = null;
 			if (locationquery != null && locationquery.trim().length() > 0) {
 				spatialQuery = new SpatialIndexQuery(spatialrelationship, locationquery);
-			}
-
+			} 
 			// query index
 			if (textQuery != null && spatialQuery != null) {// GIR
 				GIRQuery girQuery = new GIRQuery(isTextSpatialIntersected, textQuery, spatialQuery);
 				index.setCombinationStrategy(CombinationStrategyFactory.create(combinationstrategy));
-				Ranking ranking = index.queryIndex(girQuery);
-				addCoordinates(ranking);
-				restRanking = convertToRESTRanking(ranking);
-			} else if (textQuery == null && spatialQuery != null) {// Spatial only 
-				Ranking ranking = index.queryIndex(spatialQuery);
-				restRanking = convertToRESTRanking(ranking);
+				restRanking = index.queryIndex(girQuery);
+				addCoordinates(restRanking);
+			} else if (textQuery == null && spatialQuery != null) {// Spatial only
+				restRanking = index.queryIndex(spatialQuery);
 			} else if (textQuery != null && spatialQuery == null) {// Text only
-				Ranking ranking = index.queryIndex(textQuery);
-				addCoordinates(ranking);
-				restRanking = convertToRESTRanking(ranking);
+				restRanking = index.queryIndex(textQuery);
+				addCoordinates(restRanking);
 			}
-			restRanking.setQuery(getTextPartOfQuery(textquery, isTextIntersected) + getSpatialPartOfQuery(textquery,spatialrelationship,locationquery,isTextSpatialIntersected,combinationstrategy));
 
 		}
 		return restRanking;
-
-	}
-
-	private String getTextPartOfQuery(String textquery, boolean isTextIntersected) {
-		if(textquery == null|| textquery.trim().length() == 0){
-			return "";
-		}else{
-			return "<" + textquery.replace(" ", " " + convertToBooleanValues(isTextIntersected) + " ") + ">";
-		}
-	}
-
-	private String getSpatialPartOfQuery(String textquery, String spatialrelationship, String locationquery, boolean isTextSpatialIntersected, String combinationstrategy) {
-		if(locationquery == null || locationquery.trim().length() == 0){
-			return "";
-		}else if (textquery == null || textquery.trim().length() == 0){
-			return "<" + spatialrelationship + "><" + locationquery + ">";
-		}else{
-			return convertToBooleanValues(isTextSpatialIntersected) + "<" + spatialrelationship + "><" + locationquery + ">";
-		}
 	}
 
 	/**
@@ -185,93 +159,20 @@ public enum IndexDao {
 	 * @param ranking
 	 */
 	private void addCoordinates(Ranking ranking) {
-		for (Score score : ranking) {
-			if (score.getGeometry() == null) {
-				List<Long> docids = new ArrayList<>();
-				docids.add(score.getDocument().getId().getId());
-				ArrayList<SpatialDocument> locations = dbDataManager.getLocations(docids);
-				if (locations != null && locations.size() > 0) {
-					score.setGeometry(locations.get(0).getDocumentFootprint());
-				}
-			}
-		}
-	}
-
-	private String convertToBooleanValues(boolean bool) {
-		if (bool) {
-			return " AND ";
-		} else {
-			return " OR ";
-		}
-	}
-
-	private RESTRanking convertToRESTRanking(Ranking ranking) {
-		RESTRanking restRanking = new RESTRanking();
-		ArrayList<RESTScore> restScores = new ArrayList<>();
-		ArrayList<Score> results = ranking.getResults();
-		for (Score s : results) { 
-			
-			RESTScore restScore = new RESTScore(s.getDocument(), s.getScore(), GeometryConverter.convertJTStoRESTGeometry(s.getGeometry()));
-			restScores.add(restScore); 
-			
-		}
-		restRanking.setResults(restScores);
-
-		RESTRankingMetaData meta = new RESTRankingMetaData();
-		RankingMetaData origMeta = ranking.getRankingMetaData();
-
-		if (origMeta != null) {
-			meta.setCombinationStrategy(origMeta.getCombinationStrategy());
-
-			TextIndexQuery textQuery = meta.getTextIndexQuery();
-			meta.setTextIndexQuery(textQuery);
-
-			if (origMeta.getSpatialIndexQuery() != null) {
-				SpatialIndexQuery spatialQuery = origMeta.getSpatialIndexQuery();
-
-				RESTSpatialIndexQuery restSpatialIndexQuery = new RESTSpatialIndexQuery(spatialQuery.getSpatialRelationship(), spatialQuery.getLocation());
-				ArrayList<GeometryWrapper> wrapper = new ArrayList<>();
-				if (spatialQuery.getQueryFootPrints() != null) {
-					ArrayList<? extends Geometry> queryFootPrints = spatialQuery.getQueryFootPrints();
-					for (Geometry g : queryFootPrints) {
-						wrapper.add(GeometryConverter.convertJTStoRESTGeometry(g));
+		RESTTextQueryMetaData textQueryMetaData = ranking.getTextQueryMetaData();
+		if (textQueryMetaData != null) {
+			ArrayList<RESTScore> originalTermScores = textQueryMetaData.getScores();
+			for (RESTScore score : originalTermScores) {
+				if (score.getGeometry() == null) {
+					List<Long> docids = new ArrayList<>();
+					docids.add(score.getDocument().getId().getId());
+					ArrayList<SpatialDocument> locations = dbDataManager.getLocations(docids);
+					if (locations != null && locations.size() > 0) {
+						score.setGeometry(GeometryConverter.convertJTStoRESTGeometry(locations.get(0).getDocumentFootprint()));
 					}
 				}
-
-				restSpatialIndexQuery.setQueryFootPrints(wrapper);
-				meta.setSpatialIndexQuery(restSpatialIndexQuery);
 			}
-
-			GIRQuery girQuery = origMeta.getGirQuery();
-			if (girQuery != null) {
-				SpatialIndexQuery spatialQuery = girQuery.getSpatialQuery();
-				RESTSpatialIndexQuery restSpatialIndexQuery = new RESTSpatialIndexQuery(spatialQuery.getSpatialRelationship(), spatialQuery.getLocation());
-				ArrayList<GeometryWrapper> wrapper = new ArrayList<>();
-				if (spatialQuery.getQueryFootPrints() != null) {
-					ArrayList<? extends Geometry> queryFootPrints = spatialQuery.getQueryFootPrints();
-					for (Geometry g : queryFootPrints) {
-						wrapper.add(GeometryConverter.convertJTStoRESTGeometry(g));
-					}
-				}
-
-				restSpatialIndexQuery.setQueryFootPrints(wrapper);
-
-				meta.setGirQuery(new RESTGIRQuery(girQuery.isIntersected(), girQuery.getTextQuery(), restSpatialIndexQuery));
-			}
-
-			ArrayList<Ranking> rankings = origMeta.getRankings();
-			if (rankings != null) {
-				ArrayList<RESTRanking> restRankings = new ArrayList<RESTRanking>();
-
-				for (Ranking r : rankings) {
-					restRankings.add(convertToRESTRanking(r));
-				}
-			}
-			restRanking.setRankingMetaData(meta);
 		}
-
-		return restRanking;
-
 	}
 
 	private boolean getIsIntersected(String isIntersected) {

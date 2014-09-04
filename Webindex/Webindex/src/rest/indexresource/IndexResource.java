@@ -1,7 +1,5 @@
 package rest.indexresource;
 
-import index.utils.Ranking;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -9,7 +7,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import rest.dao.IndexDao;
-import rest.dao.RESTRanking;
+import rest.dao.Ranking;
+import rest.dao.RESTScore;
 
 @Path("/index")
 public class IndexResource {
@@ -29,10 +28,13 @@ public class IndexResource {
 	@GET
 	@Path("/{textsimilaritytype}/{spatialrelationship}/{locationquery}/{textquery}/{textintersected}/{textspatialintersected}/{combinationstrategy}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public RESTRanking query(@PathParam("textsimilaritytype") String textsimilaritytype, @PathParam("spatialrelationship") String spatialrelationship, @PathParam("locationquery") String locationquery, @PathParam("textquery") String textquery, @PathParam("textintersected") String textintersected, @PathParam("textspatialintersected") String textspatialintersected, @PathParam("combinationstrategy") String combinationstrategy) {
-
+	public Ranking query(@PathParam("textsimilaritytype") String textsimilaritytype, @PathParam("spatialrelationship") String spatialrelationship, @PathParam("locationquery") String locationquery, @PathParam("textquery") String textquery, @PathParam("textintersected") String textintersected, @PathParam("textspatialintersected") String textspatialintersected, @PathParam("combinationstrategy") String combinationstrategy) {
 		System.out.println("INDEXRESOURCE::query:: received: (" + textsimilaritytype + "," + spatialrelationship + "," + locationquery + "," + textquery + "," + textintersected + "," + textspatialintersected + "," + combinationstrategy + ")");
-		return IndexDao.INSTANCE.submitQuery(textsimilaritytype.trim(), spatialrelationship.trim(), locationquery.trim(), textquery.trim(), textintersected.trim(), textspatialintersected.trim(), combinationstrategy.trim());
+		Ranking ranking = IndexDao.INSTANCE.submitQuery(textsimilaritytype.trim(), spatialrelationship.trim(), locationquery.trim(), textquery.trim(), textintersected.trim(), textspatialintersected.trim(), combinationstrategy.trim());
+//		for(RESTScore s: ranking.getResults()){
+//			System.out.println(s.getDocument().getId() + ": "+ s.getScore());
+//		}
+		return ranking;
 	}
 
 	@GET

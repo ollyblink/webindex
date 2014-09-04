@@ -1,32 +1,32 @@
 package index.girindex.combinationstrategy.utils;
 
-import index.utils.Score;
-
 import java.util.ArrayList;
 
+import rest.dao.RESTScore;
+
 public class Normalizer {
-	public static ArrayList<Score> normalizeMinMax(final ArrayList<Score> set) { 
+	public static ArrayList<RESTScore> normalizeMinMax(final ArrayList<RESTScore> set) { 
 		if(set.size()==1 || getMax(set) == getMin(set)){
 			return set;
 		}
-		ArrayList<Score> normalizedValues = new ArrayList<>();
+		ArrayList<RESTScore> normalizedValues = new ArrayList<>();
 
 		Float min = getMin(set);
 		Float normFactor = getMax(set) - min;
 		
 		 
 
-		for (Score score : set) {
+		for (RESTScore score : set) {
 			float norm =  (score.getScore() - min) / normFactor; 
-			normalizedValues.add(new Score(score.getDocument(),norm,score.getGeometry()));
+			normalizedValues.add(new RESTScore(score.getDocument(),norm,score.getGeometry()));
 		}
 	
 		return normalizedValues;
 	}
 
-	public static Float getMin(ArrayList<Score> set) {
+	public static Float getMin(ArrayList<RESTScore> set) {
 		Float min = Float.MAX_VALUE;
-		for (Score value : set) {
+		for (RESTScore value : set) {
 			if (min > value.getScore()) {
 				min = value.getScore();
 			}
@@ -34,9 +34,9 @@ public class Normalizer {
 		return min;
 	}
 
-	public static Float getMax(ArrayList<Score> set) {
+	public static Float getMax(ArrayList<RESTScore> set) {
 		Float max = Float.MIN_VALUE;
-		for (Score value : set) {
+		for (RESTScore value : set) {
 			if (max < value.getScore()) {
 				max = value.getScore();
 			}

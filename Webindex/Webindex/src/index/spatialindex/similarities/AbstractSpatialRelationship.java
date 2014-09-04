@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
 
 public abstract class AbstractSpatialRelationship implements ISpatialRelationship {
 
@@ -48,5 +49,5 @@ public abstract class AbstractSpatialRelationship implements ISpatialRelationshi
 
 	protected abstract void calculateSimilarity(ArrayList<Score> results, Geometry qFP, SpatialDocument dFP);
 
-	
+
 }

@@ -1,8 +1,6 @@
-package index.spatialindex.similarities.pointsimilarities;
+package index.spatialindex.similarities.pointsimilarities.near;
 
 import index.spatialindex.similarities.AbstractSpatialRelationship;
-import index.spatialindex.utils.SpatialDocument;
-import index.utils.Score;
 
 import java.util.ArrayList;
 
@@ -13,15 +11,15 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.util.GeometricShapeFactory;
 
-public class BufferedNearRelationship extends AbstractSpatialRelationship {
-
-	private static final double SCALING_FACTOR = 20;
+public abstract class AbstractNearRelationship extends AbstractSpatialRelationship {
 	protected GeometricShapeFactory gF;
+	/** Factor used to increase the search radius for the circle. If 1, the circle is the Minimum bounding circle around the MBR */
+	protected float multiplicationFactor;
 
-	public BufferedNearRelationship() {
+	public AbstractNearRelationship(float multiplicationFactor) {
 		this.gF = new GeometricShapeFactory();
+		this.multiplicationFactor = multiplicationFactor;
 	}
-
 	@Override
 	public ArrayList<Geometry> preCalculateQueryFootprint(ArrayList<Geometry> queryFootPrints) {
 		ArrayList<Geometry> alteredGeoms = new ArrayList<Geometry>();
@@ -29,7 +27,7 @@ public class BufferedNearRelationship extends AbstractSpatialRelationship {
 			if (geom.getClass().equals("Polygon")) {
 				Point ne = getNorthEast(geom.getCoordinates());
 				gF.setCentre(geom.getCentroid().getCoordinate());
-				gF.setSize(geom.distance(ne));
+				gF.setSize(geom.distance(ne)*multiplicationFactor);
 				
 				Polygon circle = gF.createCircle();
 				circle.setSRID(geom.getSRID());
@@ -40,7 +38,8 @@ public class BufferedNearRelationship extends AbstractSpatialRelationship {
 		return alteredGeoms;
 	}
 
-	private Point getNorthEast(Coordinate[] cs) {
+	 
+	protected Point getNorthEast(Coordinate[] cs) {
 
 		Coordinate maxCoord = cs[0];
 
@@ -50,16 +49,6 @@ public class BufferedNearRelationship extends AbstractSpatialRelationship {
 			}
 		}
 		return new GeometryFactory().createPoint(maxCoord);
-	}
-
-	@Override
-	protected void calculateSimilarity(ArrayList<Score> results, Geometry qFP, SpatialDocument dFP) {
-		Point ne = getNorthEast(qFP.getCoordinates());
-		double distance = ne.distance(qFP.getCentroid());
-		Geometry buffer = qFP.buffer(distance/SCALING_FACTOR);
-		if(buffer.contains(dFP.getDocumentFootprint())){
-			super.checkLargestScore(results, dFP, 1f);
-		}
-	}
+	} 
 
 }

@@ -7,7 +7,6 @@ import index.textindex.similarities.tfidfweighting.TFWeightingStrategy;
 import index.textindex.utils.Term;
 import index.textindex.utils.TermDocs;
 import index.utils.Document;
-import index.utils.Ranking;
 import index.utils.Score;
 import index.utils.identifers.TermDocsIdentifier;
 import index.utils.indexmetadata.TextIndexMetaData;
@@ -16,10 +15,8 @@ import index.utils.query.TextIndexQuery;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public final class CosineSimilarity extends AbstractTextSimilarity {
 
@@ -34,17 +31,15 @@ public final class CosineSimilarity extends AbstractTextSimilarity {
 	}
 
 	@Override
-	public Ranking calculateSimilarity(TextIndexQuery query, HashMap<Term, Integer> queryTermFreqs, HashMap<Term, List<Document>> relevantDocuments, TextIndexMetaData metaData, boolean isIntersected) {
+	public ArrayList<Score> calculateSimilarity(TextIndexQuery query, HashMap<Term, Integer> queryTermFreqs, HashMap<Term, List<Document>> relevantDocuments, TextIndexMetaData metaData) {
 
-		ArrayList<Score> scoreList = calculateCosineSimilarity(queryTermFreqs, getMaxFreq(queryTermFreqs), relevantDocuments, metaData, isIntersected);
+		ArrayList<Score> scoreList = calculateCosineSimilarity(queryTermFreqs, getMaxFreq(queryTermFreqs), relevantDocuments, metaData);
 
 		Collections.sort(scoreList);
-		// HashMap<Score, Document> finalScore = getFinalScoreMap(relevantDocuments, scoreList);
-
-		return new Ranking(scoreList, null);
+		return scoreList;
 	}
 
-	private ArrayList<Score> calculateCosineSimilarity(HashMap<Term, Integer> queryTermFreqs, int maxFreq, HashMap<Term, List<Document>> relevantDocuments, TextIndexMetaData metaData, boolean isIntersected) {
+	private ArrayList<Score> calculateCosineSimilarity(HashMap<Term, Integer> queryTermFreqs, int maxFreq, HashMap<Term, List<Document>> relevantDocuments, TextIndexMetaData metaData) {
 
 		Map<Long, Float> vectorNormsPerDoc = new HashMap<Long, Float>();
 
@@ -53,19 +48,13 @@ public final class CosineSimilarity extends AbstractTextSimilarity {
 			// System.out.println(queryTerm + ", " +actualTerm);
 			List<Document> list = relevantDocuments.get(actualTerm);
 			if (list != null) {
-				for (Document document : list) {
-
+				for (Document document : list) { 
 					TermDocsIdentifier id = new TermDocsIdentifier(queryTerm.getIndexedTerm().getTermId(), document.getId().getId());
-
 					TermDocs termDocs = metaData.getTermDocRelationship().get(id);
-
-					float docTfIdf = getDocTfIdf(termDocs);
-
-					int freq = queryTermFreqs.get(queryTerm);
-
+					float docTfIdf = getDocTfIdf(termDocs); 
+					int freq = queryTermFreqs.get(queryTerm); 
 					float queryTfIdf = queryTf.tf(freq, maxFreq) * getQueryIdf(actualTerm);
 					float weight = docTfIdf * queryTfIdf;
-
 					updateScore(document, weight);
 
 					Float vectorNorm = vectorNormsPerDoc.get(document.getId().getId());

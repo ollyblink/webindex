@@ -2,10 +2,11 @@ package index.textindex.similarities;
 
 import index.textindex.utils.Term;
 import index.utils.Document;
-import index.utils.Ranking;
+import index.utils.Score;
 import index.utils.indexmetadata.TextIndexMetaData;
 import index.utils.query.TextIndexQuery;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -16,5 +17,5 @@ public interface ITextSimilarity {
 	 * 
 	 * @return
 	 */
-	public Ranking calculateSimilarity(TextIndexQuery query, HashMap<Term, Integer> queryTermFreqs, HashMap<Term, List<Document>> relevantDocuments, TextIndexMetaData metaData, boolean isIntersected);
+	public ArrayList<Score> calculateSimilarity(TextIndexQuery query, HashMap<Term, Integer> queryTermFreqs, HashMap<Term, List<Document>> relevantDocuments, TextIndexMetaData metaData );
 }

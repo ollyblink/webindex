@@ -1,9 +1,8 @@
-package index.girindex.combinationstrategy.combfamily;
+package index.girindex.combinationstrategy.bordacounts;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import index.utils.Document;
-import index.utils.Ranking;
 import index.utils.Score;
 
 import java.util.ArrayList;
@@ -11,15 +10,15 @@ import java.util.ArrayList;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class CombMNZTest {
+public class SimpleBordaCountTest {
 
 	private static Ranking[] rankings;
-	private static CombMNZ comb;
+	private static BordaCount comb;
 	@BeforeClass
 	public static void init(){
 		ArrayList<Score> scores = new ArrayList<Score>();
 		rankings = new Ranking[3];
-		comb = new CombMNZ();
+		comb = new BordaCount();
 		
 		scores.add(new Score(new Document(4l), 14.5f,null));
 		scores.add(new Score(new Document(3l), 12f,null));
@@ -53,29 +52,30 @@ public class CombMNZTest {
 		Ranking combineScores = comb.combineScores(isIntersected, rankings) ;
 		ArrayList<Score> results = combineScores.getResults();
 		assertTrue(results.size() == 7);
-		assertEquals(results.get(0).getScore(), 6.03f,0.01); 
-		assertEquals(results.get(0).getDocument().getId().getId().longValue(), 4);
-		assertEquals(results.get(1).getScore(), 4.00f,0.01); 
-		assertEquals(results.get(1).getDocument().getId().getId().longValue(), 6);
-		assertEquals(results.get(2).getScore(), 2.50f,0.01); 
-		assertEquals(results.get(2).getDocument().getId().getId().longValue(), 1);
-		assertEquals(results.get(3).getScore(), 0.82f,0.01); 
-		assertEquals(results.get(3).getDocument().getId().getId().longValue(), 3);
-		assertEquals(results.get(4).getScore(), 0.59f,0.01); 
-		assertEquals(results.get(4).getDocument().getId().getId().longValue(), 5);
-		assertEquals(results.get(5).getScore(), 0.22f,0.01); 
-		assertEquals(results.get(5).getDocument().getId().getId().longValue(), 7);
-		assertEquals(results.get(6).getScore(), 0.00f,0.01); 
-		assertEquals(results.get(6).getDocument().getId().getId().longValue(), 2);
+		assertEquals(12,results.get(0).getScore(),0.1); 
+		assertEquals(4,results.get(0).getDocument().getId().getId().longValue());
+		assertEquals(10, results.get(1).getScore(),0.1); 
+		assertEquals(6,results.get(1).getDocument().getId().getId().longValue());
+		assertEquals(8,results.get(2).getScore(),0.1); 
+		assertEquals(1,results.get(2).getDocument().getId().getId().longValue());
+		assertEquals(5,results.get(3).getScore(),0.1); 
+		assertEquals(7,results.get(3).getDocument().getId().getId().longValue());
+		assertEquals(4,results.get(4).getScore(),0.1); 
+		assertEquals(3,results.get(4).getDocument().getId().getId().longValue());
+		assertEquals(3,results.get(5).getScore(),0.1); 
+		assertEquals(5,results.get(5).getDocument().getId().getId().longValue());
+		assertEquals(2,results.get(6).getScore(),0.1); 
+		assertEquals(2,results.get(6).getDocument().getId().getId().longValue());
 		init();
 		isIntersected = true;
 		combineScores = comb.combineScores(isIntersected, rankings) ;
 		results = combineScores.getResults();
 		assertTrue(results.size() == 2);
-		assertEquals(results.get(0).getScore(), 6.03f,0.01);  
-		assertEquals(results.get(0).getDocument().getId().getId().longValue(), 4);
-		assertEquals(results.get(1).getScore(), 2.50f,0.01); 
-		assertEquals(results.get(1).getDocument().getId().getId().longValue(), 1);
+		assertEquals(12f,results.get(0).getScore(),0.1); 
+		assertEquals(4,results.get(0).getDocument().getId().getId().longValue());
+		assertEquals(8, results.get(1).getScore(),0.1); 
+		assertEquals(1,results.get(1).getDocument().getId().getId().longValue());
 	}
+
 
 }

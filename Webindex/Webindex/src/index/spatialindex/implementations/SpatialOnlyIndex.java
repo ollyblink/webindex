@@ -2,16 +2,18 @@ package index.spatialindex.implementations;
 
 import index.spatialindex.similarities.ISpatialRelationship;
 import index.spatialindex.similarities.SpatialRelationshipFactory;
+import index.spatialindex.utils.GeometryConverter;
 import index.spatialindex.utils.SpatialDocument;
 import index.spatialindex.utils.geolocating.georeferencing.LocationFinder;
-import index.utils.Ranking;
-import index.utils.RankingMetaData;
 import index.utils.Score;
 import index.utils.query.SpatialIndexQuery;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import rest.dao.RESTSpatialQueryMetaData;
+import rest.dao.Ranking;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.index.quadtree.Quadtree;
@@ -57,16 +59,31 @@ public class SpatialOnlyIndex implements ISpatialIndex {
 		// }
 		Collections.sort(results);
 		// Create the spatial ranking
-		RankingMetaData meta = new RankingMetaData();
-		meta.setSpatialIndexQuery(query);
-		Ranking ranking = new Ranking(results,meta);
-		
-		
+		Ranking ranking = collectMetadData(query, queryFootPrints, results);
 
 		return ranking;
 	}
 
-	 
+	private Ranking collectMetadData(SpatialIndexQuery query, ArrayList<Geometry> queryFootPrints, ArrayList<Score> results) {
+		Ranking ranking = new Ranking();
+		RESTSpatialQueryMetaData spatialMeta = new RESTSpatialQueryMetaData();
+		spatialMeta.setLocation(query.getLocation());
+		spatialMeta.setSpatialRelationship(query.getSpatialRelationship());
+		spatialMeta.setQueryFootPrints(GeometryConverter.convertGeometriesToREST(queryFootPrints));
+		spatialMeta.setScores(GeometryConverter.convertScoresToREST(results));
+		spatialMeta.setPrintableQuery(getSpatialPartOfQuery(query.getSpatialRelationship(), query.getLocation()));
+		ranking.setSpatialQueryMetaData(spatialMeta);
+		return ranking;
+	}
+
+	private String getSpatialPartOfQuery(String spatialrelationship, String locationquery) {
+		if (locationquery == null || locationquery.trim().length() == 0) {
+			return "";
+		} else {
+			return "<" + spatialrelationship + "><" + locationquery + ">";
+		}
+	}
+
 	@Override
 	public void addDocument(SpatialDocument spatialDocument) {
 		if (spatialDocument == null || spatialDocument.getDocumentFootprint() == null) {

@@ -7,8 +7,6 @@ import index.spatialindex.implementations.ISpatialIndex;
 import index.textindex.implementations.ITextIndexNoInsertion;
 import index.textindex.utils.Term;
 import index.utils.Document;
-import index.utils.Ranking;
-import index.utils.RankingMetaData;
 import index.utils.indexmetadata.TextIndexMetaData;
 import index.utils.query.GIRQuery;
 import index.utils.query.SpatialIndexQuery;
@@ -18,33 +16,39 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SeparatedGIRIndex implements IGIRIndex {
+import rest.dao.Ranking;
+
+public class GIRSeparatedIndexes implements IGIRIndex {
 	private ITextIndexNoInsertion textIndex;
 	private ISpatialIndex spatialIndex;
 	private ICombinationStrategy combinationStrategy;
 
-	public SeparatedGIRIndex(ITextIndexNoInsertion textIndex, ISpatialIndex spatialIndex, ICombinationStrategy combinationStrategy) {
+	public GIRSeparatedIndexes(ITextIndexNoInsertion textIndex, ISpatialIndex spatialIndex, ICombinationStrategy combinationStrategy) {
 		this.textIndex = textIndex;
 		this.spatialIndex = spatialIndex;
 		this.combinationStrategy = combinationStrategy;
-		
+
 	}
 
 	@Override
 	public Ranking queryIndex(GIRQuery query) {
-		System.out.println(query);
 		Ranking textRanking = textIndex.queryIndex(query.getTextQuery());
 		Ranking spatialRanking = spatialIndex.queryIndex(query.getSpatialQuery());
-		Ranking combination = combinationStrategy.combineScores(query.isIntersected(), textRanking, spatialRanking);
-		RankingMetaData meta = combination.getRankingMetaData();
-		if(meta == null){
-			meta = new RankingMetaData();
-			combination.setRankingMetaData(meta);
-		} 
-		meta.setGIRQuery(query); 
-		return combination;
+		Ranking finalRanking = combinationStrategy.combineScores(query, textRanking, spatialRanking);
+		finalRanking.setTextQueryMetaData(textRanking.getTextQueryMetaData());
+		finalRanking.setSpatialQueryMetaData(spatialRanking.getSpatialQueryMetaData());
+		finalRanking.getGirQueryMetaData().setPrintableQuery(textRanking.getTextQueryMetaData().getPrintableQuery() + convertToBooleanValues(query.isIntersected()) + spatialRanking.getSpatialQueryMetaData().getPrintableQuery());
+		
+		return finalRanking;
 	}
 
+	private String convertToBooleanValues(boolean bool) {
+		if (bool) {
+			return " AND ";
+		} else {
+			return " OR ";
+		}
+	}
 	@Override
 	public void addDocument(GIRDocument document) {
 	}
@@ -53,7 +57,7 @@ public class SeparatedGIRIndex implements IGIRIndex {
 	public Ranking queryIndex(TextIndexQuery query) {
 		return this.textIndex.queryIndex(query);
 	}
- 
+
 	@Override
 	public void clear() {
 		this.textIndex.clear();

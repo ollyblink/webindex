@@ -1,6 +1,7 @@
 package index.girindex.combinationstrategy;
  
-import index.utils.Ranking;
+import index.utils.query.GIRQuery;
+import rest.dao.Ranking;
 
 public interface ICombinationStrategy {
  
@@ -11,7 +12,7 @@ public interface ICombinationStrategy {
 	 * @param rankings
 	 * @return
 	 */
-	public Ranking combineScores(boolean isIntersected, Ranking... rankings);
+	public Ranking combineScores(GIRQuery query, Ranking... rankings);
  
 
 }

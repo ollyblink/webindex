@@ -1,19 +1,5 @@
 package index.girindex.implementations;
 
-import index.girindex.IGIRIndex;
-import index.girindex.combinationstrategy.ICombinationStrategy;
-import index.girindex.utils.GIRDocument;
-import index.textindex.utils.Term;
-import index.utils.Document;
-import index.utils.Ranking;
-import index.utils.indexmetadata.TextIndexMetaData;
-import index.utils.query.GIRQuery;
-import index.utils.query.SpatialIndexQuery;
-import index.utils.query.TextIndexQuery;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class TextPrimarySpatialIndex /*implements IGIRIndex*/ {
 // 

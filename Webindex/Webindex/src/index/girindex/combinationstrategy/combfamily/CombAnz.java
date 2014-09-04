@@ -1,21 +1,21 @@
 package index.girindex.combinationstrategy.combfamily;
 
 import index.utils.Document;
-import index.utils.Score;
+import index.utils.GeometryWrapper;
 
 import java.util.ArrayList;
 
-import com.vividsolutions.jts.geom.Geometry;
+import rest.dao.RESTScore;
 
 public class CombAnz extends AbstractComb {
 
 	@Override
-	protected Score calculateCombinedScore(ArrayList<Score> scoresOfDoc) {
+	protected RESTScore calculateCombinedScore(ArrayList<RESTScore> scoresOfDoc) {
 		float sum = 0f;
 		Document document = null;
-		Geometry docGeom = null;
+		GeometryWrapper docGeom = null;
 		
-		for (Score score : scoresOfDoc) {
+		for (RESTScore score : scoresOfDoc) {
 			sum += score.getScore();
 			if (document == null) {
 				document = score.getDocument();
@@ -26,7 +26,7 @@ public class CombAnz extends AbstractComb {
 		}
 
 		float finalScore = sum /= scoresOfDoc.size();
-		return new Score(document, finalScore,docGeom);
+		return new RESTScore(document, finalScore,docGeom);
 	}
 
 }

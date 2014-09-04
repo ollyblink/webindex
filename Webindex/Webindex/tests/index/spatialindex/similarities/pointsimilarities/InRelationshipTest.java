@@ -2,6 +2,7 @@ package index.spatialindex.similarities.pointsimilarities;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import index.spatialindex.similarities.pointsimilarities.in.InRelationship;
 import index.spatialindex.utils.SpatialDocument;
 import index.utils.Document;
 import index.utils.Score;

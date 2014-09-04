@@ -2,7 +2,7 @@ package index.spatialindex.similarities;
 import static org.junit.Assert.*;
 import index.spatialindex.similarities.ISpatialRelationship;
 import index.spatialindex.similarities.SpatialRelationshipFactory;
-import index.spatialindex.similarities.pointsimilarities.InRelationship;
+import index.spatialindex.similarities.pointsimilarities.in.InRelationship;
 
 import org.junit.After;
 import org.junit.Before;

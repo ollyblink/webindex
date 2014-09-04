@@ -25,7 +25,7 @@ import utils.dbcrud.DBTablesManager;
 
 public class SeparatedGIRIndexTest {
 
-	private static SeparatedGIRIndex girIndex;
+	private static GIRSeparatedIndexes girIndex;
 	private static DBTablesManager dbTablesManager;
 	private static DBDataManager dbDataManager;
 
@@ -45,7 +45,7 @@ public class SeparatedGIRIndexTest {
 		SpatialOnlyIndex spatialIndex = new SpatialOnlyIndex();
 		spatialIndex.addDocuments(dbDataManager.getLocations(null));
 
-		girIndex = new SeparatedGIRIndex(textIndex, spatialIndex, new CombMNZ());
+		girIndex = new GIRSeparatedIndexes(textIndex, spatialIndex, new CombMNZ());
 	}
 
 	@AfterClass

@@ -1,6 +1,6 @@
-package index.girindex.combinationstrategy.utils;
+package index.girindex.combinationstrategy;
 
-import index.girindex.combinationstrategy.ICombinationStrategy;
+import index.girindex.combinationstrategy.bordacounts.BordaCount;
 import index.girindex.combinationstrategy.combfamily.CombAnz;
 import index.girindex.combinationstrategy.combfamily.CombMNZ;
 import index.girindex.combinationstrategy.combfamily.CombMax;
@@ -10,8 +10,9 @@ import index.girindex.combinationstrategy.combfamily.CombSum;
 public class CombinationStrategyFactory {
 
 	public static ICombinationStrategy create(String combinationstrategy) {
-		switch (combinationstrategy) {
-
+		switch (combinationstrategy) { 
+		case "simpleborda":
+			return new BordaCount();
 		case "combmin":
 			return new CombMin();
 		case "combmax":

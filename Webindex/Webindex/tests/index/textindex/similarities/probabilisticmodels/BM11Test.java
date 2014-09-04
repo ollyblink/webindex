@@ -31,8 +31,8 @@ public class BM11Test {
 		Ranking hits = similarity.calculateSimilarity(new TextIndexQuery(
 				similarityTestUtils.query, "bm1", true),
 				similarityTestUtils.queryTermFreqs,
-				similarityTestUtils.docSubset, similarityTestUtils.metaData,
-				false);
+				similarityTestUtils.docSubset, similarityTestUtils.metaData 
+				 );
 
 		HashMap<Long, Float> values = new HashMap<Long, Float>();
 		values.put(1l, -1.222f);

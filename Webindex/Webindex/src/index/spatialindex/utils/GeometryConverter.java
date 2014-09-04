@@ -2,6 +2,7 @@ package index.spatialindex.utils;
 
 import index.utils.CoordinateWrapper;
 import index.utils.GeometryWrapper;
+import index.utils.Score;
 
 import java.rmi.NoSuchObjectException;
 import java.util.ArrayList;
@@ -12,6 +13,8 @@ import org.postgis.LinearRing;
 import org.postgis.PGgeometry;
 import org.postgis.Point;
 import org.postgis.Polygon;
+
+import rest.dao.RESTScore;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -81,6 +84,23 @@ public class GeometryConverter {
 		} else {
 			return null;
 		}
+	}
+
+	public static ArrayList<RESTScore> convertScoresToREST(ArrayList<Score> results) {
+		ArrayList<RESTScore> converted = new ArrayList<RESTScore>();
+		for (Score score : results) {
+			converted.add(new RESTScore(score.getDocument(), score.getScore(), GeometryConverter.convertJTStoRESTGeometry(score.getGeometry())));
+		}
+		return converted;
+	}
+
+	public static ArrayList<GeometryWrapper> convertGeometriesToREST(ArrayList<Geometry> queryFootPrints) {
+
+		ArrayList<GeometryWrapper> converted = new ArrayList<GeometryWrapper>();
+		for (Geometry geom : queryFootPrints) {
+			converted.add(GeometryConverter.convertJTStoRESTGeometry(geom));
+		}
+		return converted;
 	}
 
 }

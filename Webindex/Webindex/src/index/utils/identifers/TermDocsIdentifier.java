@@ -4,7 +4,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 
 @XmlRootElement
-public final class TermDocsIdentifier{
+public final class TermDocsIdentifier {
 	private String termid;
 	private Long docid;
 	

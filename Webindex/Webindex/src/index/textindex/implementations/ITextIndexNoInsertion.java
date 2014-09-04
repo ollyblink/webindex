@@ -2,13 +2,14 @@ package index.textindex.implementations;
 
 import index.textindex.utils.Term;
 import index.utils.Document;
-import index.utils.Ranking;
 import index.utils.indexmetadata.TextIndexMetaData;
 import index.utils.query.TextIndexQuery;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import rest.dao.Ranking;
 
 /**
  * All the needed methods for a text index without text insertions

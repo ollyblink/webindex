@@ -1,22 +1,27 @@
 package index.textindex.implementations;
 
-import index.textindex.similarities.AbstractTextSimilarity;
+import index.spatialindex.utils.GeometryConverter;
 import index.textindex.similarities.ITextSimilarity;
+import index.textindex.similarities.TextSimilarityFactory;
 import index.textindex.utils.Term;
 import index.textindex.utils.TermDocs;
 import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
 import index.textindex.utils.informationextractiontools.MockTextInformationExtractor;
 import index.utils.Document;
-import index.utils.Ranking;
-import index.utils.RankingMetaData;
+import index.utils.Score;
 import index.utils.identifers.TermDocsIdentifier;
 import index.utils.indexmetadata.TextIndexMetaData;
 import index.utils.query.TextIndexQuery;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import rest.dao.RESTTextQueryMetaData;
+import rest.dao.Ranking;
 
 /**
  * This class implements a simple RAM inverted index based on a {@link HashMap}
@@ -37,6 +42,12 @@ public class RAMTextOnlyIndex implements ITextIndex {
 
 	public RAMTextOnlyIndex(TextIndexMetaData indexMetaData, ITextInformationExtractor tokenizer) {
 		this.index = new HashMap<>();
+		this.indexMetaData = indexMetaData;
+		this.tokenizer = (tokenizer == null ? new MockTextInformationExtractor() : tokenizer);
+	}
+
+	public RAMTextOnlyIndex(HashMap<Term, List<Document>> predefinedIndex, TextIndexMetaData indexMetaData, ITextInformationExtractor tokenizer) {
+		this.index = predefinedIndex;
 		this.indexMetaData = indexMetaData;
 		this.tokenizer = (tokenizer == null ? new MockTextInformationExtractor() : tokenizer);
 	}
@@ -90,28 +101,117 @@ public class RAMTextOnlyIndex implements ITextIndex {
 		// Tokenize query, create terms and calculate term occurrences (fiq) in query
 		HashMap<Term, Integer> queryTermFreqs = tokenizer.fullTransformation(query.getTextQuery());
 		// Retrieve the relevant documents from the index (only those that contain one or more query term)
-		HashMap<Term, List<Document>> relevantDocuments = getAllRelevantDocs(queryTermFreqs.keySet());
+		HashMap<Term, List<Document>> relevantDocuments = getAllRelevantDocs(queryTermFreqs.keySet(), queryTermFreqs.keySet().size(), query.isIntersected());
 		// Create the correct similarity
-		ITextSimilarity currentSimilarity = AbstractTextSimilarity.getSimilarity(query.getSimilarity());
+		ITextSimilarity currentSimilarity = TextSimilarityFactory.create(query.getSimilarity());
 		// Calculate the similarity between the query and the documents and create a ranked list of documents
-		Ranking ranking = currentSimilarity.calculateSimilarity(query, queryTermFreqs, relevantDocuments, indexMetaData, query.isIntersected());
-		RankingMetaData meta = new RankingMetaData();
-		meta.setTextIndexQuery(query);
-		ranking.setRankingMetaData(meta);
+		ArrayList<Score> scoreList = currentSimilarity.calculateSimilarity(query, queryTermFreqs, relevantDocuments, indexMetaData);
+		// Sort according to highest score
+		Collections.sort(scoreList);
+
+		// Collect metadata
+		Ranking ranking = collectMetaData(query, scoreList, queryTermFreqs);
 		return ranking;
 	}
 
-	private HashMap<Term, List<Document>> getAllRelevantDocs(Iterable<Term> terms) {
-		HashMap<Term, List<Document>> relevantDocuments = new HashMap<>();
-		
-		for (Term term : terms) { 
-			Term actualTerm = findActualTerm(term);
-			List<Document> docs = index.get(actualTerm); 
-			if (docs != null) {
-				relevantDocuments.put(actualTerm, docs);
+	private Ranking collectMetaData(TextIndexQuery query, ArrayList<Score> results, HashMap<Term, Integer> queryTermFreqs) {
+		Ranking ranking = new Ranking();
+		RESTTextQueryMetaData textMeta = new RESTTextQueryMetaData();
+		textMeta.setScores(GeometryConverter.convertScoresToREST(results));
+		textMeta.setOverallTextIndexMetaData(this.indexMetaData.getOverallIndexMetaData());
+		textMeta.setQueryTermFrequencies(queryTermFreqs);
+		ArrayList<TermDocs> termDocs = new ArrayList<TermDocs>();
+		for (Term t : queryTermFreqs.keySet()) {
+			for (Score s : results) {
+				TermDocs termDoc = indexMetaData.getTermDocRelationship().get(new TermDocsIdentifier(t.getIndexedTerm().getTermId(), s.getDocument().getId().getId()));
+				if (termDoc != null) {
+					termDocs.add(termDoc);
+				}
 			}
 		}
+		textMeta.setTermDocs(termDocs);
+		textMeta.setTextIntersected(query.isIntersected());
+		textMeta.setTextQuery(query.getTextQuery());
+		textMeta.setTextSimilarity(query.getSimilarity());
+		textMeta.setPrintableQuery(getTextPartOfQuery(query.getTextQuery(), query.isIntersected()));
+		ranking.setTextQueryMetaData(textMeta);
+
+		return ranking;
+	}
+
+	private String convertToBooleanValues(boolean bool) {
+		if (bool) {
+			return " AND ";
+		} else {
+			return " OR ";
+		}
+	}
+
+	private String getTextPartOfQuery(String textquery, boolean isTextIntersected) {
+		if (textquery == null || textquery.trim().length() == 0) {
+			return "";
+		} else {
+			return "<" + textquery.replaceAll("[^öÖäÄüÜéÉàÀèÈßa-zA-Z ']", "").replace(" ", " " + convertToBooleanValues(isTextIntersected) + " ") + ">";
+		}
+	}
+
+	private HashMap<Term, List<Document>> getAllRelevantDocs(Iterable<Term> terms, int numberOfQueryTerms, boolean isIntersected) {
+		Map<Long, Integer> counter = new HashMap<Long, Integer>();
+
+		HashMap<Term, List<Document>> relevantDocuments = new HashMap<>();
+		for (Term term : terms) {
+			Term actualTerm = findActualTerm(term);
+			if (actualTerm != null) {
+				ArrayList<String> originalTerms = actualTerm.getOriginalTerms();
+				ArrayList<String> copyOrigTerms = new ArrayList<String>();
+				copyOrigTerms.addAll(originalTerms);
+
+				Term termCopy = new Term(actualTerm.getIndexedTerm().getTermId(), copyOrigTerms, actualTerm.getNi(), actualTerm.getTermIdf1(), actualTerm.getTermIdf2());
+				List<Document> docs = index.get(actualTerm);
+
+				if (docs != null) {
+					List<Document> docCopies = new ArrayList<>();
+					for (Document d : docs) {
+						docCopies.add(new Document(d.getId().getId(), d.getFulltext(), d.getSizeInBytes(), d.getIndexedNrOfWords(), d.getRawNrOfWords(), d.getDocVectorNorm1(), d.getDocVectorNorm2(), d.getDocVectorNorm3()));
+					}
+					relevantDocuments.put(termCopy, docCopies);
+					addDocumentsToCounter(counter, docCopies);
+				}
+			}
+		}
+
+		checkForIntersection(relevantDocuments, counter, numberOfQueryTerms, isIntersected);
 		return relevantDocuments;
+	}
+
+	private void addDocumentsToCounter(Map<Long, Integer> counter, List<Document> docs) {
+		for (Document doc : docs) {
+			long docid = doc.getId().getId();
+			Integer count = counter.get(docid);
+			if (count == null) {
+				count = 0;
+			}
+			count++;
+			counter.put(doc.getId().getId(), count);
+		}
+	}
+
+	private void checkForIntersection(HashMap<Term, List<Document>> relevantDocuments, Map<Long, Integer> counter, int numberOfQueryTerms, boolean isIntersected) {
+		if (isIntersected) {
+			Set<Term> keys = relevantDocuments.keySet();
+			for (Term term : keys) {
+				List<Document> termDocsToRemove = new ArrayList<>();
+				List<Document> termDocs = relevantDocuments.get(term);
+				for (Document d : termDocs) {
+					if (counter.get(d.getId().getId()).intValue() != numberOfQueryTerms) {
+						termDocsToRemove.add(d);
+					}
+				}
+				for (Document d : termDocsToRemove) {
+					termDocs.remove(d);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -164,8 +264,8 @@ public class RAMTextOnlyIndex implements ITextIndex {
 		return subset;
 	}
 
-	private Term findActualTerm(Term term) { 
-		for (Term t : index.keySet()) { 
+	private Term findActualTerm(Term term) {
+		for (Term t : index.keySet()) {
 			if (t.equals(term)) {
 				return t;
 			}

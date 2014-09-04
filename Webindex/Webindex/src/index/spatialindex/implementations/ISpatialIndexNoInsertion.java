@@ -1,7 +1,7 @@
 package index.spatialindex.implementations;
 
-import index.utils.Ranking;
 import index.utils.query.SpatialIndexQuery;
+import rest.dao.Ranking;
 
 public interface ISpatialIndexNoInsertion {
 	// Maybe in the future somewhen?
