@@ -12,10 +12,12 @@ import index.utils.query.GIRQuery;
 import index.utils.query.SpatialIndexQuery;
 import index.utils.query.TextIndexQuery;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import rest.dao.RESTScore;
 import rest.dao.Ranking;
 
 public class GIRSeparatedIndexes implements IGIRIndex {
@@ -32,16 +34,30 @@ public class GIRSeparatedIndexes implements IGIRIndex {
 
 	@Override
 	public Ranking queryIndex(GIRQuery query) {
+		
 		Ranking textRanking = textIndex.queryIndex(query.getTextQuery());
 		Ranking spatialRanking = spatialIndex.queryIndex(query.getSpatialQuery());
+		
+		ArrayList<RESTScore> textScores = getCopyOfScores(textRanking);
+		ArrayList<RESTScore> spatScores = getCopyOfScores(spatialRanking);
 		Ranking finalRanking = combinationStrategy.combineScores(query, textRanking, spatialRanking);
+		textRanking.getTextQueryMetaData().setScores(textScores);
 		finalRanking.setTextQueryMetaData(textRanking.getTextQueryMetaData());
-		finalRanking.setSpatialQueryMetaData(spatialRanking.getSpatialQueryMetaData());
+		spatialRanking.getSpatialQueryMetaData().setScores(spatScores);
+		finalRanking.setSpatialQueryMetaData(spatialRanking.getSpatialQueryMetaData() );
 		finalRanking.getGirQueryMetaData().setPrintableQuery(textRanking.getTextQueryMetaData().getPrintableQuery() + convertToBooleanValues(query.isIntersected()) + spatialRanking.getSpatialQueryMetaData().getPrintableQuery());
 		
 		return finalRanking;
 	}
 
+	protected ArrayList<RESTScore> getCopyOfScores(Ranking ranking) {
+		ArrayList<RESTScore> scores = ranking.getResults();
+		ArrayList<RESTScore> newScores = new ArrayList<>();
+		for(RESTScore s: scores){
+			newScores.add(new RESTScore(s.getDocument(),s.getScore(), s.getGeometry()));
+		} 
+		return newScores;
+	}
 	private String convertToBooleanValues(boolean bool) {
 		if (bool) {
 			return " AND ";

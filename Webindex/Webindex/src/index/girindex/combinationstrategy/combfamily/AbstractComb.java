@@ -5,10 +5,8 @@ import index.girindex.combinationstrategy.utils.Normalizer;
 
 import java.util.ArrayList;
 
-import rest.dao.Ranking;
 import rest.dao.RESTScore;
-import rest.dao.RESTSpatialQueryMetaData;
-import rest.dao.RESTTextQueryMetaData;
+import rest.dao.Ranking;
 
 public  abstract class AbstractComb extends AbstractCombinationStrategy {
 
@@ -23,13 +21,14 @@ public  abstract class AbstractComb extends AbstractCombinationStrategy {
 	@Override
 	protected ArrayList<Ranking> applyPreCalculations(Ranking finalRanking,  Ranking... rankings) {
 		ArrayList<Ranking> rankingList = new ArrayList<>();
-		for (Ranking ranking : rankings) { 
+		for (Ranking ranking : rankings) {  
 			rankingList.add(ranking);
-		}
-		 
+		} 
 		normalize(rankingList);
 		return rankingList;
 	}
+
+	
  
 	 
 }
