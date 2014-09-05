@@ -2,10 +2,10 @@ package index.textindex.similarities.probabilisticmodels;
 
 import static org.junit.Assert.assertEquals;
 import index.utils.DBDataManagerTest;
-import index.utils.Ranking;
 import index.utils.Score;
 import index.utils.query.TextIndexQuery;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.junit.AfterClass;
@@ -27,7 +27,7 @@ public class BM1Test {
 
 	@Test
 	public void testCalculateSimilarity() {
-		Ranking hits = similarity.calculateSimilarity(new TextIndexQuery(
+		ArrayList<Score> hits = similarity.calculateSimilarity(new TextIndexQuery(
 				similarityTestUtils.query, "bm1", true),
 				similarityTestUtils.queryTermFreqs,
 				similarityTestUtils.docSubset, similarityTestUtils.metaData );

@@ -6,8 +6,6 @@ import static org.junit.Assert.assertTrue;
 import index.textindex.utils.Term;
 import index.textindex.utils.TermDocs;
 import index.utils.Document;
-import index.utils.Ranking;
-import index.utils.Score;
 import index.utils.identifers.TermDocsIdentifier;
 import index.utils.indexmetadata.TextIndexMetaData;
 import index.utils.query.TextIndexQuery;
@@ -21,6 +19,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import rest.dao.RESTScore;
+import rest.dao.Ranking;
 import testutils.DBInitializer;
 import utils.dbcrud.DBDataManager;
 
@@ -139,7 +139,7 @@ public class RAMTextOnlyIndexTest {
 		TextIndexQuery query = new TextIndexQuery("to do", "cosine3", false);
 		Ranking ranking = index.queryIndex(query);
  
-		for (Score score : ranking) { 
+		for (RESTScore score : ranking.getResults()) { 
 			assertEquals(trialScores.get(score.getDocument().getId().getId()),score.getScore(),0.01);
 		}
 	}

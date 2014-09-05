@@ -5,7 +5,6 @@ import index.textindex.implementations.RAMTextOnlyIndex;
 import index.textindex.utils.Term;
 import index.textindex.utils.informationextractiontools.MockTextInformationExtractor;
 import index.utils.Document;
-import index.utils.Ranking;
 import index.utils.Score;
 import index.utils.query.TextIndexQuery;
 
@@ -14,6 +13,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Test;
+
+import rest.dao.RESTScore;
+import rest.dao.Ranking;
 
 public class SimpleBooleanSimilarityTest {
 
@@ -40,7 +42,7 @@ public class SimpleBooleanSimilarityTest {
 		terms[13] = new Term("it");
 
 		for (Term term : terms) {
-			documentTerms.put(term, new ArrayList<>());
+			documentTerms.put(term, new ArrayList<Document>());
 		}
 
 		Document[] documents = new Document[4];
@@ -74,27 +76,27 @@ public class SimpleBooleanSimilarityTest {
 		HashMap<Term, List<Document>> relevantDocuments = new HashMap<Term, List<Document>>();
 		relevantDocuments.put(terms[0], documentTerms.get(terms[0]));
 		relevantDocuments.put(terms[1], documentTerms.get(terms[1]));
-		
-		RAMTextOnlyIndex index = new RAMTextOnlyIndex(documentTerms,null, new MockTextInformationExtractor());
-		
+
+		RAMTextOnlyIndex index = new RAMTextOnlyIndex(documentTerms, null, new MockTextInformationExtractor());
+
 		// With intersection (AND)
 		Ranking hits = index.queryIndex(new TextIndexQuery("to do", "simpleboolean", true));
 		HashMap<Long, Float> values = new HashMap<Long, Float>();
 		values.put(1l, 1f);
 
-		for (Score res : hits) {
+		for (RESTScore res : hits.getResults()) {
 			assertEquals(values.get(res.getDocument().getId().getId()), res.getScore(), 0.001f);
 		}
 
 		// With union (OR)
-		hits = similarity.calculateSimilarity(new TextIndexQuery("to do", "simpleboolean", false), null, relevantDocuments, null);
+		hits = index.queryIndex(new TextIndexQuery("to do", "simpleboolean", false));
 		values = new HashMap<Long, Float>();
 		values.put(1l, 1f);
 		values.put(2l, 1f);
 		values.put(3l, 1f);
 		values.put(4l, 1f);
 
-		for (Score res : hits) {
+		for (RESTScore res : hits.getResults()) {
 			assertEquals(values.get(res.getDocument().getId().getId()), res.getScore(), 0.001f);
 		}
 	}

@@ -209,7 +209,7 @@ public class DBDataManager implements IDataManager {
 		// If not: skip this document...
 		List<Geometry> possibleLocations = (List<Geometry>) request.getTransformationStage(geoReferencingStage.getClass().getSimpleName());
 		if (possibleLocations == null || possibleLocations.size() == 0) {
-			System.out.println("No locations found. Document \"" + transformedText + "\" could not be georeferenced. Discarded.");
+//			System.out.println("No locations found. Document \"" + transformedText + "\" could not be georeferenced. Discarded.");
 			// return;
 		}
 		// text extraction

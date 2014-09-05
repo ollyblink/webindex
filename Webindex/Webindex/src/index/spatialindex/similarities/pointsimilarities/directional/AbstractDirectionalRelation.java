@@ -52,7 +52,7 @@ public abstract class AbstractDirectionalRelation extends AbstractSpatialRelatio
 		double distance = qFP.distance(dFP);
 		float nearScoreValue = (float) (1.0 - (distance / (radius * multiplicationFactor)));
 
-		System.out.println(distance + ", " + (radius * multiplicationFactor) + ", " + nearScoreValue);
+//		System.out.println(distance + ", " + (radius * multiplicationFactor) + ", " + nearScoreValue);
 		if (nearScoreValue < 0f) {
 			nearScoreValue = 0f;
 		}

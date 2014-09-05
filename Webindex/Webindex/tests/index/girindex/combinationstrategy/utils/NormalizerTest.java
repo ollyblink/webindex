@@ -10,9 +10,11 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import rest.dao.RESTScore;
+
 public class NormalizerTest {
 
-	private static ArrayList<Score> values;
+	private static ArrayList<RESTScore> values;
 	private static float minMax;
 	private static float min;
 	private static int N;
@@ -20,11 +22,11 @@ public class NormalizerTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 
-		values = new ArrayList<Score>();
+		values = new ArrayList<RESTScore>();
 
 		N = 100;
 		for(int i = 0; i < N;++i){
-			values.add(new Score(new Document(new Long(i)), new Float(Math.pow(2, i)),null));
+			values.add(new RESTScore(new Document(new Long(i)), new Float(Math.pow(2, i)),null));
 		}
 
 		minMax = (float)((Math.pow(2, N-1))-1)-min;
@@ -33,7 +35,7 @@ public class NormalizerTest {
 
 	@Test
 	public void test() { 
-		List<Score> normalizedValues = new ArrayList<>(Normalizer.normalizeMinMax(values));
+		List<RESTScore> normalizedValues = new ArrayList<>(Normalizer.normalizeMinMax(values));
 		assertTrue(normalizedValues != null);
 		assertTrue(normalizedValues != values);
 		assertTrue(normalizedValues.size() == values.size()); 

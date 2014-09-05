@@ -5,10 +5,10 @@ import index.textindex.similarities.tfidfweighting.DocTFIDFTypes;
 import index.textindex.similarities.tfidfweighting.Formula3TFStrategy;
 import index.textindex.similarities.tfidfweighting.QueryIDFTypes;
 import index.utils.DBDataManagerTest;
-import index.utils.Ranking;
 import index.utils.Score;
 import index.utils.query.TextIndexQuery;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.junit.AfterClass;
@@ -31,7 +31,7 @@ public class CosineSimilarityTest {
 	@Test
 	public void testCalculateSimilarity() {
 
-		Ranking hits = similarity.calculateSimilarity(new TextIndexQuery(similarityTestUtils.query, "cosine", true), similarityTestUtils.queryTermFreqs, similarityTestUtils.docSubset, similarityTestUtils.metaData);
+		ArrayList<Score> hits = similarity.calculateSimilarity(new TextIndexQuery(similarityTestUtils.query, "cosine", true), similarityTestUtils.queryTermFreqs, similarityTestUtils.docSubset, similarityTestUtils.metaData);
 		HashMap<Long, Float> values = new HashMap<Long, Float>();
 		values.put(1l, 0.660f);
 		values.put(2l, 0.408f);

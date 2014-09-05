@@ -2,16 +2,17 @@ package index.textindex.similarities.probabilisticmodels;
 
 import static org.junit.Assert.assertEquals;
 import index.utils.DBDataManagerTest;
-import index.utils.Ranking;
 import index.utils.Score;
 import index.utils.query.TextIndexQuery;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import rest.dao.Ranking;
 import testutils.SimilarityTestUtils;
 
 public class BM15Test {
@@ -28,7 +29,7 @@ public class BM15Test {
 
 	@Test
 	public void testCalculateSimilarity() {
-		Ranking hits = similarity.calculateSimilarity(new TextIndexQuery(similarityTestUtils.query, "bm1", true), similarityTestUtils.queryTermFreqs, similarityTestUtils.docSubset, similarityTestUtils.metaData);
+		ArrayList<Score> hits = similarity.calculateSimilarity(new TextIndexQuery(similarityTestUtils.query, "bm1", true), similarityTestUtils.queryTermFreqs, similarityTestUtils.docSubset, similarityTestUtils.metaData);
 
 		HashMap<Long, Float> values = new HashMap<Long, Float>();
 		values.put(1l, -1.222f);

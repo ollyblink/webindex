@@ -3,8 +3,6 @@ package index.spatialindex.implementations;
 import static org.junit.Assert.assertEquals;
 import index.spatialindex.utils.SpatialDocument;
 import index.utils.Document;
-import index.utils.Ranking;
-import index.utils.Score;
 import index.utils.documenttransformation.ExtractionRequest;
 import index.utils.documenttransformation.spatialtransformation.GeoReferencingStage;
 import index.utils.documenttransformation.spatialtransformation.GeoTaggingStage;
@@ -15,6 +13,9 @@ import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import rest.dao.RESTScore;
+import rest.dao.Ranking;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -61,7 +62,7 @@ public class SpatialOnlyIndexTest {
 	public void queryTest() {
 		Ranking ranking = spatialOnlyIndex.queryIndex(new SpatialIndexQuery("point_in", "Switzerland"));
 
-		for (Score d : ranking.getResults()) {
+		for (RESTScore d : ranking.getResults()) {
 			if (d.getDocument().getId().getId() == 1) {
 				assertEquals(1f, d.getScore(), 0.01f);
 			} else {

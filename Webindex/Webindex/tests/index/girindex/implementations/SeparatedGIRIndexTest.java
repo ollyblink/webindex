@@ -5,7 +5,6 @@ import index.spatialindex.implementations.SpatialOnlyIndex;
 import index.textindex.implementations.RAMTextOnlyIndex;
 import index.textindex.utils.TermDocs;
 import index.textindex.utils.informationextractiontools.MockTextInformationExtractor;
-import index.utils.Ranking;
 import index.utils.Score;
 import index.utils.identifers.TermDocsIdentifier;
 import index.utils.indexmetadata.TextIndexMetaData;
@@ -19,6 +18,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import rest.dao.RESTScore;
+import rest.dao.Ranking;
 import testutils.DBInitializer;
 import utils.dbcrud.DBDataManager;
 import utils.dbcrud.DBTablesManager;
@@ -58,10 +59,9 @@ public class SeparatedGIRIndexTest {
 		TextIndexQuery textQuery = new TextIndexQuery("text", "cosine3", false);
 		SpatialIndexQuery spatialQuery = new SpatialIndexQuery("point_in", "Switzerland");
 		GIRQuery girQuery = new GIRQuery(true, textQuery, spatialQuery);
-		Ranking hits = girIndex.queryIndex(girQuery);
-		System.out.println(hits.getResults().size());
-		System.out.println(hits.getRankingMetaData());
-		for (Score s : hits) {
+		Ranking  hits = girIndex.queryIndex(girQuery);
+		System.out.println(hits.getResults().size()); 
+		for (RESTScore s : hits.getResults()) {
 			System.out.println(s.getDocument().getId().getId() + ": " + s.getScore());
 		}
 	}
@@ -71,10 +71,9 @@ public class SeparatedGIRIndexTest {
 		TextIndexQuery textQuery = new TextIndexQuery("text", "cosine3", false);
 		SpatialIndexQuery spatialQuery = new SpatialIndexQuery("overlaps", "Canton of Zurich");
 		GIRQuery girQuery = new GIRQuery(true, textQuery, spatialQuery);
-		Ranking hits = girIndex.queryIndex(girQuery);
-		System.out.println(hits.getResults().size());
-		System.out.println(hits.getRankingMetaData());
-		for (Score s : hits) {
+		Ranking  hits = girIndex.queryIndex(girQuery);
+		System.out.println(hits.getResults().size()); 
+		for (RESTScore s : hits.getResults()) {
 			System.out.println(s.getDocument().getId().getId() + ": " + s.getScore());
 		}
 	}
