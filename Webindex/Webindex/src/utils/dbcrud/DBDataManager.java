@@ -145,7 +145,7 @@ public class DBDataManager implements IDataManager {
 			PreparedStatement statement = dbTablesManager.getConnection().prepareStatement(sql);
 			ResultSet r = statement.executeQuery();
 			while (r.next()) {
-				Document d = new Document(r.getLong(1), r.getString(2), r.getInt(3), r.getInt(4), r.getInt(5), r.getFloat(6), r.getFloat(7), r.getFloat(8));
+				Document d = new Document(r.getLong(1), r.getString(2), r.getInt(3), r.getInt(5), r.getInt(4), r.getFloat(6), r.getFloat(7), r.getFloat(8));
 				documents.add(d);
 			}
 			statement.close();

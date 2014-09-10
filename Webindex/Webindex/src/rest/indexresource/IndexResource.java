@@ -6,9 +6,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import rest.dao.IndexContainer;
 import rest.dao.IndexDao;
 import rest.dao.Ranking;
-import rest.dao.RESTScore;
 
 @Path("/index")
 public class IndexResource {
@@ -37,6 +37,13 @@ public class IndexResource {
 		return ranking;
 	}
 
+	@GET
+	@Path("/getindex")
+	@Produces(MediaType.APPLICATION_JSON)
+	public IndexContainer getIndex() {
+		return IndexDao.INSTANCE.getIndex();
+	}
+	
 	@GET
 	@Path("/testrest")
 	@Produces(MediaType.TEXT_PLAIN)

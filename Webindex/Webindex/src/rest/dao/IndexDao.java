@@ -17,8 +17,6 @@ import index.textindex.utils.TermDocs;
 import index.textindex.utils.informationextractiontools.GermanTextInformationExtractor;
 import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
 import index.utils.Document;
-import index.utils.GeometryWrapper;
-import index.utils.Score;
 import index.utils.identifers.TermDocsIdentifier;
 import index.utils.indexmetadata.OverallTextIndexMetaData;
 import index.utils.indexmetadata.TextIndexMetaData;
@@ -29,13 +27,14 @@ import index.utils.query.TextIndexQuery;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import utils.dbconnection.AbstractDBConnector;
 import utils.dbconnection.PGDBConnector;
 import utils.dbcrud.DBDataManager;
 import utils.dbcrud.DBTablesManager;
-
-import com.vividsolutions.jts.geom.Geometry;
 
 public enum IndexDao {
 	INSTANCE;
@@ -135,7 +134,7 @@ public enum IndexDao {
 			SpatialIndexQuery spatialQuery = null;
 			if (locationquery != null && locationquery.trim().length() > 0) {
 				spatialQuery = new SpatialIndexQuery(spatialrelationship, locationquery);
-			} 
+			}
 			// query index
 			if (textQuery != null && spatialQuery != null) {// GIR
 				GIRQuery girQuery = new GIRQuery(isTextSpatialIntersected, textQuery, spatialQuery);
@@ -190,4 +189,92 @@ public enum IndexDao {
 		dbDataManager.initializeDBTables();
 	}
 
+	private final class SimpleDocument implements Comparable<SimpleDocument>{
+		 
+		private final long id;
+		private final Integer fij;
+		
+		public SimpleDocument(long id, int fij) {
+			this.id = id;
+			this.fij = new Integer(fij);
+		}
+		public long getId() {
+			return id;
+		} 
+		public int getFij() {
+			return fij;
+		} 
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + getOuterType().hashCode();
+			result = prime * result + (int) (id ^ (id >>> 32));
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			SimpleDocument other = (SimpleDocument) obj;
+			if (!getOuterType().equals(other.getOuterType()))
+				return false;
+			if (id != other.id)
+				return false;
+			return true;
+		}
+		private IndexDao getOuterType() {
+			return IndexDao.this;
+		}
+		@Override
+		public int compareTo(SimpleDocument o) {
+			return -fij.compareTo(o.fij);
+		}
+		
+		
+	}
+	public IndexContainer getIndex() {
+
+		TreeMap<String, Set<SimpleDocument>> simpleIndex = new TreeMap<>();
+		ArrayList<Term> terms = dbDataManager.getTerms();
+		ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs();
+
+		for (Term term : terms) {
+			String t = term.getIndexedTerm().getTermId();
+			String displayable = "<span class=\"diterm\">" + t + "</span><span class=\"dini\">" + term.getNi() + "</span>";
+
+			for (TermDocs td : termDocs) {
+				if (t.equals(td.getId().getTermid())) {
+					Set<SimpleDocument> docs = simpleIndex.get(displayable);
+					if (docs == null) {
+						docs = new TreeSet<>();
+						simpleIndex.put(displayable, docs);
+					} 
+					docs.add(new SimpleDocument(td.getId().getDocid(), td.getFij()));
+					
+				}
+			}
+		}
+		ArrayList<String> displayableIndex = new ArrayList<String>();
+		for (String term : simpleIndex.keySet()) {
+			Set<SimpleDocument> docsForTerm = simpleIndex.get(term);
+			String docLine = "";
+			for(SimpleDocument s: docsForTerm){
+				docLine += formatToString(docLine,s); 
+			}
+			System.out.println(term + "<span class=\"didocs\">" +docLine.trim().substring(0, docLine.trim().lastIndexOf(",")) + "</span>");
+			displayableIndex.add(term + "<span class=\"didocs\">" +docLine.trim().substring(0, docLine.trim().lastIndexOf(",")) + "</span>");
+		}
+		IndexContainer c = new IndexContainer(displayableIndex);
+		return c;
+
+	}
+
+	private String formatToString(String line, SimpleDocument s) {  
+		return "<span class=\"didocid\">"+s.getId() + "</span> <span class=\"didocfij\">(" + s.getFij() + ")</span>, ";
+	}
 }
