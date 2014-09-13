@@ -10,29 +10,20 @@ public class RESTGIRQueryMetaData {
 	private String combinationStrategy;
 	private ArrayList<RESTScore> scores;
 	private String printableQuery;
- 
+
 	public RESTGIRQueryMetaData(boolean isIntersected, String combinationStrategy, ArrayList<RESTScore> finalScores) {
 		this.isIntersected = isIntersected;
 		this.combinationStrategy = combinationStrategy;
 		this.scores = finalScores;
 	}
 
-	 
-
-
 	public ArrayList<RESTScore> getScores() {
 		return scores;
 	}
 
-
-
-
 	public void setScores(ArrayList<RESTScore> scores) {
 		this.scores = scores;
 	}
-
-
-
 
 	public RESTGIRQueryMetaData() {
 	}
@@ -52,6 +43,7 @@ public class RESTGIRQueryMetaData {
 	public void setCombinationStrategy(String combinationStrategy) {
 		this.combinationStrategy = combinationStrategy;
 	}
+
 	public String getPrintableQuery() {
 		return printableQuery;
 	}

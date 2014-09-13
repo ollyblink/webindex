@@ -31,6 +31,11 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import com.vividsolutions.jts.geom.Point;
+
+import rest.indexresource.CoordinatesContainer;
+import rest.indexresource.SimpleCoordinate;
+import sun.security.pkcs11.Secmod.DbMode;
 import utils.dbconnection.AbstractDBConnector;
 import utils.dbconnection.PGDBConnector;
 import utils.dbcrud.DBDataManager;
@@ -189,59 +194,17 @@ public enum IndexDao {
 		dbDataManager.initializeDBTables();
 	}
 
-	private final class SimpleDocument implements Comparable<SimpleDocument>{
-		 
-		private final long id;
-		private final Integer fij;
-		
-		public SimpleDocument(long id, int fij) {
-			this.id = id;
-			this.fij = new Integer(fij);
-		}
-		public long getId() {
-			return id;
-		} 
-		public int getFij() {
-			return fij;
-		} 
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + getOuterType().hashCode();
-			result = prime * result + (int) (id ^ (id >>> 32));
-			return result;
-		}
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			SimpleDocument other = (SimpleDocument) obj;
-			if (!getOuterType().equals(other.getOuterType()))
-				return false;
-			if (id != other.id)
-				return false;
-			return true;
-		}
-		private IndexDao getOuterType() {
-			return IndexDao.this;
-		}
-		@Override
-		public int compareTo(SimpleDocument o) {
-			return -fij.compareTo(o.fij);
-		}
-		
-		
-	}
+	
 	public IndexContainer getIndex() {
 
-		TreeMap<String, Set<SimpleDocument>> simpleIndex = new TreeMap<>();
+		TreeMap<String, ArrayList<SimpleDocument>> simpleIndex = new TreeMap<>();
 		ArrayList<Term> terms = dbDataManager.getTerms();
 		ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs();
+		for(TermDocs td: termDocs){
+			if(td.getId().getTermid().equals("bestieg")){
+					System.out.println(td.getId().getTermid()+": "+td.getId().getDocid()+", " +td.getFij()); 
+			}
+		}
 
 		for (Term term : terms) {
 			String t = term.getIndexedTerm().getTermId();
@@ -249,32 +212,63 @@ public enum IndexDao {
 
 			for (TermDocs td : termDocs) {
 				if (t.equals(td.getId().getTermid())) {
-					Set<SimpleDocument> docs = simpleIndex.get(displayable);
+					ArrayList<SimpleDocument> docs = simpleIndex.get(displayable);
 					if (docs == null) {
-						docs = new TreeSet<>();
+						docs = new ArrayList<>();
 						simpleIndex.put(displayable, docs);
 					} 
-					docs.add(new SimpleDocument(td.getId().getDocid(), td.getFij()));
-					
+
+					SimpleDocument doc = new SimpleDocument(td.getId().getDocid(), td.getFij());
+
+					docs.add(doc);
+    
 				}
 			}
 		}
-		ArrayList<String> displayableIndex = new ArrayList<String>();
+		ArrayList<String> displayableIndex = new ArrayList<String>(); 
 		for (String term : simpleIndex.keySet()) {
-			Set<SimpleDocument> docsForTerm = simpleIndex.get(term);
+			ArrayList<SimpleDocument> docsForTerm = simpleIndex.get(term);
 			String docLine = "";
 			for(SimpleDocument s: docsForTerm){
 				docLine += formatToString(docLine,s); 
-			}
-			System.out.println(term + "<span class=\"didocs\">" +docLine.trim().substring(0, docLine.trim().lastIndexOf(",")) + "</span>");
+			} 
 			displayableIndex.add(term + "<span class=\"didocs\">" +docLine.trim().substring(0, docLine.trim().lastIndexOf(",")) + "</span>");
 		}
-		IndexContainer c = new IndexContainer(displayableIndex);
+		IndexContainer c = new IndexContainer(displayableIndex,dbDataManager.getDocuments(null).size());
 		return c;
 
 	}
 
 	private String formatToString(String line, SimpleDocument s) {  
 		return "<span class=\"didocid\">"+s.getId() + "</span> <span class=\"didocfij\">(" + s.getFij() + ")</span>, ";
+	}
+
+	public CoordinatesContainer getDocumentCoordinates() {
+		ArrayList<SpatialDocument> locations = dbDataManager.getLocations(null);
+		
+		
+		
+		CoordinatesContainer container = new CoordinatesContainer();
+		for(SpatialDocument doc: locations){
+			long id = doc.getDocument().getId().getId();
+			Point centroid = doc.getDocumentFootprint().getCentroid();
+			SimpleCoordinate simpleCoordinate = new SimpleCoordinate(id, centroid.getX(),centroid.getY());
+			
+			container.addCoordinate(simpleCoordinate);
+			
+			if(container.getMinX() > simpleCoordinate.getX()){
+				container.setMinX(simpleCoordinate.getX());
+			}
+			if(container.getMaxX() < simpleCoordinate.getX()){
+				container.setMaxX(simpleCoordinate.getX());
+			}
+			if(container.getMinY() > simpleCoordinate.getY()){
+				container.setMinY(simpleCoordinate.getY());
+			}
+			if(container.getMaxY() < simpleCoordinate.getY()){
+				container.setMaxY(simpleCoordinate.getY());
+			}
+		}
+		return container;
 	}
 }

@@ -45,6 +45,13 @@ public class IndexResource {
 	}
 	
 	@GET
+	@Path("/getdoccoordinates")
+	@Produces(MediaType.APPLICATION_JSON)
+	public CoordinatesContainer getDocumentCoordinates() {
+		return IndexDao.INSTANCE.getDocumentCoordinates();
+	}
+	
+	@GET
 	@Path("/testrest")
 	@Produces(MediaType.TEXT_PLAIN)
 	public String testRest() {
