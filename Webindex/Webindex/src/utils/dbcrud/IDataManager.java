@@ -23,8 +23,8 @@ public interface IDataManager {
 	
 	//Querying tables
 	//Text index querying
-	public ArrayList<TermDocs> getTermDocs();
-	public ArrayList<Term> getTerms();
+	public ArrayList<TermDocs> getTermDocs(List<Term> terms);
+	public ArrayList<Term> getTerms(int... bounds);
 	public ArrayList<Document> getDocuments(List<Long> docids); 
 	public OverallTextIndexMetaData getOverallTextIndexMetaData();
 	

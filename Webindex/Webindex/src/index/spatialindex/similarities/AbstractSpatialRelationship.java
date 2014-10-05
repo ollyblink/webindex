@@ -20,6 +20,9 @@ public abstract class AbstractSpatialRelationship implements ISpatialRelationshi
 			}
 		}
 
+		for(Score s: results){
+			System.out.println(s);
+		}
 		return results;
 	}
 

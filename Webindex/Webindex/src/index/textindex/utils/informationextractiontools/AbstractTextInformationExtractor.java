@@ -113,7 +113,9 @@ public abstract class AbstractTextInformationExtractor implements ITextInformati
 			while (tokenStream.incrementToken()) {
 				char[] termBuff = charTermAttribute.buffer();
 				int termLen = charTermAttribute.length();
-				tokens.add(new String(termBuff, 0, termLen));
+				String token = new String(termBuff, 0, termLen);
+				token = token.replace("'","''");
+				tokens.add(token);
 			}
 
 			tokenStream.end();

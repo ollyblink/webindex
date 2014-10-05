@@ -23,10 +23,15 @@ import com.vividsolutions.jts.geom.Geometry;
  *
  */
 public class HikrGazetteerPlaceExtractor implements IPlaceExtractor {
-
+//	String host = "localhost";
+//	String port = "5432";
+//	String database = "girindex2";
+//	String user = "postgres";
+//	String password = "postgres";
 	private HashMap<String, Geometry> hikrGazetteer;
 
-	public HikrGazetteerPlaceExtractor(AbstractDBConnector db) {
+	public HikrGazetteerPlaceExtractor(String host, String port, String database, String user, String password) {
+		AbstractDBConnector db = new PGDBConnector(host, port, database, user, password);
 		hikrGazetteer = new HashMap<String, Geometry>();
 		try {
 			Statement statement = db.getConnection().createStatement();
@@ -44,8 +49,8 @@ public class HikrGazetteerPlaceExtractor implements IPlaceExtractor {
 	public ArrayList<Geometry> extract(String text) {
 		String[] tokens = alterText(text).split(" ");
 		ArrayList<Geometry> geometries = new ArrayList<Geometry>();
-		for(String token:tokens){
-			if(hikrGazetteer.containsKey(token)){
+		for (String token : tokens) {
+			if (hikrGazetteer.containsKey(token)) {
 				geometries.add(hikrGazetteer.get(token));
 			}
 		}
@@ -57,16 +62,11 @@ public class HikrGazetteerPlaceExtractor implements IPlaceExtractor {
 	}
 
 	public static void main(String[] args) {
-
-		String host = "localhost";
-		String port = "5432";
-		String database = "girindex";
-		String user = "postgres";
-		String password = "32qjivkd";
-		HikrGazetteerPlaceExtractor gazetter = new HikrGazetteerPlaceExtractor(new PGDBConnector(host, port, database, user, password));
-		ArrayList<Geometry> geoms = gazetter.extract("sseren");
-		for (Geometry geom : geoms) {
-			System.out.println(geom);
-		}
+//		String host = "geocomp-res.geo.uzh.ch"; 
+//		HikrGazetteerPlaceExtractor gazetter = new HikrGazetteerPlaceExtractor();
+//		ArrayList<Geometry> geoms = gazetter.extract("sseren");
+//		for (Geometry geom : geoms) {
+//			System.out.println(geom);
+//		}
 	}
 }

@@ -47,6 +47,7 @@ public class SpatialOnlyIndex implements ISpatialIndex {
 		}
 		query.setQueryFootPrints(queryFootPrints);
 		// Algorithm stage: calculate score for each found geometry
+		System.out.println("Spatial relationship: " +spatRelAlgorithm.getClass().getSimpleName());
 		ArrayList<Score> results = spatRelAlgorithm.calculateSimilarity(queryFootPrints, documentFootPrints);
 
 		// =======================================================================================
@@ -59,12 +60,12 @@ public class SpatialOnlyIndex implements ISpatialIndex {
 		// }
 		Collections.sort(results);
 		// Create the spatial ranking
-		Ranking ranking = collectMetadData(query, queryFootPrints, results);
+		Ranking ranking = collectMetaData(query, queryFootPrints, results);
 
 		return ranking;
 	}
 
-	private Ranking collectMetadData(SpatialIndexQuery query, ArrayList<Geometry> queryFootPrints, ArrayList<Score> results) {
+	private Ranking collectMetaData(SpatialIndexQuery query, ArrayList<Geometry> queryFootPrints, ArrayList<Score> results) {
 		Ranking ranking = new Ranking();
 		RESTSpatialQueryMetaData spatialMeta = new RESTSpatialQueryMetaData();
 		spatialMeta.setLocation(query.getLocation());

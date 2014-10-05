@@ -46,11 +46,7 @@ public class GeoTaggingStage extends AbstractTransformationStage {
 	private static final String CALAIS_PARAMS_XML = "<c:params xmlns:c=\"http://s.opencalais.com/1/pred/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" + "<c:processingDirectives c:contentType=\"TEXT/RAW\" c:enableMetadataType=\"GenericRelations\" c:outputFormat=\"Text/Simple\">" + "</c:processingDirectives>" + "<c:userDirectives c:allowDistribution=\"true\" c:allowSearch=\"true\" c:externalID=\"17cabs901\" c:submitter=\"ABC\">" + "</c:userDirectives>" + "<c:externalMetadata>" + "</c:externalMetadata>" + "</c:params>";
 
 	private static final String[] CALAIS_ENTITIES = { "City", "Continent", "Country", "NaturalFeature", "ProvinceOrState", "Region" };
-	private static final String host = "localhost";
-	private static final String port = "5432";
-	private static final String database = "girindex";
-	private static final String user = "postgres";
-	private static final String password = "32qjivkd";
+
 	private static final String dictionaryLocation = "de-pos-maxent.bin";
 	private static final String tokenLocation = "de-token.bin";
 
@@ -61,11 +57,10 @@ public class GeoTaggingStage extends AbstractTransformationStage {
 	public GeoTaggingStage(boolean isShowTransformationEnabled) {
 
 		super(isShowTransformationEnabled);
- 
 
 		calaisLocator = new CalaisLocator();
 		ypmExtractor = new YPMPlaceExtractor(YPM_XML);
-		this.hikrExtractor = new HikrGazetteerLocator(new PGDBConnector(host, port, database, user, password), dictionaryLocation, tokenLocation);
+		this.hikrExtractor = new HikrGazetteerLocator(dictionaryLocation, tokenLocation);
 
 	}
 

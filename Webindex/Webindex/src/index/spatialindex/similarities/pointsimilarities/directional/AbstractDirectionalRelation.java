@@ -41,6 +41,7 @@ public abstract class AbstractDirectionalRelation extends AbstractSpatialRelatio
 		float directionalScore = 1 - (float) ((alpha / Math.toRadians(45)));
 
 		directionalScore *= nearScore(qfpCentroid, adjacent, dfpCentroid);
+ 
 		if (directionalScore > 0f) {
 			checkLargestScore(results, dFP, directionalScore);
 		}

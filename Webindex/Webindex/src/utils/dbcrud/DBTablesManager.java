@@ -52,7 +52,7 @@ public final class DBTablesManager {
 			"create table original_terms(original_term varchar(100) not null primary key, termid varchar(100) not null references terms(id));",
 			"create index orig_term_index on original_terms(original_term);",
 
-			"create table locations(docid bigserial not null references documents(id)); Select ADDGEOMETRYCOLUMN('locations','geometry',4326,'GEOMETRY',2); Create Index locations_spatial_index on locations using GIST(geometry); Alter table locations add primary key(docid, geometry)" };
+			"create table locations(docid bigserial not null references documents(id)); Select ADDGEOMETRYCOLUMN('locations','geometry',4326,'GEOMETRY',2); Create Index locations_spatial_index on locations using GIST(geometry); Alter table locations add primary key(docid, geometry);" };
 
 	public static final String dropTables = "drop table if exists terms, documents, term_docs, metadata, original_terms, locations cascade;";
 	
@@ -90,16 +90,14 @@ public final class DBTablesManager {
 		}
 	}
 
-	public void dropTables() {
-		if (db.tableExists("terms")) {
+	public void dropTables() { 
 			try {
 				Statement statement = db.getConnection().createStatement();
 				statement.execute(dropTables);
 				statement.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
-			}
-		}
+			} 
 	}
  
 	public Connection getConnection() {

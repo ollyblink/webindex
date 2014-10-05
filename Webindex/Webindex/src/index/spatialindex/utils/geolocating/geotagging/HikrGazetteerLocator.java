@@ -9,15 +9,23 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import utils.dbconnection.AbstractDBConnector;
+import utils.dbconnection.PGDBConnector;
 
 public class HikrGazetteerLocator {
+	
+	String host = "localhost";
+	String port = "5432";
+	String database = "girindex";
+	String user = "postgres";
+	String password = "postgres";
 
 	private ArrayList<String> hikrGazetteer;
 
-	public HikrGazetteerLocator(AbstractDBConnector db, String dictionaryLocation, String tokenLocation) {
+	public HikrGazetteerLocator( String dictionaryLocation, String tokenLocation) {
+		AbstractDBConnector db2 = new PGDBConnector(host,port,database,user,password);
 		hikrGazetteer = new ArrayList<String>();
 		try {
-			Statement statement = db.getConnection().createStatement();
+			Statement statement = db2.getConnection().createStatement();
 			ResultSet set = statement.executeQuery("Select name from hikrgazetteer");
 			while (set.next()) {
 				hikrGazetteer.add(HikrGazetteerPlaceExtractor.alterText(set.getString(1)));

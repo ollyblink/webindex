@@ -49,7 +49,7 @@ public class PGDBConnector extends AbstractDBConnector{
 
 
 	@Override
-	protected String getUrl() { 
+	protected String getUrl() {  
 		return ("jdbc:postgresql:" + (host != null ? ("//" + host) + (port != null ? ":" + port : "") + "/" : "") + database);
 	}
 

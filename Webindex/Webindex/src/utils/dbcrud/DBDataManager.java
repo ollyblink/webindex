@@ -90,9 +90,19 @@ public class DBDataManager implements IDataManager {
 	 */
 
 	@Override
-	public ArrayList<TermDocs> getTermDocs() {
+	public ArrayList<TermDocs> getTermDocs(List<Term> terms) {
 		ArrayList<TermDocs> termDocs = new ArrayList<>();
 		String sql = "select * from term_docs";
+		
+		if(terms != null && terms.size() > 0){
+
+			sql += " where (";
+			for(int i = 0; i < terms.size()-1;++i){
+				sql += "termid = '"+terms.get(i).getIndexedTerm()+"' OR ";
+			}
+			sql += "termid = '"+terms.get(terms.size()-1).getIndexedTerm() + "');"; 
+		}
+//		System.out.println(sql);
 		try {
 			PreparedStatement statement = dbTablesManager.getConnection().prepareStatement(sql);
 			ResultSet r = statement.executeQuery();
@@ -109,9 +119,13 @@ public class DBDataManager implements IDataManager {
 	}
 
 	@Override
-	public ArrayList<Term> getTerms() {
+	public ArrayList<Term> getTerms(int... bounds) {
 		HashMap<Term, ArrayList<String>> originalTerms = new HashMap<>();
 		String sql = "select * from terms inner join original_terms on id=termid";
+
+		if(bounds != null && bounds.length == 2 && (bounds[0] <= bounds[1])){
+			sql += " where ni >= "+ bounds[0] + " AND ni <= " + bounds[1]+";";
+		}
 		try {
 			PreparedStatement statement = dbTablesManager.getConnection().prepareStatement(sql);
 			ResultSet r = statement.executeQuery();
@@ -236,7 +250,7 @@ public class DBDataManager implements IDataManager {
 			insertDocument(transformedText, new ArrayList<>(termFreqs.keySet()), documentInsertion);
 
 			// Now the terms and term-to-doc relationships
-			for (Term indexTerm : termFreqs.keySet()) {
+			for (Term indexTerm : termFreqs.keySet()) { 
 				insertTerm(termInsertion, indexTerm);
 				insertOriginalTerms(originalTermInsertion, indexTerm);
 				insertTermDocs(transformedText, termFreqs, termInDocInsertion, indexTerm);
@@ -346,6 +360,7 @@ public class DBDataManager implements IDataManager {
 		try {
 			Double N = new Double(getN());
 			Statement s = dbTablesManager.getConnection().createStatement();
+			System.out.println(N);
 			String updateIDFs = "Update terms set term_idf1 = log(2, (" + N + "/ni)), term_idf2 = log(2,(1+(" + N + "/ni)));";
 			s.execute(updateIDFs);
 			s.close();
@@ -378,7 +393,7 @@ public class DBDataManager implements IDataManager {
 	protected void insertOriginalTerms(PreparedStatement originalTermInsertion, Term indexTerm) throws SQLException {
 		ArrayList<String> originalTerms = indexTerm.getOriginalTerms();
 		for (String originalTerm : originalTerms) {
-			if (!alreadyIndexed("select count(original_term) from original_terms where original_term='" + originalTerm + "';")) {
+			if (!alreadyIndexed("select count(original_term) from original_terms where original_term='" + originalTerm.replace("'","''") + "';")) {
 				originalTermInsertion.setString(1, originalTerm);
 				originalTermInsertion.setString(2, indexTerm.getIndexedTerm().getTermId());
 				originalTermInsertion.execute();
@@ -471,6 +486,7 @@ public class DBDataManager implements IDataManager {
 	private boolean alreadyIndexed(String sql) {
 		try {
 			Statement statement = dbTablesManager.getConnection().createStatement();
+//			System.out.println(sql);
 			ResultSet lastDocId = statement.executeQuery(sql);
 			int count = 0;
 			while (lastDocId.next()) {
@@ -623,7 +639,7 @@ public class DBDataManager implements IDataManager {
 		DBDataManager dbDataManager = DBInitializer.initTestTextDB(new MockTextInformationExtractor(), DBInitializer.initDB(), d);
 		ArrayList<Term> terms = dbDataManager.getTerms();
 		ArrayList<Document> documents = dbDataManager.getDocuments(null);
-		ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs();
+		ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs(null);
 
 		HashMap<Term, List<Document>> converted = new HashMap<>();
 		for (Term term : terms) {
@@ -655,7 +671,7 @@ public class DBDataManager implements IDataManager {
 		DBDataManager dbDataManager = new DBDataManager(DBInitializer.initDB(), null, false);
 
 		HashMap<Term, List<Document>> documents = DBDataManager.createIndexableDocuments();
-		ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs();
+		ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs(null);
 		HashMap<TermDocsIdentifier, TermDocs> termDocsMeta = new HashMap<>();
 
 		for (TermDocs t : termDocs) {
@@ -689,7 +705,7 @@ public class DBDataManager implements IDataManager {
 	public Map<Term, List<Document>> getTermAndDocOccurrences() {
 		ArrayList<Term> terms = getTerms();
 		ArrayList<Document> documents = getDocuments(null);
-		ArrayList<TermDocs> termDocs = getTermDocs();
+		ArrayList<TermDocs> termDocs = getTermDocs(null);
 
 		HashMap<Term, List<Document>> converted = new HashMap<>();
 		for (Term term : terms) {

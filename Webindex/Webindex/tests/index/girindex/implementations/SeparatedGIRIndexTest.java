@@ -38,7 +38,7 @@ public class SeparatedGIRIndexTest {
 		dbDataManager = DBInitializer.initTestTextDB(new MockTextInformationExtractor(), dbTablesManager, docs);
 
 		HashMap<TermDocsIdentifier, TermDocs> termDocsMap = new HashMap<TermDocsIdentifier, TermDocs>();
-		for (TermDocs td : dbDataManager.getTermDocs()) {
+		for (TermDocs td : dbDataManager.getTermDocs(null)) {
 			termDocsMap.put(td.getId(), td);
 		}
 		RAMTextOnlyIndex textIndex = new RAMTextOnlyIndex(new TextIndexMetaData(termDocsMap, dbDataManager.getOverallTextIndexMetaData()), new MockTextInformationExtractor());

@@ -1,0 +1,430 @@
+﻿<!--
+    Coded by Oliver Zihler, MSc Geography, Student MSc Computer Science.
+-->
+<!doctype html>
+<html ng-app="queryhandler">
+<head>
+    <title>Ranking</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.24/angular.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.24/angular-resource.js"></script>
+    <script src="https://code.angularjs.org/1.2.24/angular-sanitize.min.js"></script>
+    <script src="http://tombatossals.github.io/angular-leaflet-directive/bower_components/angular/angular.min.js"></script>
+    <script src="http://tombatossals.github.io/angular-leaflet-directive/bower_components/leaflet/dist/leaflet.js"></script>
+    <script src="http://tombatossals.github.io/angular-leaflet-directive/dist/angular-leaflet-directive.min.js"></script>
+    <link rel="stylesheet" href="http://tombatossals.github.io/angular-leaflet-directive/bower_components/leaflet/dist/leaflet.css" />
+    <script type="text/javascript">
+
+
+        angular.module('queryhandler', ['leaflet-directive', 'ngSanitize'])
+
+            .controller('QueryCtrl', function ($scope, $http) {
+                ///{textsimilaritytype}/{spatialrelationship}/{locationquery}/{textquery}/{textintersected}/{textspatialintersected}
+                var rest = 'http://geocomp-res.geo.uzh.ch:8181/Webindex/webindex/index';
+
+                $scope.checkResults = function (ranking) {
+                    if (ranking.girQueryMetaData != null) {
+                        return ranking.girQueryMetaData;
+                    } else {
+                        if (ranking.textQueryMetaData != null) {
+                            return ranking.textQueryMetaData;
+                        } else {
+                            return ranking.spatialQueryMetaData;
+                        }
+                    }
+                }
+
+                $scope.getTextIndex = function () {
+                    return $http.get(rest + '/getindex').
+
+                     success(function (data) {
+                         $scope.index = data;
+                     });
+                };
+                $scope.getQuadtreeData = function () {
+                    return $http.get(rest + '/getdoccoordinates').
+
+                     success(function (data) {
+                         $scope.createQuadtree(data.docCoords, data.minX, data.maxX, data.minY, data.maxY);
+                     });
+                };
+
+
+
+                $scope.createQuadtree = function (docCoords, minX, maxX, minY, maxY) {
+                    var width = 500, height = 260;
+
+                    var data = new Array(docCoords.length);
+                    for (var i = 0; i < docCoords.length; ++i) {
+                        var x = (docCoords[i].x - minX) / (maxX - minX);
+                        var y = (docCoords[i].y - minY) / (maxY - minY);
+                        data[i] = [((x * width)), (height - (y * height))];
+                    }
+
+
+                    var quadtree = d3.geom.quadtree()
+                        .extent(null)
+                        (data);
+                    var svg = d3.select("#quadtreediv").append("svg")
+                        .attr("width", width)
+                        .attr("height", height);
+
+                    svg.selectAll(".node")
+                        .data(nodes(quadtree))
+                        .enter().append("rect")
+                        .attr("class", "node")
+                        .attr("x", function (d) { return d.x; })
+                        .attr("y", function (d) { return d.y; })
+                        .attr("width", function (d) { return d.width; })
+                        .attr("height", function (d) { return d.height; });
+
+                    var point = svg.selectAll(".point")
+                        .data(data)
+                      .enter().append("circle")
+                        .attr("class", "point")
+                        .attr("cx", function (d) { return d[0]; })
+                        .attr("cy", function (d) { return d[1]; })
+                        .attr("r", 1);
+
+
+                    // Collapse the quadtree into an array of rectangles.
+                    function nodes(quadtree) {
+                        var nodes = [];
+                        quadtree.visit(function (node, x1, y1, x2, y2) {
+                            nodes.push({ x: x1, y: y1, width: x2 - x1, height: y2 - y1 });
+                        });
+                        return nodes;
+                    }
+
+
+                }
+                $scope.queryIndex = function (textsimilaritytype, spatialrelationship, locationquery, textquery, textintersected, textspatialintersected, combinationstrategy) {
+
+                    if (locationquery === undefined) {
+                        locationquery = "%20";
+                    }
+                    if (textquery === undefined) {
+                        textquery = "%20";
+                    }
+                    return $http.get(rest + '/' + textsimilaritytype + "/" + spatialrelationship + "/" + locationquery + "%20/" + textquery + "%20/" + textintersected + "/" + textspatialintersected + "/" + combinationstrategy).
+
+                      success(function (data) {
+                          $scope.ranking = data;
+
+                          $scope.finalresults = $scope.checkResults($scope.ranking);
+                          $scope.girresults = $scope.ranking.girQueryMetaData;
+                          $scope.textresults = $scope.ranking.textQueryMetaData;
+                          $scope.spatialresults = $scope.ranking.spatialQueryMetaData;
+
+                          $scope.addMarkers($scope.finalresults.scores);
+
+                      });
+                };
+
+                $scope.someSafeContent = function (line, $sce) {
+                    return $sce.trustAsHtml(line);
+                }
+
+                angular.extend($scope, {
+                    switzerlandcentre: {
+                        lat: 47.5,
+                        lng: 8.5,
+                        zoom: 6,
+                    },
+                    paths: {}
+                });
+
+                $scope.markers = new Array();
+                $scope.addMarkers = function (results) {
+                    $scope.markers = new Array();
+                    var counter = 0;
+                    if (results != null) {
+                        for (var i = 0; i < results.length; i++) {
+                            if (results[i].geometry != null) {
+                                var lat = results[i].geometry.coordinates[0].lat;
+                                var lon = results[i].geometry.coordinates[0].lon;
+                                var id = results[i].document.id.id;
+                                var inFocus = false;
+                                if (counter == 0) {
+                                    inFocus = true;
+                                    counter++;
+                                }
+
+                                $scope.markers.push({
+                                    lat: lat,
+                                    lng: lon,
+                                    message: "docid: " + id,
+                                    focus: inFocus
+                                });
+                            }
+                        }
+                    }
+                };
+
+                $scope.addQueryFootPrint = function (qFP) {
+                    $scope.paths = new Array();
+
+                    var coords = new Array();
+                    if (qFP != null) {
+                        for (var i = 0; i < qFP.length; i++) {
+                            coords.push({
+                                lat: qFP[i].lat,
+                                lng: qFP[i].lon
+                            });
+                        }
+                    }
+
+                    var polygon = {
+                        type: "polygon",
+                        latlngs: [coords[0], coords[1]]
+                    }
+
+                    $scope.paths["qfp"] = polygon;
+                    //alert($scope.paths["qfp"].latlngs[0]);
+                };
+
+                $scope.removeMarkers = function () {
+                    $scope.markers = {};
+                };
+
+            }).controller('DisplayCtrl', function ($scope) {
+                $scope.docid = -1;
+                $scope.isSelected = function (docid) {
+                    return docid == $scope.docid;
+                }
+
+                $scope.selectDoc = function (docid) {
+                    if (docid == $scope.docid) {
+                        $scope.docid = -1;
+                    } else {
+                        $scope.docid = docid;
+                    }
+                }
+            }).controller('HtmlCtrl', ['$scope', '$sce', function ($scope, $sce) {
+
+                $scope.to_trusted = function (html_code) {
+                    return $sce.trustAsHtml(html_code);
+                }
+            }])
+        ;
+
+
+
+    </script>
+
+
+</head>
+
+<body>
+    <div id="container" ng-controller="QueryCtrl">
+        <center>
+            <div id="top" ng-init="getTextIndex();getQuadtreeData();textquery='';textsimilaritytype='simpleboolean';textintersected='union';combinationstrategy='combmnz';spatialrelationship='in';locationquery='';textspatialintersected='union'">
+                <form>
+                    <div class="querydiv">
+                        <div class="queryleftdiv">
+                            Theme/topic
+                        </div>
+
+                        <div class="queryleftdiv">
+                            Term intersection
+                        </div>
+                        <div class="queryleftdiv">
+                            Text similarity
+                        </div>
+
+                        <div class="queryleftdiv">
+                            Text-spatial intersection
+                        </div>
+
+                        <div class="queryleftdiv">
+                            Combination type
+                        </div>
+
+                        <div class="queryleftdiv">
+                            Spatial relationship
+                        </div>
+
+                        <div class="queryleftdiv">
+                            Location
+                        </div>
+
+                    </div>
+
+                    <div class="querydiv">
+                        <div class="queryrightdiv">
+                            <input ng-model="textquery" placeholder="<theme>" />
+                        </div>
+                        <div class="queryrightdiv">
+                            <select ng-model="textintersected" ng-change="queryIndex(textsimilaritytype, spatialrelationship,locationquery,textquery,textintersected,textspatialintersected,combinationstrategy)">
+                                <option value="union" ng-selected="textintersected=='union'">OR</option>
+                                <option value="intersection" ng-selected="textintersected=='intersection'">AND</option>
+                            </select>
+                        </div>
+
+                        <div class="queryrightdiv">
+                            <select ng-model="textsimilaritytype" ng-change="queryIndex(textsimilaritytype, spatialrelationship,locationquery,textquery,textintersected,textspatialintersected,combinationstrategy)">
+                                <option value="simpleboolean" ng-selected="textsimilaritytype=='simpleboolean'">Boolean</option>
+                                <option value="tfidf1" ng-selected="textsimilaritytype=='tfidf1'">TF-IDF 1</option>
+                                <option value="tfidf2" ng-selected="textsimilaritytype=='tfidf2'">TF-IDF 2</option>
+                                <option value="tfidf3" ng-selected="textsimilaritytype=='tfidf3'">TF-IDF 3</option>
+                                <option value="cosine1" ng-selected="textsimilaritytype=='cosine1'">Cosine 1 (Vector)</option>
+                                <option value="cosine2" ng-selected="textsimilaritytype=='cosine2'">Cosine 2 (Vector)</option>
+                                <option value="cosine3" ng-selected="textsimilaritytype=='cosine3'">Cosine 3 (Vector)</option>
+                                <option value="bm1" ng-selected="textsimilaritytype=='bm1'">BM1 (Prob.)</option>
+                                <option value="bm11" ng-selected="textsimilaritytype=='bm11'">BM11 (Prob.)</option>
+                                <option value="bm15" ng-selected="textsimilaritytype=='bm15'">BM15 (Prob.)</option>
+                                <option value="bm25" ng-selected="textsimilaritytype=='bm25'">BM25 (Prob.)</option>
+                            </select>
+                        </div>
+                        <div class="queryrightdiv">
+                            <select ng-model="textspatialintersected" ng-change="queryIndex(textsimilaritytype, spatialrelationship,locationquery,textquery,textintersected,textspatialintersected,combinationstrategy)">
+                                <option value="union" ng-selected="textspatialintersected=='union'">OR</option>
+                                <option value="intersection" ng-selected="textspatialintersected=='intersection'">AND</option>
+                            </select>
+                        </div>
+                        <div class="queryrightdiv">
+                            <select ng-model="combinationstrategy" ng-change="queryIndex(textsimilaritytype, spatialrelationship,locationquery,textquery,textintersected,textspatialintersected,combinationstrategy)">
+                                <option value="simpleborda" ng-selected="combinationstrategy=='simpleborda'">Borda Count</option>
+                                <option value="combmin" ng-selected="combinationstrategy=='combmin'">CombMin</option>
+                                <option value="combmax" ng-selected="combinationstrategy=='combmax'">CombMax</option>
+                                <option value="combsum" ng-selected="combinationstrategy=='combsum'">CombSum</option>
+                                <option value="combanz" ng-selected="combinationstrategy=='combanz'">CombAnz</option>
+                                <option value="combmnz" ng-selected="combinationstrategy=='combmnz'">CombMNZ</option>
+                            </select>
+                        </div>
+                        <div class="queryrightdiv">
+                            <select ng-model="spatialrelationship" ng-change="queryIndex(textsimilaritytype, spatialrelationship,locationquery,textquery,textintersected,textspatialintersected,combinationstrategy)">
+                                <option value="in" ng-selected="spatialrelationship=='in'">in (point-in-MBR)</option>
+                                <option value="overlaps" ng-selected="spatialrelationship=='overlaps'">overlaps</option>
+                                <option value="circularlinearnear" ng-selected="spatialrelationship=='circularlinearnear'">near (linear decay)</option>
+                                <option value="circularbuffernear" ng-selected="spatialrelationship=='circularbuffernear'">near (circular buffer)</option>
+                                <option value="north" ng-selected="spatialrelationship=='north'">north (point-based)</option>
+                                <option value="east" ng-selected="spatialrelationship=='east'">east (point-based)</option>
+                                <option value="west" ng-selected="spatialrelationship=='west'">west (point-based)</option>
+                                <option value="south" ng-selected="spatialrelationship=='south'">south (point-based)</option>
+                            </select>
+                        </div>
+                        <div class="queryrightdiv">
+                            <input ng-model="locationquery" placeholder="<location>" />
+                        </div>
+                    </div>
+                    <div class="querydiv">
+                        <div id="searchsubmitdiv">
+                            <button ng-click="queryIndex(textsimilaritytype, spatialrelationship,locationquery,textquery,textintersected,textspatialintersected,combinationstrategy)">Search!</button>
+                        </div>
+                        <div id="calcdetails">
+                            <a target="_blank" href="#">Show calculation details</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="middle" ng-controller="DisplayCtrl">
+
+                <div class="section">
+                    <div class="title">
+                        <span>Term index</span>
+                    </div>
+                    <div class="smallertitle">
+                        Term <span class="dini">n<sub>i</sub></span> <span class="didocid">doc<sub>1</sub></span> <span class="didocfij">(f<sub>i1</sub>)</span>, ..., <span class="didocid">doc<sub>n</sub></span> <span class="didocfij">(f<sub>in</sub>)</span>
+                        
+                    </div>
+                    <div id="N">N: {{index.n}}</div>
+                    <div class="inlinescroll">
+                        <div ng-repeat="line in index.displayableIndex">
+                            <div class="textindexline" ng-bind-html="line"></div> 
+                        </div>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="title"><span>Spatial Index</span></div>
+                   
+                    <div id="quadtreediv"></div>
+                </div>
+            </div>
+            <div class="middleb" ng-controller="DisplayCtrl" ng-hide="(!ranking.results)||(finalresults.printableQuery==null||finalresults.printableQuery.length==0)">
+
+                <div class="queryresultscontent">
+                    <b>Query was:</b> {{finalresults.printableQuery}}
+                </div>
+                <div class="queryresultscontent">
+                    <b>Number of results:</b> {{finalresults.scores.length}}
+                </div>
+                <div class="queryresultscontent" ng-hide="!girresults">
+                    <b>combination strategy:</b> {{girresults.combinationStrategy}}
+                </div>
+            </div>
+
+            <div id="bottom" ng-hide="(!ranking.results)||(ranking.results.length==0)">
+                <!--This is the ranking-->
+                <div id="rankingdiv" ng-controller="DisplayCtrl">
+                    <!--<div class="rankinginfodiv" ng-hide="!ranking.results">
+                        <div class="leftdiv">Query was:</div>
+                        <div class="rightdiv">{{ranking.rankingmetadata.}}</div>
+                    </div>
+                    <div class="rankinginfodiv" ng-hide="!ranking.results">
+                        <div class="leftdiv">Number of results:</div>
+                        <div class="rightdiv">{{ranking.results.length}}</div>
+                    </div>-->
+                    <div class="rankingtitlediv" ng-hide="!ranking.results">
+                        <div class="rankingscoreitemtitlediv">rank</div>
+                        <div class="rankingscoreitemtitlediv">score</div>
+                        <div class="rankingscoreitemtitlediv">docid</div>
+                        <div class="rankingscoreitemtitlediv">info</div>
+                    </div>
+                    <div class="itemdiv" ng-repeat="score in finalresults.scores">
+                        <div class="rankingtitlediv">
+                            <div class="rankingscoreitemdiv">{{$index+1}}</div>
+                            <div class="rankingscoreitemdiv"> {{score.score | number:4}} </div>
+                            <div class="rankingscoreitemdiv">{{score.document.id.id}}</div>
+                            <div class="rankingscoreitemdiv" ng-click="selectDoc(score.document.id.id)" ng-show="!isSelected(score.document.id.id)"><span class="showspan">show</span></div>
+                            <div class="rankingscoreitemdiv" ng-click="selectDoc(-1)" ng-show="isSelected(score.document.id.id)"><span class="hidespan">hide</span></div>
+                        </div>
+                        <div class="resultcontent" ng-show="isSelected(score.document.id.id)">
+                            <div class="fulltextdiv">
+                                <p>
+                                    <b>Fulltext: </b> <br />
+                                    {{score.document.fulltext}}
+                                </p>
+                            </div>
+                            <div class="fulltextdiv">
+                                <p>
+                                    <b>Raw number of words of document: </b>
+                                    {{score.document.rawNrOfWords}}
+                                </p>
+                                <p>
+                                    <b>Indexed number of words of document: </b>
+                                    {{score.document.indexedNrOfWords}}
+                                </p>
+                                <p>
+                                    <b>Document's size in bytes: </b>
+                                    {{score.document.sizeInBytes}}
+                                </p>
+                            </div>
+                            <div class="fulltextdiv">
+                                <p ng-repeat="s2 in textresults.scores" ng-if="s2.document.id.id==score.document.id.id">
+                                    <b>Original Text Score: </b>{{s2.score | number:4}}
+                                </p>
+                                <p ng-repeat="s3 in spatialresults.scores" ng-if="s3.document.id.id==score.document.id.id">
+                                    <b>Original Spatial Score: </b>{{s3.score | number:4}}
+                                </p>
+                            </div>
+                            <div class="end">&nbsp;</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--end ranking-->
+                <!--This is the map-->
+                <div id="mapdiv">
+                    <leaflet id="leafletcontainer" center="switzerlandcentre" markers="markers"></leaflet>
+                </div>
+                <!--end map-->
+            </div>
+        </center>
+    </div>
+
+
+
+</body>
+</html>

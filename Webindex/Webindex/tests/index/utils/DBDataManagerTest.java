@@ -46,7 +46,7 @@ public class DBDataManagerTest {
 
 	@After
 	public void tearDownTest() {
-		// DBInitializer.tearDownTestDB(dbTablesManager);
+		 DBInitializer.tearDownTestDB(dbTablesManager);
 	}
 
 	private static String[] getDocs(String type) {
@@ -64,7 +64,7 @@ public class DBDataManagerTest {
 		populateDB("text");
 		assertEquals(4, dbDataManager.getDocuments(null).size());
 		assertEquals(14, dbDataManager.getTerms().size());
-		assertEquals(22, dbDataManager.getTermDocs().size());
+		assertEquals(22, dbDataManager.getTermDocs(null).size());
 	}
 
 	private void populateDB(String text) {
@@ -74,7 +74,7 @@ public class DBDataManagerTest {
 			documents.add(doc);
 		}
 
-		dbDataManager.addDocuments(documents);
+//		dbDataManager.addDocuments(documents);
 	}
 
 	@Test
@@ -186,7 +186,7 @@ public class DBDataManagerTest {
 		populateDB("text");
 
 		float[][] tfidfs = { { 3f, 0.83f, 4f }, { 2, 2, 2, 2, 2, 2 }, { 1.073f, 2, 1, 2, 2 }, { 1.073f, 5.170f, 4, 4 } };
-		List<TermDocs> termDocs = dbDataManager.getTermDocs();
+		List<TermDocs> termDocs = dbDataManager.getTermDocs(null);
 		assertEquals(22, termDocs.size());
 		for (int i = 0; i <= 18; ++i) {
 			if (termDocs.get(i).getId().equals(new TermDocsIdentifier("to", 1l))) {

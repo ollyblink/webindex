@@ -26,11 +26,11 @@ public class IndexResource {
 	// }
 
 	@GET
-	@Path("/{textsimilaritytype}/{spatialrelationship}/{locationquery}/{textquery}/{textintersected}/{textspatialintersected}/{combinationstrategy}")
+	@Path("/{textsimilaritytype}/{spatialrelationship}/{locationquery}/{textquery}/{textintersected}/{textspatialintersected}/{combinationstrategy}/{maxnumberofresults}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Ranking query(@PathParam("textsimilaritytype") String textsimilaritytype, @PathParam("spatialrelationship") String spatialrelationship, @PathParam("locationquery") String locationquery, @PathParam("textquery") String textquery, @PathParam("textintersected") String textintersected, @PathParam("textspatialintersected") String textspatialintersected, @PathParam("combinationstrategy") String combinationstrategy) {
-		System.out.println("INDEXRESOURCE::query:: received: (" + textsimilaritytype + "," + spatialrelationship + "," + locationquery + "," + textquery + "," + textintersected + "," + textspatialintersected + "," + combinationstrategy + ")");
-		Ranking ranking = IndexDao.INSTANCE.submitQuery(textsimilaritytype.trim(), spatialrelationship.trim(), locationquery.trim(), textquery.trim(), textintersected.trim(), textspatialintersected.trim(), combinationstrategy.trim());
+	public Ranking query(@PathParam("textsimilaritytype") String textsimilaritytype, @PathParam("spatialrelationship") String spatialrelationship, @PathParam("locationquery") String locationquery, @PathParam("textquery") String textquery, @PathParam("textintersected") String textintersected, @PathParam("textspatialintersected") String textspatialintersected, @PathParam("combinationstrategy") String combinationstrategy, @PathParam("maxnumberofresults") int maxnumberofresults) {
+		System.out.println("INDEXRESOURCE::query:: received: (" + textsimilaritytype + "," + spatialrelationship + "," + locationquery + "," + textquery + "," + textintersected + "," + textspatialintersected + "," + combinationstrategy + "," + maxnumberofresults+")");
+		Ranking ranking = IndexDao.INSTANCE.submitQuery(textsimilaritytype.trim(), spatialrelationship.trim(), locationquery.trim(), textquery.trim(), textintersected.trim(), textspatialintersected.trim(), combinationstrategy.trim(),maxnumberofresults);
 //		for(RESTScore s: ranking.getResults()){
 //			System.out.println(s.getDocument().getId() + ": "+ s.getScore());
 //		}
@@ -38,10 +38,10 @@ public class IndexResource {
 	}
 
 	@GET
-	@Path("/getindex")
+	@Path("/getindex/{lowerbound}/{upperbound}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public IndexContainer getIndex() {
-		return IndexDao.INSTANCE.getIndex();
+	public IndexContainer getIndex(@PathParam("lowerbound") int lowerbound,@PathParam("upperbound") int upperbound) {
+		return IndexDao.INSTANCE.getIndex(lowerbound, upperbound);
 	}
 	
 	@GET

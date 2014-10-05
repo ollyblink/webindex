@@ -33,7 +33,7 @@ public class RAMTextOnlyIndexTest {
 	public static void setUpBeforeClass() throws Exception {
 		dbDataManager = new DBDataManager(DBInitializer.initDB(), null,  true); 
 		terms = DBDataManager.createIndexableDocuments();
-		ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs();
+		ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs(null);
 		HashMap<TermDocsIdentifier, TermDocs> termDocsMeta = new HashMap<>();
 
 		for (TermDocs t : termDocs) { 
