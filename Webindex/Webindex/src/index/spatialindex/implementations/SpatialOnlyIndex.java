@@ -54,7 +54,6 @@ public class SpatialOnlyIndex implements ISpatialIndex {
 		}
 		query.setQueryFootPrints(queryFootPrints);
 		// Algorithm stage: calculate score for each found geometry
-		System.out.println("Spatial relationship: " + spatRelAlgorithm.getClass().getSimpleName());
 		ArrayList<Score> results = spatRelAlgorithm.calculateSimilarity(queryFootPrints, documentFootPrints);
 
 		// =======================================================================================
@@ -113,6 +112,14 @@ public class SpatialOnlyIndex implements ISpatialIndex {
 	@Override
 	public void clear() {
 		index = new Quadtree();
+	}
+
+	public Quadtree getIndex() {
+		return index;
+	}
+
+	public void setIndex(Quadtree index) {
+		this.index = index;
 	}
 
 }

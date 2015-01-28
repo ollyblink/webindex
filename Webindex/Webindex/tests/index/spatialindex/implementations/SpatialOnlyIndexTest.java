@@ -34,7 +34,7 @@ public class SpatialOnlyIndexTest {
 	@BeforeClass
 	public static void init() {
 
-		String[] docs = new String[] { "This text is about Zürich, Schweiz", "The mayor of London was not amused", "Many people died in World War II when Berlin was bombed by the allies" };
+		String[] docs = new String[] { "This text is about Zürich, Schweiz", "The mayor of London, England was not amused", "Many people died in World War II when Berlin, Germany was bombed by the allies" };
 
 		LocationFinder testLF = new LocationFinder(true);
 		// Spatial
@@ -55,23 +55,29 @@ public class SpatialOnlyIndexTest {
 
 			@SuppressWarnings("unchecked")
 			List<Geometry> documentFootprints = (List<Geometry>) request.getTransformationStage(geoReferencingStage.getClass().getSimpleName());
+	 
 			List<SpatialDocument> spatialDocuments = new ArrayList<SpatialDocument>();
 			// System.out.println(documentFootprints);
 			for (Geometry geom : documentFootprints) {
+				System.out.println(doc);
+				System.out.println(geom);
+				System.out.println();
 				spatialDocuments.add(new SpatialDocument(new Document(id), geom));
 			}
 
 			spatialOnlyIndex.addDocuments(spatialDocuments);
 		}
+		 
 
 	}
 
 	@Test
 	public void queryTest() {
-		Ranking ranking = spatialOnlyIndex.queryIndex(new SpatialIndexQuery("point_in", "Switzerland"));
-		System.out.println();
-
+		SpatialIndexQuery query = new SpatialIndexQuery("point_in", "Switzerland");
+		Ranking ranking = spatialOnlyIndex.queryIndex(query );
+		
 		for (RESTScore d : ranking.getResults()) {
+			System.out.println(d);
 			if (d.getDocument().getId().getId() == 1) {
 				assertEquals(1f, d.getScore(), 0.01f);
 			} else {

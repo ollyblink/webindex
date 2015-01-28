@@ -86,4 +86,9 @@ public class RESTScore implements Comparable<RESTScore>{
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "RESTScore [document=" + document + ", score=" + score + ", geometry=" + geometry.getCoordinates() + "]";
+	}
+
 }

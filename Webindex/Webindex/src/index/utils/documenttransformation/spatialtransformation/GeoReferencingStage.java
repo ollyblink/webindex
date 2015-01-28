@@ -1,7 +1,6 @@
 package index.utils.documenttransformation.spatialtransformation;
 
 import index.spatialindex.utils.geolocating.georeferencing.LocationFinder;
-import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
 import index.utils.documenttransformation.AbstractTransformationStage;
 import index.utils.documenttransformation.ExtractionRequest;
 

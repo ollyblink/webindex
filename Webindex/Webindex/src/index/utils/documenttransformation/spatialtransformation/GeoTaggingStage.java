@@ -71,9 +71,9 @@ public class GeoTaggingStage extends AbstractTransformationStage {
 		this.beforeTransformation = new ArrayList<>();
 
 		// looking for locations
-		foundLocations.addAll(queryCalais(request.getInputText()));
+//		foundLocations.addAll(queryCalais(request.getInputText()));
 		foundLocations.addAll(queryYPM(request.getInputText()));
-		foundLocations.addAll(queryHikrGazetteer(request.getInputText()));
+//		foundLocations.addAll(queryHikrGazetteer(request.getInputText()));
 
 		this.afterTransformation = foundLocations;
 		request.addTransformationStage(this.getClass().getSimpleName(), foundLocations);

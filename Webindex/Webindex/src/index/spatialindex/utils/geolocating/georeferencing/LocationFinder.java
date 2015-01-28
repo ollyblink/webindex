@@ -71,7 +71,7 @@ public class LocationFinder {
 	private void initExtractors(AbstractDBConnector db) {
 		extractors.add(new YPMPlaceExtractor(YPM_XML));
 		// extractors.add(new GNPlaceExtractor(USERNAME));
-		extractors.add(new HikrGazetteerPlaceExtractor(db));
+//		extractors.add(new HikrGazetteerPlaceExtractor(db));
 	}
 
 	public LocationFinder() {
@@ -115,6 +115,7 @@ public class LocationFinder {
 	public ArrayList<Geometry> findMBR(String query) {
 		ArrayList<Geometry> locations = new ArrayList<>();
 		locations.addAll(extractors.get(0).extract(query));
+		System.out.println(locations.get(0));
 		return locations;
 	}
 }

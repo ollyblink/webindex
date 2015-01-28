@@ -5,7 +5,6 @@ import index.spatialindex.implementations.SpatialOnlyIndex;
 import index.textindex.implementations.RAMTextOnlyIndex;
 import index.textindex.utils.TermDocs;
 import index.textindex.utils.informationextractiontools.MockTextInformationExtractor;
-import index.utils.Score;
 import index.utils.identifers.TermDocsIdentifier;
 import index.utils.indexmetadata.TextIndexMetaData;
 import index.utils.query.GIRQuery;
