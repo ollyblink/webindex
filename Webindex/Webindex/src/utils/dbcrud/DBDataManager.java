@@ -2,6 +2,7 @@ package utils.dbcrud;
 
 import index.spatialindex.utils.GeometryConverter;
 import index.spatialindex.utils.SpatialDocument;
+import index.spatialindex.utils.geolocating.georeferencing.LocationFinder;
 import index.textindex.implementations.ITextIndexNoInsertion;
 import index.textindex.implementations.RAMTextOnlyIndex;
 import index.textindex.utils.Term;
@@ -53,9 +54,10 @@ public class DBDataManager implements IDataManager {
 	private ITextInformationExtractor tokenizer;
 	private boolean showTransformations;
 	private boolean isRunning;
+	 
 
 	public DBDataManager(DBTablesManager dbManager, ITextInformationExtractor tokenizer, boolean showTransformations) {
-		this.dbTablesManager = dbManager;
+ 		this.dbTablesManager = dbManager;
 		this.tokenizer = tokenizer;
 		this.showTransformations = showTransformations;
 		this.isRunning = true;
@@ -102,7 +104,7 @@ public class DBDataManager implements IDataManager {
 			}
 			sql += "termid = '"+terms.get(terms.size()-1).getIndexedTerm() + "');"; 
 		}
-//		System.out.println(sql);
+		System.out.println(sql);
 		try {
 			PreparedStatement statement = dbTablesManager.getConnection().prepareStatement(sql);
 			ResultSet r = statement.executeQuery();
@@ -209,8 +211,8 @@ public class DBDataManager implements IDataManager {
 		TermFrequencyExtractionStage termFrequencyExtractionStage = new TermFrequencyExtractionStage(showTransformations, tokenizer);
 
 		// Spatial
-		GeoTaggingStage geoTaggingStage = new GeoTaggingStage(showTransformations);
-		GeoReferencingStage geoReferencingStage = new GeoReferencingStage(showTransformations);
+		GeoTaggingStage geoTaggingStage = new GeoTaggingStage(showTransformations, dbTablesManager.getConnector());
+		GeoReferencingStage geoReferencingStage = new GeoReferencingStage(new LocationFinder(dbTablesManager.getConnector()),showTransformations);
 
 		// Chaining the stages together in an appropriate way
 
@@ -668,18 +670,18 @@ public class DBDataManager implements IDataManager {
 	}
 
 	public static ITextIndexNoInsertion getTestIndex() {
-		DBDataManager dbDataManager = new DBDataManager(DBInitializer.initDB(), null, false);
-
-		HashMap<Term, List<Document>> documents = DBDataManager.createIndexableDocuments();
-		ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs(null);
-		HashMap<TermDocsIdentifier, TermDocs> termDocsMeta = new HashMap<>();
-
-		for (TermDocs t : termDocs) {
-			termDocsMeta.put(t.getId(), t);
-		}
-		RAMTextOnlyIndex ramTextOnlyIndex = new RAMTextOnlyIndex(new TextIndexMetaData(termDocsMeta, dbDataManager.getOverallTextIndexMetaData()), null);
-		ramTextOnlyIndex.addTerms(documents);
-		return ramTextOnlyIndex;
+//		DBDataManager dbDataManager = new DBDataManager(DBInitializer.initDB(), null, false);
+//
+//		HashMap<Term, List<Document>> documents = DBDataManager.createIndexableDocuments();
+//		ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs(null);
+//		HashMap<TermDocsIdentifier, TermDocs> termDocsMeta = new HashMap<>();
+//
+//		for (TermDocs t : termDocs) {
+//			termDocsMeta.put(t.getId(), t);
+//		}
+//		RAMTextOnlyIndex ramTextOnlyIndex = new RAMTextOnlyIndex(new TextIndexMetaData(termDocsMeta, dbDataManager.getOverallTextIndexMetaData()), null);
+//		ramTextOnlyIndex.addTerms(documents);
+		return null;
 	}
 
 	@Override

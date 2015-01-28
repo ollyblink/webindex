@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <contentlocation xmlns:yahoo="http://www.yahooapis.com/v1/base.rng" xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns="http://wherein.yahooapis.com/v1/schema" xml:lang="en">
-<processingTime>0.001608</processingTime>
-<version>2.0.11.0 build 140609</version>
-<documentLength>18</documentLength>
+<processingTime>0.001112</processingTime>
+<version>2.0.12.138 build 150109</version>
+<documentLength>11</documentLength>
 <document>
 <administrativeScope>
 <woeId>23424957</woeId>
@@ -71,17 +71,17 @@
 <placeReferenceIds>1</placeReferenceIds>
 <matchType>0</matchType>
 <weight>1</weight>
-<confidence>6</confidence>
+<confidence>9</confidence>
 </placeDetails>
 <referenceList>
 <reference>
 <woeIds>23424957</woeIds>
 <placeReferenceId>1</placeReferenceId>
 <placeIds>1</placeIds>
-<start>11</start>
-<end>18</end>
+<start>0</start>
+<end>11</end>
 <isPlaintextMarker>1</isPlaintextMarker>
-<text><![CDATA[Schweiz]]></text>
+<text><![CDATA[Switzerland]]></text>
 <type>plaintext</type>
 <xpath><![CDATA[]]></xpath>
 </reference>

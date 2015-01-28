@@ -21,9 +21,16 @@ import com.vividsolutions.jts.index.quadtree.Quadtree;
 public class SpatialOnlyIndex implements ISpatialIndex {
 
 	private Quadtree index;
+	private LocationFinder locationFinder;
+
+	public SpatialOnlyIndex(LocationFinder locationFinder) {
+		this.index = new Quadtree();
+		this.locationFinder = locationFinder;
+	}
 
 	public SpatialOnlyIndex() {
 		this.index = new Quadtree();
+		this.locationFinder = new LocationFinder();
 	}
 
 	@Override
@@ -35,7 +42,7 @@ public class SpatialOnlyIndex implements ISpatialIndex {
 		// Querying spatial index
 		// =======================================================================================
 		// Get spatial location geometry
-		ArrayList<Geometry> queryFootPrints = LocationFinder.INSTANCE.findMBR(query.getLocation());
+		ArrayList<Geometry> queryFootPrints = locationFinder.findMBR(query.getLocation());
 		query.setQueryFootPrints(spatRelAlgorithm.preCalculateQueryFootprint(queryFootPrints));
 
 		// Filter stage
@@ -47,7 +54,7 @@ public class SpatialOnlyIndex implements ISpatialIndex {
 		}
 		query.setQueryFootPrints(queryFootPrints);
 		// Algorithm stage: calculate score for each found geometry
-		System.out.println("Spatial relationship: " +spatRelAlgorithm.getClass().getSimpleName());
+		System.out.println("Spatial relationship: " + spatRelAlgorithm.getClass().getSimpleName());
 		ArrayList<Score> results = spatRelAlgorithm.calculateSimilarity(queryFootPrints, documentFootPrints);
 
 		// =======================================================================================

@@ -14,8 +14,8 @@ public class LocationProviderTest {
 
 	@Test
 	public void testCountries() {
-
-		List<Geometry> germany = LocationFinder.INSTANCE.findLocation("Germany");
+		LocationFinder finder = new LocationFinder(true);
+		List<Geometry> germany = finder.findLocation("Germany");
 
 		for (Geometry g : germany) {
 			Coordinate[] coordinates = g.getCoordinates();
@@ -24,7 +24,7 @@ public class LocationProviderTest {
 			}
 		}
 
-		List<Geometry> switzerland = LocationFinder.INSTANCE.findLocation("Switzerland");
+		List<Geometry> switzerland = finder.findLocation("Switzerland");
 
 		for (Geometry sw : switzerland) {
 			Coordinate[] coordinates = sw.getCoordinates();

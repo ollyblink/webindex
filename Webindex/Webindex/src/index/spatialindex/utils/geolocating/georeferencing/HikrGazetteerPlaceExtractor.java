@@ -22,16 +22,10 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author rsp
  *
  */
-public class HikrGazetteerPlaceExtractor implements IPlaceExtractor {
-//	String host = "localhost";
-//	String port = "5432";
-//	String database = "girindex2";
-//	String user = "postgres";
-//	String password = "postgres";
+public class HikrGazetteerPlaceExtractor implements IPlaceExtractor { 
 	private HashMap<String, Geometry> hikrGazetteer;
 
-	public HikrGazetteerPlaceExtractor(String host, String port, String database, String user, String password) {
-		AbstractDBConnector db = new PGDBConnector(host, port, database, user, password);
+	public HikrGazetteerPlaceExtractor(AbstractDBConnector db) { 
 		hikrGazetteer = new HashMap<String, Geometry>();
 		try {
 			Statement statement = db.getConnection().createStatement();
@@ -44,7 +38,7 @@ public class HikrGazetteerPlaceExtractor implements IPlaceExtractor {
 			e.printStackTrace();
 		}
 	}
-
+ 
 	@Override
 	public ArrayList<Geometry> extract(String text) {
 		String[] tokens = alterText(text).split(" ");
@@ -58,7 +52,7 @@ public class HikrGazetteerPlaceExtractor implements IPlaceExtractor {
 	}
 
 	public static String alterText(String text) {
-		return text.replaceAll("[^öÖäÄüÜa-zA-Z0-9\\s]", " ");
+		return text.toLowerCase().replaceAll("[^öÖäÄüÜa-zA-Z0-9\\s]", " ");
 	}
 
 	public static void main(String[] args) {

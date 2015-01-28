@@ -3,6 +3,7 @@ package index.spatialindex.utils.geolocating.georeferencing;
 import java.util.ArrayList;
 import java.util.List;
 
+import utils.dbconnection.AbstractDBConnector;
 import utils.dbconnection.PGDBConnector;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -14,75 +15,43 @@ import com.vividsolutions.jts.geom.Geometry;
  * @version 0.1
  * 
  */
-public enum LocationFinder {
-	INSTANCE;
-
+public class LocationFinder {
 	List<IPlaceExtractor> extractors = new ArrayList<IPlaceExtractor>();
 
 	private final String YPM_XML = "ypm.xml";
 	private final String USERNAME = "ollyblink";
-	 private   String host = "localhost";
-	 private   String port = "5432";
-	 private   String database = "girindex";
-	 private   String user = "postgres";
-	 private   String password = "postgres";
-//	String host = "geocomp-res.geo.uzh.ch";
-//	String port = "5432";
-//	String database = "girindex2";
-//	String user = "gcscript";
-//	String password = "gcmdp8057";
+
+	private static final String host = "geocomp-res.geo.uzh.ch";
+	private static final String port = "5432";
+	private static final String database = "girindex2";
+	private static final String user = "gcscript";
+	private static final String password = "gcmdp8057";
+
+	private String testhost = "localhost";
+	private String testport = "5432";
+	private String testdatabase = "girindex";
+	private String testuser = "postgres";
+	private String testpassword = "postgres";
+	private AbstractDBConnector db;
 
 	public String getHost() {
 		return host;
-	}
-
-	public void setHost(String host) {
-		this.host = host;
-		reinitializeList(host);
-	}
-
-	private void reinitializeList(String host) {
-		extractors.clear();
-
-		extractors.add(new YPMPlaceExtractor(YPM_XML));
-//		extractors.add(new GNPlaceExtractor(USERNAME));
-		extractors.add(new HikrGazetteerPlaceExtractor(host,port,database,user,password));
 	}
 
 	public String getPort() {
 		return port;
 	}
 
-	public void setPort(String port) {
-		this.port = port;
-		reinitializeList(host);
-	}
-
 	public String getDatabase() {
 		return database;
-	}
-
-	public void setDatabase(String database) {
-		this.database = database;
-		reinitializeList(host);
 	}
 
 	public String getUser() {
 		return user;
 	}
 
-	public void setUser(String user) {
-		this.user = user;
-		reinitializeList(host);
-	}
-
 	public String getPassword() {
 		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-		reinitializeList(host);
 	}
 
 	/**
@@ -94,10 +63,29 @@ public enum LocationFinder {
 	 * @param stringRules
 	 * @param boundsRules
 	 */
-	private LocationFinder() {
+	public LocationFinder(AbstractDBConnector db) {
+		this.db = db;
+		initExtractors(db);
+	}
+
+	private void initExtractors(AbstractDBConnector db) {
 		extractors.add(new YPMPlaceExtractor(YPM_XML));
-//		extractors.add(new GNPlaceExtractor(USERNAME));
-		extractors.add(new HikrGazetteerPlaceExtractor(host,port,database,user,password));
+		// extractors.add(new GNPlaceExtractor(USERNAME));
+		extractors.add(new HikrGazetteerPlaceExtractor(db));
+	}
+
+	public LocationFinder() {
+		this(new PGDBConnector(host, port, database, user, password));
+	
+	}
+
+	public LocationFinder(boolean isTest) {
+		if (isTest) {
+			this.db = new PGDBConnector(testhost, testport, testdatabase, testuser, testpassword);
+		} else {
+			this.db = new PGDBConnector(host, port, database, user, password);
+		}
+		initExtractors(db);
 	}
 
 	/**

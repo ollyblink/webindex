@@ -20,9 +20,9 @@
         angular.module('queryhandler', ['leaflet-directive', 'ngSanitize'])
 
             .controller('QueryCtrl', function ($scope, $http) {
-                ///{textsimilaritytype}/{spatialrelationship}/{locationquery}/{textquery}/{textintersected}/{textspatialintersected}
+                ///{textsimilaritytype}/{spatialrelationship}/{locationquery}/{textquery}/{textintersected}/{textspatialintersected}/{maxnumberofresults}
                 var rest = 'http://geocomp-res.geo.uzh.ch:8181/Webindex/webindex/index';
-
+                //var rest = 'http://localhost:8083/Webindex/webindex/index';
                 $scope.checkResults = function (ranking) {
                     if (ranking.girQueryMetaData != null) {
                         return ranking.girQueryMetaData;
@@ -36,7 +36,7 @@
                 }
 
                 $scope.getTextIndex = function () {
-                    return $http.get(rest + '/getindex').
+                    return $http.get(rest + '/getindex/12/20').
 
                      success(function (data) {
                          $scope.index = data;
@@ -100,14 +100,14 @@
 
                 }
                 $scope.queryIndex = function (textsimilaritytype, spatialrelationship, locationquery, textquery, textintersected, textspatialintersected, combinationstrategy) {
-
+                    $scope.maxnumberofresults = 20;
                     if (locationquery === undefined) {
                         locationquery = "%20";
                     }
                     if (textquery === undefined) {
                         textquery = "%20";
                     }
-                    return $http.get(rest + '/' + textsimilaritytype + "/" + spatialrelationship + "/" + locationquery + "%20/" + textquery + "%20/" + textintersected + "/" + textspatialintersected + "/" + combinationstrategy).
+                    return $http.get(rest + '/' + textsimilaritytype + "/" + spatialrelationship + "/" + locationquery + "%20/" + textquery + "%20/" + textintersected + "/" + textspatialintersected + "/" + combinationstrategy+"/"+$scope.maxnumberofresults).
 
                       success(function (data) {
                           $scope.ranking = data;
@@ -190,6 +190,7 @@
 
             }).controller('DisplayCtrl', function ($scope) {
                 $scope.docid = -1;
+                $scope.areIndexesSelected = false;
                 $scope.isSelected = function (docid) {
                     return docid == $scope.docid;
                 }
@@ -200,6 +201,16 @@
                     } else {
                         $scope.docid = docid;
                     }
+                }
+
+                $scope.indexesShown = function () {
+                    return $scope.areIndexesSelected;
+                }
+                $scope.showIndexes = function () {
+                    $scope.areIndexesSelected = true;
+                }
+                $scope.hideIndexes = function () {
+                    $scope.areIndexesSelected = false;
                 }
             }).controller('HtmlCtrl', ['$scope', '$sce', function ($scope, $sce) {
 
@@ -256,14 +267,16 @@
                             <input ng-model="textquery" placeholder="<theme>" />
                         </div>
                         <div class="queryrightdiv">
-                            <select ng-model="textintersected" ng-change="queryIndex(textsimilaritytype, spatialrelationship,locationquery,textquery,textintersected,textspatialintersected,combinationstrategy)">
+                            <select ng-model="textintersected">
+                                <!--<!--ng-change="queryIndex(textsimilaritytype, spatialrelationship,locationquery,textquery,textintersected,textspatialintersected,combinationstrategy)"-->
                                 <option value="union" ng-selected="textintersected=='union'">OR</option>
                                 <option value="intersection" ng-selected="textintersected=='intersection'">AND</option>
                             </select>
                         </div>
 
                         <div class="queryrightdiv">
-                            <select ng-model="textsimilaritytype" ng-change="queryIndex(textsimilaritytype, spatialrelationship,locationquery,textquery,textintersected,textspatialintersected,combinationstrategy)">
+                            <select ng-model="textsimilaritytype">
+                                <!-- ng-change="queryIndex(textsimilaritytype, spatialrelationship,locationquery,textquery,textintersected,textspatialintersected,combinationstrategy)"--> 
                                 <option value="simpleboolean" ng-selected="textsimilaritytype=='simpleboolean'">Boolean</option>
                                 <option value="tfidf1" ng-selected="textsimilaritytype=='tfidf1'">TF-IDF 1</option>
                                 <option value="tfidf2" ng-selected="textsimilaritytype=='tfidf2'">TF-IDF 2</option>
@@ -278,13 +291,15 @@
                             </select>
                         </div>
                         <div class="queryrightdiv">
-                            <select ng-model="textspatialintersected" ng-change="queryIndex(textsimilaritytype, spatialrelationship,locationquery,textquery,textintersected,textspatialintersected,combinationstrategy)">
+                            <select ng-model="textspatialintersected">
+                                <!--ng-change="queryIndex(textsimilaritytype, spatialrelationship,locationquery,textquery,textintersected,textspatialintersected,combinationstrategy)"-->
                                 <option value="union" ng-selected="textspatialintersected=='union'">OR</option>
                                 <option value="intersection" ng-selected="textspatialintersected=='intersection'">AND</option>
                             </select>
                         </div>
                         <div class="queryrightdiv">
-                            <select ng-model="combinationstrategy" ng-change="queryIndex(textsimilaritytype, spatialrelationship,locationquery,textquery,textintersected,textspatialintersected,combinationstrategy)">
+                            <select ng-model="combinationstrategy">
+                                <!--ng-change="queryIndex(textsimilaritytype, spatialrelationship,locationquery,textquery,textintersected,textspatialintersected,combinationstrategy)"--> 
                                 <option value="simpleborda" ng-selected="combinationstrategy=='simpleborda'">Borda Count</option>
                                 <option value="combmin" ng-selected="combinationstrategy=='combmin'">CombMin</option>
                                 <option value="combmax" ng-selected="combinationstrategy=='combmax'">CombMax</option>
@@ -294,11 +309,12 @@
                             </select>
                         </div>
                         <div class="queryrightdiv">
-                            <select ng-model="spatialrelationship" ng-change="queryIndex(textsimilaritytype, spatialrelationship,locationquery,textquery,textintersected,textspatialintersected,combinationstrategy)">
+                            <select ng-model="spatialrelationship">
+                                <!--ng-change="queryIndex(textsimilaritytype, spatialrelationship,locationquery,textquery,textintersected,textspatialintersected,combinationstrategy)"-->
                                 <option value="in" ng-selected="spatialrelationship=='in'">in (point-in-MBR)</option>
-                                <option value="overlaps" ng-selected="spatialrelationship=='overlaps'">overlaps</option>
+                                <!--<option value="overlaps" ng-selected="spatialrelationship=='overlaps'">overlaps</option>-->
                                 <option value="circularlinearnear" ng-selected="spatialrelationship=='circularlinearnear'">near (linear decay)</option>
-                                <option value="circularbuffernear" ng-selected="spatialrelationship=='circularbuffernear'">near (circular buffer)</option>
+                                <!--<option value="circularbuffernear" ng-selected="spatialrelationship=='circularbuffernear'">near (circular buffer)</option>-->
                                 <option value="north" ng-selected="spatialrelationship=='north'">north (point-based)</option>
                                 <option value="east" ng-selected="spatialrelationship=='east'">east (point-based)</option>
                                 <option value="west" ng-selected="spatialrelationship=='west'">west (point-based)</option>
@@ -314,34 +330,12 @@
                             <button ng-click="queryIndex(textsimilaritytype, spatialrelationship,locationquery,textquery,textintersected,textspatialintersected,combinationstrategy)">Search!</button>
                         </div>
                         <div id="calcdetails">
-                            <a target="_blank" href="#">Show calculation details</a>
+                            <a target="_blank" href="Theory.pdf">Show calculation details</a>
                         </div>
                     </div>
                 </form>
             </div>
-            <div class="middle" ng-controller="DisplayCtrl">
 
-                <div class="section">
-                    <div class="title">
-                        <span>Term index</span>
-                    </div>
-                    <div class="smallertitle">
-                        Term <span class="dini">n<sub>i</sub></span> <span class="didocid">doc<sub>1</sub></span> <span class="didocfij">(f<sub>i1</sub>)</span>, ..., <span class="didocid">doc<sub>n</sub></span> <span class="didocfij">(f<sub>in</sub>)</span>
-                        
-                    </div>
-                    <div id="N">N: {{index.n}}</div>
-                    <div class="inlinescroll">
-                        <div ng-repeat="line in index.displayableIndex">
-                            <div class="textindexline" ng-bind-html="line"></div> 
-                        </div>
-                    </div>
-                </div>
-                <div class="section">
-                    <div class="title"><span>Spatial Index</span></div>
-                   
-                    <div id="quadtreediv"></div>
-                </div>
-            </div>
             <div class="middleb" ng-controller="DisplayCtrl" ng-hide="(!ranking.results)||(finalresults.printableQuery==null||finalresults.printableQuery.length==0)">
 
                 <div class="queryresultscontent">
@@ -420,6 +414,31 @@
                     <leaflet id="leafletcontainer" center="switzerlandcentre" markers="markers"></leaflet>
                 </div>
                 <!--end map-->
+            </div>
+            <div ng-controller="DisplayCtrl">
+                <span class="showspan" ng-click="showIndexes()" ng-show="!indexesShown()">show indexes</span>
+                <span class="hidespan" ng-click="hideIndexes()" ng-show="indexesShown()">hide indexes</span>
+                <div class="middle" ng-hide="!indexesShown()">
+                    <div class="section">
+                        <div class="title">
+                            <span>Term index</span>
+                        </div>
+                        <div class="smallertitle">
+                            Term <span class="dini">n<sub>i</sub></span> <span class="didocid">doc<sub>1</sub></span> <span class="didocfij">(f<sub>i1</sub>)</span>, ..., <span class="didocid">doc<sub>n</sub></span> <span class="didocfij">(f<sub>in</sub>)</span>
+
+                        </div>
+                        <div id="N">N: {{index.n}}</div>
+                        <div class="inlinescroll">
+                            <div ng-repeat="line in index.displayableIndex">
+                                <div class="textindexline" ng-bind-html="line"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div class="title"><span>Spatial Index</span></div>
+                        <div id="quadtreediv"></div>
+                    </div>
+                </div>
             </div>
         </center>
     </div>

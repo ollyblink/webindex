@@ -29,6 +29,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import utils.dbconnection.AbstractDBConnector;
 import utils.dbconnection.PGDBConnector;
 
 /**
@@ -54,13 +55,13 @@ public class GeoTaggingStage extends AbstractTransformationStage {
 	private CalaisLocator calaisLocator;
 	private HikrGazetteerLocator hikrExtractor;
 
-	public GeoTaggingStage(boolean isShowTransformationEnabled) {
+	public GeoTaggingStage(boolean isShowTransformationEnabled, AbstractDBConnector db) {
 
 		super(isShowTransformationEnabled);
 
 		calaisLocator = new CalaisLocator();
 		ypmExtractor = new YPMPlaceExtractor(YPM_XML);
-		this.hikrExtractor = new HikrGazetteerLocator(dictionaryLocation, tokenLocation);
+		this.hikrExtractor = new HikrGazetteerLocator(db, dictionaryLocation, tokenLocation);
 
 	}
 
