@@ -3,9 +3,6 @@ package index.spatialindex.utils.geolocating.georeferencing;
 import java.util.ArrayList;
 import java.util.List;
 
-import utils.dbconnection.AbstractDBConnector;
-import utils.dbconnection.PGDBConnector;
-
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
@@ -16,76 +13,19 @@ import com.vividsolutions.jts.geom.Geometry;
  * 
  */
 public class LocationFinder {
-	List<IPlaceExtractor> extractors = new ArrayList<IPlaceExtractor>();
+	private List<IPlaceExtractor> extractors;
 
-	private final String YPM_XML = "ypm.xml";
-	private final String USERNAME = "ollyblink";
-
-	private static final String host = "geocomp-res.geo.uzh.ch";
-	private static final String port = "5432";
-	private static final String database = "girindex2";
-	private static final String user = "gcscript";
-	private static final String password = "gcmdp8057";
-
-	private String testhost = "localhost";
-	private String testport = "5432";
-	private String testdatabase = "girindex";
-	private String testuser = "postgres";
-	private String testpassword = "postgres";
-	private AbstractDBConnector db;
-
-	public String getHost() {
-		return host;
-	}
-
-	public String getPort() {
-		return port;
-	}
-
-	public String getDatabase() {
-		return database;
-	}
-
-	public String getUser() {
-		return user;
-	}
-
-	public String getPassword() {
-		return password;
+	public LocationFinder(List<IPlaceExtractor> extractors) {
+		this.extractors = extractors;
 	}
 
 	/**
-	 * Constructor
-	 * 
-	 * @param countryCode
-	 * @param userName
-	 * @param xmlPath
-	 * @param stringRules
-	 * @param boundsRules
+	 * Default
 	 */
-	public LocationFinder(AbstractDBConnector db) {
-		this.db = db;
-		initExtractors(db);
-	}
-
-	private void initExtractors(AbstractDBConnector db) {
-		extractors.add(new YPMPlaceExtractor(YPM_XML));
-		// extractors.add(new GNPlaceExtractor(USERNAME));
-//		extractors.add(new HikrGazetteerPlaceExtractor(db));
-	}
-
 	public LocationFinder() {
-		this(new PGDBConnector(host, port, database, user, password));
-	
-	}
-
-	public LocationFinder(boolean isTest) {
-		if (isTest) {
-			this.db = new PGDBConnector(testhost, testport, testdatabase, testuser, testpassword);
-		} else {
-			this.db = new PGDBConnector(host, port, database, user, password);
-		}
-		initExtractors(db);
+		// Add default extractors
+		List<IPlaceExtractor> extractors = new ArrayList<IPlaceExtractor>();
+		extractors.add(new YPMPlaceExtractor("ypm.xml"));
 	}
 
 	/**
@@ -115,7 +55,6 @@ public class LocationFinder {
 	public ArrayList<Geometry> findMBR(String query) {
 		ArrayList<Geometry> locations = new ArrayList<>();
 		locations.addAll(extractors.get(0).extract(query));
-		System.out.println(locations.get(0));
 		return locations;
 	}
 }

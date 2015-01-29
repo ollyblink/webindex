@@ -1,5 +1,8 @@
 package testutils;
 
+import index.spatialindex.utils.geolocating.georeferencing.IPlaceExtractor;
+import index.spatialindex.utils.geolocating.georeferencing.LocationFinder;
+import index.spatialindex.utils.geolocating.georeferencing.YPMPlaceExtractor;
 import index.textindex.utils.informationextractiontools.ITextInformationExtractor;
 import index.textindex.utils.informationextractiontools.MockTextInformationExtractor;
 
@@ -21,7 +24,9 @@ public class DBInitializer {
 		for (String d : docs) {
 			documents.add(d);
 		}
-		DBDataManager dbDataProvider = new DBDataManager(dbManager, tokenizer, false);
+		// Create location finder
+		LocationFinder locationFinder = new LocationFinder();
+		DBDataManager dbDataProvider = new DBDataManager(dbManager, tokenizer, locationFinder, false);
 		dbDataProvider.addDocuments(documents);
 		return dbDataProvider;
 	}
@@ -29,9 +34,10 @@ public class DBInitializer {
 	public static DBTablesManager initDB() {
 		String host = "localhost";
 		String port = "5432";
-		String database = "girindex_test";
+		String database = "girindex";
 		String user = "postgres";
-		String password = "32qjivkd";
+		String password = "postgres";
+		// Add all extractors
 
 		DBTablesManager dbManager = new DBTablesManager(new PGDBConnector(host, port, database, user, password));
 		dbManager.dropTables();
@@ -42,8 +48,6 @@ public class DBInitializer {
 
 	public static void tearDownTestDB(DBTablesManager dbManager) {
 		dbManager.dropTables();
-		// dbManager.closeConnection();
 	}
 
-	 
 }

@@ -54,11 +54,12 @@ public class DBDataManager implements IDataManager {
 	private ITextInformationExtractor tokenizer;
 	private boolean showTransformations;
 	private boolean isRunning;
-	 
+	private LocationFinder locationFinder;
 
-	public DBDataManager(DBTablesManager dbManager, ITextInformationExtractor tokenizer, boolean showTransformations) {
- 		this.dbTablesManager = dbManager;
+	public DBDataManager(DBTablesManager dbManager, ITextInformationExtractor tokenizer, LocationFinder locationFinder, boolean showTransformations) {
+		this.dbTablesManager = dbManager;
 		this.tokenizer = tokenizer;
+		this.locationFinder = locationFinder;
 		this.showTransformations = showTransformations;
 		this.isRunning = true;
 	}
@@ -95,14 +96,14 @@ public class DBDataManager implements IDataManager {
 	public ArrayList<TermDocs> getTermDocs(List<Term> terms) {
 		ArrayList<TermDocs> termDocs = new ArrayList<>();
 		String sql = "select * from term_docs";
-		
-		if(terms != null && terms.size() > 0){
+
+		if (terms != null && terms.size() > 0) {
 
 			sql += " where (";
-			for(int i = 0; i < terms.size()-1;++i){
-				sql += "termid = '"+terms.get(i).getIndexedTerm()+"' OR ";
+			for (int i = 0; i < terms.size() - 1; ++i) {
+				sql += "termid = '" + terms.get(i).getIndexedTerm() + "' OR ";
 			}
-			sql += "termid = '"+terms.get(terms.size()-1).getIndexedTerm() + "');"; 
+			sql += "termid = '" + terms.get(terms.size() - 1).getIndexedTerm() + "');";
 		}
 		System.out.println(sql);
 		try {
@@ -125,8 +126,8 @@ public class DBDataManager implements IDataManager {
 		HashMap<Term, ArrayList<String>> originalTerms = new HashMap<>();
 		String sql = "select * from terms inner join original_terms on id=termid";
 
-		if(bounds != null && bounds.length == 2 && (bounds[0] <= bounds[1])){
-			sql += " where ni >= "+ bounds[0] + " AND ni <= " + bounds[1]+";";
+		if (bounds != null && bounds.length == 2 && (bounds[0] <= bounds[1])) {
+			sql += " where ni >= " + bounds[0] + " AND ni <= " + bounds[1] + ";";
 		}
 		try {
 			PreparedStatement statement = dbTablesManager.getConnection().prepareStatement(sql);
@@ -203,19 +204,13 @@ public class DBDataManager implements IDataManager {
 	protected void addDocument(final String text) {
 		String transformedText = text.replace("´", "''").replace("`", "''").replace("'", "''");
 		ExtractionRequest request = new ExtractionRequest(text);
-		// Terms
-		StopwordRemovalStage stopwordRemovalStage = new StopwordRemovalStage(showTransformations, tokenizer);
-		StemmingStage stemmingStage = new StemmingStage(showTransformations, tokenizer);
-		TokenizationStage tokenizationStage = new TokenizationStage(showTransformations, tokenizer);
-		IndexAndOriginalTokenExtractionStage indexAndOriginalTokenExtractionStage = new IndexAndOriginalTokenExtractionStage(showTransformations, tokenizer);
-		TermFrequencyExtractionStage termFrequencyExtractionStage = new TermFrequencyExtractionStage(showTransformations, tokenizer);
-
+		
+		
 		// Spatial
 		GeoTaggingStage geoTaggingStage = new GeoTaggingStage(showTransformations, dbTablesManager.getConnector());
-		GeoReferencingStage geoReferencingStage = new GeoReferencingStage(new LocationFinder(dbTablesManager.getConnector()),showTransformations);
+		GeoReferencingStage geoReferencingStage = new GeoReferencingStage(locationFinder, showTransformations);
 
 		// Chaining the stages together in an appropriate way
-
 		// spatial extraction
 		geoTaggingStage.setSuccessor(geoReferencingStage);
 		geoReferencingStage.setPrecursor(geoTaggingStage);
@@ -225,9 +220,18 @@ public class DBDataManager implements IDataManager {
 		// If not: skip this document...
 		List<Geometry> possibleLocations = (List<Geometry>) request.getTransformationStage(geoReferencingStage.getClass().getSimpleName());
 		if (possibleLocations == null || possibleLocations.size() == 0) {
-//			System.out.println("No locations found. Document \"" + transformedText + "\" could not be georeferenced. Discarded.");
-			// return;
+			System.out.println("No locations found. Document \"" + transformedText + "\" could not be georeferenced. Discarded.");
+			return;
 		}
+		
+		// Terms
+		StopwordRemovalStage stopwordRemovalStage = new StopwordRemovalStage(showTransformations, tokenizer);
+		StemmingStage stemmingStage = new StemmingStage(showTransformations, tokenizer);
+		TokenizationStage tokenizationStage = new TokenizationStage(showTransformations, tokenizer);
+		IndexAndOriginalTokenExtractionStage indexAndOriginalTokenExtractionStage = new IndexAndOriginalTokenExtractionStage(showTransformations, tokenizer);
+		TermFrequencyExtractionStage termFrequencyExtractionStage = new TermFrequencyExtractionStage(showTransformations, tokenizer);
+
+	
 		// text extraction
 		stopwordRemovalStage.setSuccessor(stemmingStage);
 		stemmingStage.setPrecursor(stopwordRemovalStage);
@@ -252,7 +256,7 @@ public class DBDataManager implements IDataManager {
 			insertDocument(transformedText, new ArrayList<>(termFreqs.keySet()), documentInsertion);
 
 			// Now the terms and term-to-doc relationships
-			for (Term indexTerm : termFreqs.keySet()) { 
+			for (Term indexTerm : termFreqs.keySet()) {
 				insertTerm(termInsertion, indexTerm);
 				insertOriginalTerms(originalTermInsertion, indexTerm);
 				insertTermDocs(transformedText, termFreqs, termInDocInsertion, indexTerm);
@@ -395,7 +399,7 @@ public class DBDataManager implements IDataManager {
 	protected void insertOriginalTerms(PreparedStatement originalTermInsertion, Term indexTerm) throws SQLException {
 		ArrayList<String> originalTerms = indexTerm.getOriginalTerms();
 		for (String originalTerm : originalTerms) {
-			if (!alreadyIndexed("select count(original_term) from original_terms where original_term='" + originalTerm.replace("'","''") + "';")) {
+			if (!alreadyIndexed("select count(original_term) from original_terms where original_term='" + originalTerm.replace("'", "''") + "';")) {
 				originalTermInsertion.setString(1, originalTerm);
 				originalTermInsertion.setString(2, indexTerm.getIndexedTerm().getTermId());
 				originalTermInsertion.execute();
@@ -488,7 +492,7 @@ public class DBDataManager implements IDataManager {
 	private boolean alreadyIndexed(String sql) {
 		try {
 			Statement statement = dbTablesManager.getConnection().createStatement();
-//			System.out.println(sql);
+			// System.out.println(sql);
 			ResultSet lastDocId = statement.executeQuery(sql);
 			int count = 0;
 			while (lastDocId.next()) {
@@ -575,7 +579,7 @@ public class DBDataManager implements IDataManager {
 		if (dbTablesManager.getConnector().tableExists("locations")) {
 
 			try {
-				String sql = "Select l.docid, l.geometry from locations l " + getWhereClause("l", "docid",docids);
+				String sql = "Select l.docid, l.geometry from locations l " + getWhereClause("l", "docid", docids);
 				// System.out.println(sql);
 				return retrieveDocuments(sql);
 			} catch (SQLException | NoSuchObjectException e) {
@@ -670,17 +674,17 @@ public class DBDataManager implements IDataManager {
 	}
 
 	public static ITextIndexNoInsertion getTestIndex() {
-//		DBDataManager dbDataManager = new DBDataManager(DBInitializer.initDB(), null, false);
-//
-//		HashMap<Term, List<Document>> documents = DBDataManager.createIndexableDocuments();
-//		ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs(null);
-//		HashMap<TermDocsIdentifier, TermDocs> termDocsMeta = new HashMap<>();
-//
-//		for (TermDocs t : termDocs) {
-//			termDocsMeta.put(t.getId(), t);
-//		}
-//		RAMTextOnlyIndex ramTextOnlyIndex = new RAMTextOnlyIndex(new TextIndexMetaData(termDocsMeta, dbDataManager.getOverallTextIndexMetaData()), null);
-//		ramTextOnlyIndex.addTerms(documents);
+		// DBDataManager dbDataManager = new DBDataManager(DBInitializer.initDB(), null, false);
+		//
+		// HashMap<Term, List<Document>> documents = DBDataManager.createIndexableDocuments();
+		// ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs(null);
+		// HashMap<TermDocsIdentifier, TermDocs> termDocsMeta = new HashMap<>();
+		//
+		// for (TermDocs t : termDocs) {
+		// termDocsMeta.put(t.getId(), t);
+		// }
+		// RAMTextOnlyIndex ramTextOnlyIndex = new RAMTextOnlyIndex(new TextIndexMetaData(termDocsMeta, dbDataManager.getOverallTextIndexMetaData()), null);
+		// ramTextOnlyIndex.addTerms(documents);
 		return null;
 	}
 

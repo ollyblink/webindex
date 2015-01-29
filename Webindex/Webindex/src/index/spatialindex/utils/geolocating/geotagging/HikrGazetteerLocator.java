@@ -22,7 +22,7 @@ public class HikrGazetteerLocator {
 			Statement statement = db2.getConnection().createStatement();
 			ResultSet set = statement.executeQuery("Select name from hikrgazetteer");
 			while (set.next()) {
-				hikrGazetteer.add(HikrGazetteerPlaceExtractor.alterText(set.getString(1)));
+				hikrGazetteer.add(/*HikrGazetteerPlaceExtractor.alterText(*/set.getString(1));
 			} 
 			statement.close();
 		} catch (SQLException e) {
@@ -39,21 +39,21 @@ public class HikrGazetteerLocator {
 	public HashSet<String> parse(String inputText) {
 		HashSet<String> possibleNames = new HashSet<String>();
 
-		String tokens[] = HikrGazetteerPlaceExtractor.alterText(inputText).split(" ");
+//		String tokens[] = HikrGazetteerPlaceExtractor.alterText(inputText).split(" ");
 
 //		for (String hikr : hikrGazetteer) {
 //			System.out.println(">> Hikr: "+hikr ); 
 //		}
-		for (String token : tokens) {
-			for (String hikr : hikrGazetteer) {
-				
-				if (token.equals(hikr)) {
-//					System.out.println(">> Hikr: "+hikr +" equals "  + token);
-					possibleNames.add(token);
-					break;
-				}
-			}
-		}
+//		for (String token : tokens) {
+//			for (String hikr : hikrGazetteer) {
+//				
+//				if (token.equals(hikr)) {
+////					System.out.println(">> Hikr: "+hikr +" equals "  + token);
+//					possibleNames.add(token);
+//					break;
+//				}
+//			}
+//		}
 
 		return possibleNames;
 	}

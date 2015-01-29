@@ -4,6 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import index.spatialindex.utils.SpatialDocument;
+import index.spatialindex.utils.geolocating.georeferencing.IPlaceExtractor;
+import index.spatialindex.utils.geolocating.georeferencing.LocationFinder;
+import index.spatialindex.utils.geolocating.georeferencing.YPMPlaceExtractor;
 import index.textindex.utils.Term;
 import index.textindex.utils.TermDocs;
 import index.textindex.utils.informationextractiontools.MockTextInformationExtractor;
@@ -40,13 +43,13 @@ public class DBDataManagerTest {
 
 	@Before
 	public void initTest() {
-		dbTablesManager = DBInitializer.initDB();
-		dbDataManager = new DBDataManager(dbTablesManager, new MockTextInformationExtractor(), false);
+		dbTablesManager = DBInitializer.initDB(); 
+		dbDataManager = new DBDataManager(dbTablesManager, new MockTextInformationExtractor(), new LocationFinder(), false);
 	}
 
 	@After
 	public void tearDownTest() {
-		 DBInitializer.tearDownTestDB(dbTablesManager);
+		DBInitializer.tearDownTestDB(dbTablesManager);
 	}
 
 	private static String[] getDocs(String type) {
@@ -74,7 +77,7 @@ public class DBDataManagerTest {
 			documents.add(doc);
 		}
 
-//		dbDataManager.addDocuments(documents);
+		// dbDataManager.addDocuments(documents);
 	}
 
 	@Test

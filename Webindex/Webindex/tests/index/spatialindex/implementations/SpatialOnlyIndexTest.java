@@ -2,7 +2,9 @@ package index.spatialindex.implementations;
 
 import static org.junit.Assert.assertEquals;
 import index.spatialindex.utils.SpatialDocument;
+import index.spatialindex.utils.geolocating.georeferencing.IPlaceExtractor;
 import index.spatialindex.utils.geolocating.georeferencing.LocationFinder;
+import index.spatialindex.utils.geolocating.georeferencing.YPMPlaceExtractor;
 import index.utils.Document;
 import index.utils.documenttransformation.ExtractionRequest;
 import index.utils.documenttransformation.spatialtransformation.GeoReferencingStage;
@@ -35,11 +37,12 @@ public class SpatialOnlyIndexTest {
 	public static void init() {
 
 		String[] docs = new String[] { "This text is about Zürich, Schweiz", "The mayor of London, England was not amused", "Many people died in World War II when Berlin, Germany was bombed by the allies" };
-
-		LocationFinder testLF = new LocationFinder(true);
+	 
+		// Create location finder 
+		LocationFinder testLF = new LocationFinder();
 		// Spatial
 		GeoTaggingStage geoTaggingStage = new GeoTaggingStage(IS_SHOW_TRANSFORMATION_ENABLED, new PGDBConnector(host, port, database, user, password));
-		GeoReferencingStage geoReferencingStage = new GeoReferencingStage(testLF, IS_SHOW_TRANSFORMATION_ENABLED );
+		GeoReferencingStage geoReferencingStage = new GeoReferencingStage(testLF, IS_SHOW_TRANSFORMATION_ENABLED);
 
 		// Chaining the stages together in an appropriate way
 
@@ -55,7 +58,7 @@ public class SpatialOnlyIndexTest {
 
 			@SuppressWarnings("unchecked")
 			List<Geometry> documentFootprints = (List<Geometry>) request.getTransformationStage(geoReferencingStage.getClass().getSimpleName());
-	 
+
 			List<SpatialDocument> spatialDocuments = new ArrayList<SpatialDocument>();
 			// System.out.println(documentFootprints);
 			for (Geometry geom : documentFootprints) {
@@ -67,15 +70,14 @@ public class SpatialOnlyIndexTest {
 
 			spatialOnlyIndex.addDocuments(spatialDocuments);
 		}
-		 
 
 	}
 
 	@Test
 	public void queryTest() {
 		SpatialIndexQuery query = new SpatialIndexQuery("point_in", "Switzerland");
-		Ranking ranking = spatialOnlyIndex.queryIndex(query );
-		
+		Ranking ranking = spatialOnlyIndex.queryIndex(query);
+
 		for (RESTScore d : ranking.getResults()) {
 			System.out.println(d);
 			if (d.getDocument().getId().getId() == 1) {

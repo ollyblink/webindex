@@ -10,7 +10,9 @@ import index.spatialindex.implementations.ISpatialIndex;
 import index.spatialindex.implementations.SpatialOnlyIndex;
 import index.spatialindex.utils.GeometryConverter;
 import index.spatialindex.utils.SpatialDocument;
+import index.spatialindex.utils.geolocating.georeferencing.IPlaceExtractor;
 import index.spatialindex.utils.geolocating.georeferencing.LocationFinder;
+import index.spatialindex.utils.geolocating.georeferencing.YPMPlaceExtractor;
 import index.textindex.implementations.ITextIndex;
 import index.textindex.implementations.RAMTextOnlyIndex;
 import index.textindex.utils.Term;
@@ -42,39 +44,39 @@ import com.vividsolutions.jts.geom.Point;
 public enum IndexDao {
 	INSTANCE;
 
+	private static final String YPM_XML = "ypm.xml";
+
+	/*
+	 * Database configurations (localhost etc. = test, geocomp etc. = real
+	 */
+	// private String host = "localhost";
+	// private String port = "5432";
+	// private String database = "girindex";
+	// private String user = "postgres";
+	// private String password = "postgres";
+	private String host = "geocomp-res.geo.uzh.ch";
+	private String port = "5432";
+	private String database = "girindex2";
+	private String user = "gcscript";
+	private String password = "gcmdp8057";
 	private final ITextInformationExtractor DEFAULT_TEXT_EXTRACTOR = new GermanTextInformationExtractor();
 	private final GIRIndexType CURRENT_GIR_TYPE = GIRIndexType.SEPARATED;
 	private final ICombinationStrategy DEFAULT_COMBINATION_STRATEGY = new CombMNZ();
+
 	private IGIRIndex index;
 	private DBDataManager dbDataManager;
 	private LocationFinder locationFinder;
 
-	// public static void main(String[] args) {
-	// String host = "geocomp-res.geo.uzh.ch";
-	// String port = "5432";
-	// String database = "girindex2";
-	// String user = "gcscript";
-	// String password = "gcmdp8057";
-	//
-	// AbstractDBConnector db = new PGDBConnector(host, port, database, user, password);
-	// }
 	private IndexDao() {
-		// String host = "localhost";
-		// String port = "5432";
-		// String database = "girindex";
-		// String user = "postgres";
-		// String password = "postgres";
-		String host = "geocomp-res.geo.uzh.ch";
-		String port = "5432";
-		String database = "girindex2";
-		String user = "gcscript";
-		String password = "gcmdp8057";
+
 		AbstractDBConnector db = new PGDBConnector(host, port, database, user, password);
-		locationFinder = new LocationFinder(db);
-		DBTablesManager dbManager = new DBTablesManager(db);
-		this.dbDataManager = new DBDataManager(dbManager, DEFAULT_TEXT_EXTRACTOR, true);
+
+		// Create location finder
+		this.locationFinder = new LocationFinder();
+
+		this.dbDataManager = new DBDataManager(new DBTablesManager(db), DEFAULT_TEXT_EXTRACTOR, locationFinder, true);
 		dbDataManager.initializeDBTables();
-		 
+
 		this.index = getGIRIndex(GIRIndexType.SEPARATED);
 	}
 

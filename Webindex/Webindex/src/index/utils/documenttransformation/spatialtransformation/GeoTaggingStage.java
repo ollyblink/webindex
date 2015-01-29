@@ -61,7 +61,7 @@ public class GeoTaggingStage extends AbstractTransformationStage {
 
 		calaisLocator = new CalaisLocator();
 		ypmExtractor = new YPMPlaceExtractor(YPM_XML);
-		this.hikrExtractor = new HikrGazetteerLocator(db, dictionaryLocation, tokenLocation);
+		hikrExtractor = new HikrGazetteerLocator(db, dictionaryLocation, tokenLocation);
 
 	}
 

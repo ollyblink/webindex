@@ -3,6 +3,9 @@ package index.textindex.implementations;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import index.spatialindex.utils.geolocating.georeferencing.IPlaceExtractor;
+import index.spatialindex.utils.geolocating.georeferencing.LocationFinder;
+import index.spatialindex.utils.geolocating.georeferencing.YPMPlaceExtractor;
 import index.textindex.utils.Term;
 import index.textindex.utils.TermDocs;
 import index.utils.Document;
@@ -31,12 +34,14 @@ public class RAMTextOnlyIndexTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		dbDataManager = new DBDataManager(DBInitializer.initDB(), null,  true); 
+		// Create location finder
+		LocationFinder locationFinder = new LocationFinder();
+		dbDataManager = new DBDataManager(DBInitializer.initDB(), null, locationFinder, true);
 		terms = DBDataManager.createIndexableDocuments();
 		ArrayList<TermDocs> termDocs = dbDataManager.getTermDocs(null);
 		HashMap<TermDocsIdentifier, TermDocs> termDocsMeta = new HashMap<>();
 
-		for (TermDocs t : termDocs) { 
+		for (TermDocs t : termDocs) {
 			termDocsMeta.put(t.getId(), t);
 		}
 		index = new RAMTextOnlyIndex(new TextIndexMetaData(termDocsMeta, dbDataManager.getOverallTextIndexMetaData()), null);
@@ -60,26 +65,25 @@ public class RAMTextOnlyIndexTest {
 	}
 
 	@Test
-	public void addDocumentTest() {  
-		 
+	public void addDocumentTest() {
+
 		Map<Document, List<Term>> documents = new HashMap<Document, List<Term>>();
-		for(Term term: terms.keySet()){
+		for (Term term : terms.keySet()) {
 			List<Document> docs = terms.get(term);
-			for(Document doc: docs){
+			for (Document doc : docs) {
 				List<Term> list = documents.get(doc);
-				if(list == null){
+				if (list == null) {
 					list = new ArrayList<>();
 					documents.put(doc, list);
 				}
 				list.add(term);
 			}
 		}
-		 
-		for(Document doc: documents.keySet()){
+
+		for (Document doc : documents.keySet()) {
 			index.addDocument(doc, documents.get(doc));
 		}
-		
-		 
+
 		index.clear();
 		assertEquals(4, index.N());
 		for (Term term : index.getAllTerms()) {
@@ -91,9 +95,9 @@ public class RAMTextOnlyIndexTest {
 				assertTrue(indexDocumentList.contains(document));
 			}
 		}
-		
+
 		index.addDocuments(documents);
-		 
+
 		index.clear();
 		assertEquals(4, index.N());
 		for (Term term : index.getAllTerms()) {
@@ -106,7 +110,7 @@ public class RAMTextOnlyIndexTest {
 			}
 		}
 	}
-	
+
 	@Test
 	public void getSubsetForTest() {
 		List<Term> terms = new ArrayList<Term>();
@@ -138,15 +142,15 @@ public class RAMTextOnlyIndexTest {
 
 		TextIndexQuery query = new TextIndexQuery("to do", "cosine3", false);
 		Ranking ranking = index.queryIndex(query);
- 
-		for (RESTScore score : ranking.getResults()) { 
-			assertEquals(trialScores.get(score.getDocument().getId().getId()),score.getScore(),0.01);
+
+		for (RESTScore score : ranking.getResults()) {
+			assertEquals(trialScores.get(score.getDocument().getId().getId()), score.getScore(), 0.01);
 		}
 	}
 
 	@AfterClass
 	public static void clear() {
-		index.clear(); 
+		index.clear();
 	}
 
 }

@@ -1,8 +1,11 @@
 package index.spatialindex.utils;
 
 import static org.junit.Assert.assertTrue;
+import index.spatialindex.utils.geolocating.georeferencing.IPlaceExtractor;
 import index.spatialindex.utils.geolocating.georeferencing.LocationFinder;
+import index.spatialindex.utils.geolocating.georeferencing.YPMPlaceExtractor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
@@ -14,7 +17,9 @@ public class LocationProviderTest {
 
 	@Test
 	public void testCountries() {
-		LocationFinder finder = new LocationFinder(true);
+
+		// Create location finder
+		LocationFinder finder = new LocationFinder();
 		List<Geometry> germany = finder.findLocation("Germany");
 
 		for (Geometry g : germany) {

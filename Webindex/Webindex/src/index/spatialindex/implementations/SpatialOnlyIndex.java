@@ -4,7 +4,9 @@ import index.spatialindex.similarities.ISpatialRelationship;
 import index.spatialindex.similarities.SpatialRelationshipFactory;
 import index.spatialindex.utils.GeometryConverter;
 import index.spatialindex.utils.SpatialDocument;
+import index.spatialindex.utils.geolocating.georeferencing.IPlaceExtractor;
 import index.spatialindex.utils.geolocating.georeferencing.LocationFinder;
+import index.spatialindex.utils.geolocating.georeferencing.YPMPlaceExtractor;
 import index.utils.Score;
 import index.utils.query.SpatialIndexQuery;
 
@@ -29,8 +31,8 @@ public class SpatialOnlyIndex implements ISpatialIndex {
 	}
 
 	public SpatialOnlyIndex() {
-		this.index = new Quadtree();
-		this.locationFinder = new LocationFinder();
+		this.index = new Quadtree(); 
+		this.locationFinder = new LocationFinder(); 
 	}
 
 	@Override

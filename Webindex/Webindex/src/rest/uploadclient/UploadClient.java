@@ -1,6 +1,8 @@
 package rest.uploadclient;
 
+import index.spatialindex.utils.geolocating.georeferencing.IPlaceExtractor;
 import index.spatialindex.utils.geolocating.georeferencing.LocationFinder;
+import index.spatialindex.utils.geolocating.georeferencing.YPMPlaceExtractor;
 import index.textindex.utils.informationextractiontools.GermanTextInformationExtractor;
 
 import java.io.BufferedReader;
@@ -24,13 +26,14 @@ import utils.fileutils.FilePathRetriever;
 
 public class UploadClient {
 	private static final int NUMBER_TO_INDEX = 2000;
+	private static final String YPM_XML = "ypm.xml";
 
 	public static void main(String[] args) throws Exception {
-//		 String host = "geocomp-res.geo.uzh.ch";
-//		 String port = "5432";
-//		 String database = "girindex2";
-//		 String user = "gcscript";
-//		 String password = "gcmdp8057";
+		// String host = "geocomp-res.geo.uzh.ch";
+		// String port = "5432";
+		// String database = "girindex2";
+		// String user = "gcscript";
+		// String password = "gcmdp8057";
 
 		String host = "localhost";
 		String port = "5432";
@@ -40,11 +43,12 @@ public class UploadClient {
 		Scanner scanner = new Scanner(System.in);
 
 		AbstractDBConnector db = new PGDBConnector(host, port, database, user, password);
- 
-		DBTablesManager dbManager = new DBTablesManager(db);
 
+		DBTablesManager dbManager = new DBTablesManager(db); 
+		// Create location finder
+		LocationFinder locationFinder = new LocationFinder( );
 		BlockingQueue<String> documentQueue = new LinkedBlockingQueue<String>();
-		DBDataManager dbDataManager = new DBDataManager(dbManager, new GermanTextInformationExtractor(), false);
+		DBDataManager dbDataManager = new DBDataManager(dbManager, new GermanTextInformationExtractor(),locationFinder, false);
 		dbDataManager.dropTables();
 		dbDataManager.initializeDBTables();
 
@@ -87,7 +91,7 @@ public class UploadClient {
 				// break;
 				System.out.println("Do you want to index more? 1 means yes, any other integer means no.");
 				try {
-//					int answer = scanner.nextInt();
+					// int answer = scanner.nextInt();
 					int answer = 2;
 
 					if (answer == 1) {
@@ -118,7 +122,7 @@ public class UploadClient {
 
 		scanner.close();
 		consumer.setRunning(false);
-//		dbDataManager.close();
+		// dbDataManager.close();
 	}
 
 }
