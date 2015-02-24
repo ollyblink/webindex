@@ -1,17 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="resources"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry exported="true" kind="lib" path="C:/Program Files/Java/jre8/lib/ext/jfxrt.jar"/>
+	<classpathentry including="**/*.java" kind="src" output="target/classes" path="src">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry including="**/*.java" kind="src" path="resources"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="postgis-jdbc-2.1.0SVN.jar"/>
-	<classpathentry kind="lib" path="postgresql-9.3-1102.jdbc41.jar"/>
-	<classpathentry kind="lib" path="joda-time-2.3-dist/joda-time-2.3/joda-time-2.3-javadoc.jar"/>
-	<classpathentry kind="lib" path="joda-time-2.3-dist/joda-time-2.3/joda-time-2.3-sources.jar"/>
-	<classpathentry kind="lib" path="joda-time-2.3-dist/joda-time-2.3/joda-time-2.3.jar"/>
-	<classpathentry kind="lib" path="twitter4j-4.0.2/lib/twitter4j-async-4.0.2.jar"/>
-	<classpathentry kind="lib" path="twitter4j-4.0.2/lib/twitter4j-core-4.0.2.jar"/>
-	<classpathentry kind="lib" path="twitter4j-4.0.2/lib/twitter4j-examples-4.0.2.jar"/>
-	<classpathentry kind="lib" path="twitter4j-4.0.2/lib/twitter4j-media-support-4.0.2.jar"/>
-	<classpathentry kind="lib" path="twitter4j-4.0.2/lib/twitter4j-stream-4.0.2.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>

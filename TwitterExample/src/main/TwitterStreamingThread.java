@@ -11,6 +11,7 @@ import twitter4j.TwitterStreamFactory;
 import twitter4j.User;
 
 public class TwitterStreamingThread extends Thread {
+	private static final String twitterCredentialsPropertyFileLocation = System.getProperty("user.dir") + "/src/main/resources/twitter.properties";
 
 	private String[] keywordsToFilterFor;
 	private BlockingQueue<UserMentionTuple> mentionedUsers;
@@ -20,7 +21,11 @@ public class TwitterStreamingThread extends Thread {
 	private volatile boolean bExit = false;
 	private String[] languagesToFilter;
 
-	public TwitterStreamingThread(String[] keywordsToFilterFor, String[] languagesToFilter, BlockingQueue<UserMentionTuple> mentionedUsers, TwitterStreamDBCreatorAndWriter postgresIndex, boolean isDisplayTweetsEnabled,
+	public TwitterStreamingThread(String[] keywordsToFilterFor, 
+			String[] languagesToFilter, 
+			BlockingQueue<UserMentionTuple> mentionedUsers, 
+			TwitterStreamDBCreatorAndWriter postgresIndex, 
+			boolean isDisplayTweetsEnabled,
 			boolean mustHaveGeolocation) {
 		this.keywordsToFilterFor = keywordsToFilterFor;
 		this.languagesToFilter = languagesToFilter;
@@ -40,7 +45,7 @@ public class TwitterStreamingThread extends Thread {
 		// End query specifications
 
 		// Creating a new twitter stream
-		TwitterStream twitterStream = new TwitterStreamFactory(TwitterBuilder.INSTANCE.newConfigurationBuilder().build()).getInstance();
+		TwitterStream twitterStream = new TwitterStreamFactory(TwitterBuilder.INSTANCE.newConfigurationBuilder(twitterCredentialsPropertyFileLocation).build()).getInstance();
 
 		// Creating a listener to that stream
 		PGWriterListener listener = new PGWriterListener(mentionedUsers, postgresIndex, keywordsToFilterFor, isDisplayTweetsEnabled, mustHaveGeolocation);

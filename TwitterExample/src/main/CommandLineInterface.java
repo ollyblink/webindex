@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,6 +19,8 @@ import db.PGDBConnector;
 import db.TwitterStreamDBCreatorAndWriter;
 
 public class CommandLineInterface {
+	private static final String twitterCredentialsPropertyFileLocation = System.getProperty("user.dir") + "/src/main/resources/twitter.properties";
+
 	public static void main(String[] args) throws InterruptedException {
 		Scanner scanner = new Scanner(System.in);
 
@@ -95,7 +98,13 @@ public class CommandLineInterface {
 		AbstractDBConnector postgresConnector = new PGDBConnector(host, port, database, user, password);
 		TwitterStreamDBCreatorAndWriter postgresIndex = new TwitterStreamDBCreatorAndWriter(postgresConnector, false);
 
-		Twitter twitter = TwitterBuilder.INSTANCE.newInstance();
+		Twitter twitter = null;
+		try {
+			twitter = TwitterBuilder.INSTANCE.newInstance(twitterCredentialsPropertyFileLocation);
+		} catch (NoSuchFileException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		BlockingQueue<UserMentionTuple> mentionedUsersToAdd = null;
 
 		// Save followers if needed...

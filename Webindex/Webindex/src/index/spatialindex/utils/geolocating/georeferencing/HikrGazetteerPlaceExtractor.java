@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.postgis.PGgeometry;
 
@@ -48,29 +47,29 @@ public class HikrGazetteerPlaceExtractor implements IPlaceExtractor {
 
 	@Override
 	public ArrayList<Geometry> extract(String text) {
-		// String[] tokens = /* alterText( */text/* ) */.split(" ");
+		text = alterText(text);
 		Set<String> smallIndex = createSmallIndex(text);
 
 		Map<String, Geometry> temp = new HashMap<String, Geometry>();
 
 		Map<String, Integer> counter = new HashMap<String, Integer>();
-		
+
 		for (String geoname : hikrGazetteer.keySet()) {
-			if ( text.contains(geoname)) {
+			if (text.contains(geoname)) {
 				addToCounter(counter, geoname);
 			}
-			if(smallIndex.contains(geoname)){
-				addToCounter(counter, geoname);
-			}
+			// if(smallIndex.contains(geoname)){
+			// addToCounter(counter, geoname);
+			// }
 		}
-		
-		for(String s: counter.keySet()){
+
+		for (String s : counter.keySet()) {
 			System.out.println(s + " " + counter.get(s));
 		}
 
-//				System.out.println(geoname);
-//				temp.put(geoname, hikrGazetteer.get(geoname));
-				// temp.put(geoname, hikrGazetteer.get(geoname));
+		// System.out.println(geoname);
+		// temp.put(geoname, hikrGazetteer.get(geoname));
+		// temp.put(geoname, hikrGazetteer.get(geoname));
 		// HashMap<String, Boolean> containment = new HashMap<String, Boolean>();
 		// for (String key1 : temp.keySet()) {
 		// boolean isContainedIn = false;
@@ -97,7 +96,7 @@ public class HikrGazetteerPlaceExtractor implements IPlaceExtractor {
 
 	private void addToCounter(Map<String, Integer> counter, String geoname) {
 		Integer cnt = counter.get(geoname);
-		if(cnt == null){
+		if (cnt == null) {
 			cnt = 0;
 		}
 		++cnt;
@@ -114,7 +113,7 @@ public class HikrGazetteerPlaceExtractor implements IPlaceExtractor {
 		String[] split = tmp.split("\\s");
 		for (String s : split) {
 			if (s.trim().length() > 0) {
-				// System.out.println(s);
+				 System.out.println(s);
 				smallIndex.add(s);
 			}
 		}
@@ -141,9 +140,6 @@ public class HikrGazetteerPlaceExtractor implements IPlaceExtractor {
 			System.out.println(geom);
 		}
 
-		// for (int i = 97; i < 123; ++i) {
-		// System.out.println((i - 96) + " " + ((char) (i)));
-		// }
 	}
 
 	private static String getText(String file) {
